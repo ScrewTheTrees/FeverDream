@@ -1,8 +1,8 @@
 {
-  "mapFolder": "TheVeryEndOfYou.w3x",
-  "buildFolderName": "TheVeryEndOfYou",
-  "mapName": "The very end of you",
-  "resourceFolder": "\\Resources\\",
+  "mapFolder": "FeverDream.w3x",
+  "buildFolderName": "FeverDream",
+  "mapName": "Fever Dream",
+  "resourceFolder": "\\resources\\",
   "gameExecutable": "C:\\Games\\Warcraft III\\_retail_\\x86_64\\Warcraft III.exe",
   "launchArgs": [
     "-windowmode windowed",
