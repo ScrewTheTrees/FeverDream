@@ -1,0 +1,18 @@
+{
+  "mapFolder": "TheVeryEndOfYou.w3x",
+  "buildFolderName": "TheVeryEndOfYou",
+  "mapName": "The very end of you",
+  "resourceFolder": "\\Resources\\",
+  "gameExecutable": "C:\\Games\\Warcraft III\\_retail_\\x86_64\\Warcraft III.exe",
+  "launchArgs": [
+    "-windowmode windowed",
+    "-nowfpause",
+    "-launch"
+  ],
+  "indexDirectory": "./src",
+  "minifyLua": true,
+  "removeMapFiles": [
+    "war3map.shd",
+    "war3map.wpm"
+  ]
+}
