@@ -10,7 +10,7 @@ Force 1
 
 STRING 3
 {
-${mapName
+ ${MapName} 
 }
 
 STRING 4
@@ -56,23 +56,5 @@ Enemy 6
 STRING 12
 {
 Force 2
-}
-
-STRING 13
-// Units: H000 (Trash), Propernames (Proper Names)
-{
-Granis Dankhammer,Jorm the Giant,Sage Trouthbearer,Malak from Avengers,Gavinrad the Died,Morlune the Righty,Agamand the False,Ballador the Fright,Mandalore the Youtuber,Zac the Efron,Anus the Seeker,Aurriurrus the Pureé,Karnwield the Sleeper,Buzan the Fearful
-}
-
-STRING 14
-// Units: H000 (Trash), Name (Name)
-{
-Trash
-}
-
-STRING 15
-// Units: H000 (Trash), Hotkey (Hotkey)
-{
-T
 }
 

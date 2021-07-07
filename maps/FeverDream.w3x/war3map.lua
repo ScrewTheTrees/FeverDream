@@ -1,4 +1,84 @@
+udg_Dest_Scene1Entry1 = nil
+udg_Dest_Scene1Exit1 = nil
+gg_trg_InitVars = nil
+gg_dest_ATg4_0002 = nil
+gg_rct_Scene1Arena1Spawn1 = nil
+gg_rct_Scene1Arena1Spawn2 = nil
+gg_rct_Scene1Arena1Spawn3 = nil
+gg_rct_Scene1Arena1Spawn4 = nil
+gg_rct_Scene1Arena1Tardy = nil
+gg_rct_Scene1Arena1Trigger = nil
+gg_dest_ATg1_0003 = nil
+gg_rct_Scene1Arena1Spawn5 = nil
+gg_rct_Scene1Arena1Spawn6 = nil
+gg_rct_Scene1Arena1Spawn7 = nil
+gg_rct_Scene1Arena1Spawn8 = nil
+gg_rct_Scene1Checkpoint1 = nil
+gg_rct_Scene1Arena1Check1 = nil
 function InitGlobals()
+end
+
+function CreateAllDestructables()
+    local d
+    local t
+    local life
+    gg_dest_ATg1_0003 = BlzCreateDestructableWithSkin(FourCC("ATg1"), -26304.0, -22720.0, 270.000, 0.900, 0, FourCC("ATg1"))
+    gg_dest_ATg4_0002 = BlzCreateDestructableWithSkin(FourCC("ATg4"), -27488.0, -25120.0, 180.000, 1.000, 0, FourCC("ATg4"))
+end
+
+function CreateNeutralPassiveBuildings()
+    local p = Player(PLAYER_NEUTRAL_PASSIVE)
+    local u
+    local unitID
+    local t
+    local life
+    u = BlzCreateUnitWithSkin(p, FourCC("nfoh"), -27840.0, -28736.0, 270.000, FourCC("nfoh"))
+end
+
+function CreatePlayerBuildings()
+end
+
+function CreatePlayerUnits()
+end
+
+function CreateAllUnits()
+    CreateNeutralPassiveBuildings()
+    CreatePlayerBuildings()
+    CreatePlayerUnits()
+end
+
+function CreateRegions()
+    local we
+    gg_rct_Scene1Arena1Spawn1 = Rect(-27616.0, -24416.0, -27424.0, -24224.0)
+    gg_rct_Scene1Arena1Spawn2 = Rect(-26176.0, -24928.0, -25984.0, -24736.0)
+    gg_rct_Scene1Arena1Spawn3 = Rect(-27616.0, -23520.0, -27424.0, -23328.0)
+    gg_rct_Scene1Arena1Spawn4 = Rect(-26432.0, -25056.0, -26240.0, -24864.0)
+    gg_rct_Scene1Arena1Tardy = Rect(-26464.0, -23296.0, -26272.0, -23104.0)
+    gg_rct_Scene1Arena1Trigger = Rect(-26848.0, -23520.0, -25824.0, -22880.0)
+    gg_rct_Scene1Arena1Spawn5 = Rect(-27616.0, -23808.0, -27424.0, -23616.0)
+    gg_rct_Scene1Arena1Spawn6 = Rect(-26112.0, -24480.0, -25920.0, -24288.0)
+    gg_rct_Scene1Arena1Spawn7 = Rect(-27616.0, -24128.0, -27424.0, -23936.0)
+    gg_rct_Scene1Arena1Spawn8 = Rect(-26752.0, -25248.0, -26560.0, -25056.0)
+    gg_rct_Scene1Checkpoint1 = Rect(-28416.0, -28928.0, -28032.0, -28544.0)
+    gg_rct_Scene1Arena1Check1 = Rect(-27392.0, -25024.0, -25760.0, -22816.0)
+end
+
+function Trig_InitVars_Actions()
+    udg_Dest_Scene1Entry1 = gg_dest_ATg4_0002
+    udg_Dest_Scene1Exit1 = gg_dest_ATg1_0003
+end
+
+function InitTrig_InitVars()
+    gg_trg_InitVars = CreateTrigger()
+    TriggerAddAction(gg_trg_InitVars, Trig_InitVars_Actions)
+end
+
+function InitCustomTriggers()
+    InitTrig_InitVars()
+end
+
+function RunInitializationTriggers()
+    ConditionalTriggerExecute(gg_trg_InitVars)
 end
 
 function InitCustomPlayerSlots()
@@ -103,8 +183,13 @@ function main()
     SetAmbientDaySound("AshenvaleDay")
     SetAmbientNightSound("AshenvaleNight")
     SetMapMusic("Music", true, 0)
+    CreateRegions()
+    CreateAllDestructables()
+    CreateAllUnits()
     InitBlizzard()
     InitGlobals()
+    InitCustomTriggers()
+    RunInitializationTriggers()
 end
 
 function config()

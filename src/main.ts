@@ -1,6 +1,5 @@
 import {Game} from "./Game";
 import {Hooks} from "wc3-treelib/src/TreeLib/Hooks";
-import {Debug} from "./Debug";
 
 export let gg_trg_Start: trigger;
 export let gameInstance: Game;
@@ -8,7 +7,6 @@ export let gameInstance: Game;
 function MapStart() {
     xpcall(() => {
         gameInstance = new Game();
-        Debug.getInstance(gameInstance);
     }, print);
 
     DestroyTrigger(gg_trg_Start);

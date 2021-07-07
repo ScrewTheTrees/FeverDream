@@ -14,7 +14,8 @@
     "compileMap": "ts-node bin/operations build",
     "compileMapRelease": "ts-node bin/operations buildRelease",
     "launchWarcraft": "ts-node bin/operations run",
-    "postinstall": "tsc --outDir null -p node_modules/mdx-m3-viewer/tsconfig.json"
+    "postinstall": "tsc --outDir null -p node_modules/mdx-m3-viewer/tsconfig.json",
+    "customDefs": "ts-node bin/operations customDefs"
   },
   "directories": {
     "lib": "lib"
@@ -33,15 +34,13 @@
     "typescript": "^4.1.3",
     "typescript-to-lua": "^0.37.1",
     "war3-transformer": "^2.0.0",
-    "wc3-treelib": "^2.3.0",
+    "wc3-treelib": "^2.4.5",
     "winston": "^3.3.3"
   },
   "dependencies": {
     "@types/fs-extra": "^8.1.1",
     "@types/node": "^14.0.23",
     "@types/pako": "^1.0.1",
-    "dependency-tree": "^8.1.0",
-    "luadestroyer": "file:../luadestroyer",
-    "ts-fdf-generator": "file:../tsFDFGenerator"
+    "dependency-tree": "^8.1.0"
   }
 }

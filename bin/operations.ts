@@ -1,5 +1,6 @@
-import {buildConfig, getFilesInsideDir, incrementMajor, incrementMinor, buildLogger, copyFolder} from "./Utils";
+import {buildConfig, buildLogger, getFilesInsideDir, incrementMajor, incrementMinor} from "./Utils";
 import {buildEntireMap} from "./Build";
+import {Make} from "./customDefs";
 
 const fs = require("fs");
 const execFile = require("child_process").execFile;
@@ -37,6 +38,9 @@ function main() {
             incrementMinor();
             break;
 
+        case "customDefs":
+            Make()
+            break;
 
         case "regenerateIndex":
             let dirs = getFilesInsideDir(config.indexDirectory, ".ts")

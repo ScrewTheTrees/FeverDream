@@ -1,3 +1,7 @@
+import {Quick} from "wc3-treelib/src/TreeLib/Quick";
+import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
+import {CUnit} from "../CUnit";
+
 export class PlayerHeroes {
     private static _instance: PlayerHeroes;
     public static getInstance() {
@@ -9,9 +13,9 @@ export class PlayerHeroes {
     private constructor() {
 
     }
-    private heroes: Map<player, unit> = new Map<player, unit>();
+    private heroes: Map<player, CUnit> = new Map<player, CUnit>();
 
-    public addHero(p: player, u: unit): boolean {
+    public addHero(p: player, u: CUnit): boolean {
         if (this.heroes.get(p) == null) {
             this.heroes.set(p, u);
             return true;
@@ -30,5 +34,40 @@ export class PlayerHeroes {
 
     public getHero(p: player) {
         return this.heroes.get(p);
+    }
+
+    public moveHeroesToRect(to: rect, excluding: CUnit[] = []) {
+        for (let u of this.heroes.values()) {
+            if (Quick.Contains(excluding, u)) continue;
+            u.teleport(Vector2.randomPointInRect(to).recycle());
+        }
+    }
+    public reviveHeroesIfDead(to: rect) {
+        for (let u of this.heroes.values()) {
+            if (u.isDead) {
+                u.teleport(Vector2.randomPointInRect(to).recycle());
+                u.revive();
+            }
+        }
+    }
+    public intersects(...to: rect[]) {
+        for (let u of this.heroes.values()) {
+            if (u.isDead) return;
+            for (let r of to) {
+                if (RectContainsCoords(r, u.position.x, u.position.y)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public getHeroesInside(to: rect) {
+        let found: CUnit[] = [];
+        for (let u of this.heroes.values()) {
+            if (RectContainsCoords(to, u.position.x, u.position.y)) {
+                found.push(u);
+            }
+        }
+        return found;
     }
 }

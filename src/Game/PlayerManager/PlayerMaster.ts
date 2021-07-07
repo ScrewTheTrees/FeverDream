@@ -1,5 +1,6 @@
 import {PlayerHeroes} from "./PlayerHeroes";
 import {PlayerInput} from "./PlayerInput";
+import {PlayerCamera} from "./PlayerCamera";
 
 export class PlayerMaster {
     private static _instance: PlayerMaster;
@@ -16,4 +17,5 @@ export class PlayerMaster {
 
     public playerHeroes = PlayerHeroes.getInstance();
     public playerInput = PlayerInput.getInstance();
+    public playerCamera = PlayerCamera.getInstance();
 }
