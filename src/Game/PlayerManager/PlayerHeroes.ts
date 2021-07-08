@@ -1,6 +1,7 @@
+import { ChooseOne } from "wc3-treelib/src/TreeLib/Misc";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {CUnit} from "../CUnit";
+import {CUnit} from "../Units/CUnit";
 
 export class PlayerHeroes {
     private static _instance: PlayerHeroes;
@@ -42,10 +43,10 @@ export class PlayerHeroes {
             u.teleport(Vector2.randomPointInRect(to).recycle());
         }
     }
-    public reviveHeroesIfDead(to: rect) {
+    public reviveHeroesIfDead(...to: rect[]) {
         for (let u of this.heroes.values()) {
             if (u.isDead) {
-                u.teleport(Vector2.randomPointInRect(to).recycle());
+                u.teleport(Vector2.randomPointInRect(ChooseOne(...to)).recycle());
                 u.revive();
             }
         }
@@ -61,10 +62,10 @@ export class PlayerHeroes {
         }
         return false;
     }
-    public getHeroesInside(to: rect) {
+    public getHeroesInside(...to: rect[]) {
         let found: CUnit[] = [];
         for (let u of this.heroes.values()) {
-            if (RectContainsCoords(to, u.position.x, u.position.y)) {
+            if (RectContainsCoords(ChooseOne(...to), u.position.x, u.position.y)) {
                 found.push(u);
             }
         }

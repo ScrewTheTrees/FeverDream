@@ -1,10 +1,9 @@
 import {Logger} from "wc3-treelib/src/TreeLib/Logger";
 import {GameConfig} from "./GameConfig";
-import {Models} from "./Game/Models";
 import {PlayerMaster} from "./Game/PlayerManager/PlayerMaster";
-import {CUnit} from "./Game/CUnit";
 import {SceneService} from "./Game/Scenes/SceneService";
 import {Scene1} from "./Game/Scenes/Scene";
+import {CUnitPlayer} from "./Game/Units/CUnitPlayer";
 
 
 // =========================================
@@ -29,11 +28,10 @@ export class Game {
 
             if (GetPlayerController(p) == MAP_CONTROL_USER && GetPlayerSlotState(p) == PLAYER_SLOT_STATE_PLAYING) {
                 this.gameConfig.playingPlayers.push(p);
-                let h = new CUnit(p,
-                    Models.RIFLEMAN,
+                let h = new CUnitPlayer(p,
                     GetStartLocationX(i),
                     GetStartLocationY(i)
-                )
+                );
                 this.playerMaster.playerHeroes.addHero(p, h);
             }
         }

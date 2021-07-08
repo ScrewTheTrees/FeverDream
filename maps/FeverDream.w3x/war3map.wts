@@ -10,7 +10,7 @@ Force 1
 
 STRING 3
 {
- ${MapName} 
+ ${MapName
 }
 
 STRING 4
