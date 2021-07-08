@@ -16,7 +16,6 @@ export class SceneService extends Entity {
     set currentScene(value: Scene) {
         if (this._currentScene) this._currentScene.remove();
         this._currentScene = value;
-        this._currentScene.onInit();
     }
 
 

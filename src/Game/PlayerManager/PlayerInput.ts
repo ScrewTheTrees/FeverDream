@@ -19,7 +19,6 @@ export class PlayerInput extends Entity {
     private playerHeroes = PlayerHeroes.getInstance();
 
     public pauseInput = false;
-    public moveSpeed = 3;
 
     public keyLeft: oskeytype = OSKEY_A;
     public keyRight: oskeytype = OSKEY_D;
@@ -43,11 +42,7 @@ export class PlayerInput extends Entity {
 
             if (move.x == 0 && move.y == 0) continue;
 
-            let next = Vector2.new(0, 0).polarProject(this.moveSpeed,
-                (-(move.getAngle() * bj_RADTODEG)) + 90
-            )
-            hero.move(next);
-            next.recycle();
+            hero.move(move);
             move.recycle();
         }
     }

@@ -15,11 +15,13 @@ export class CUnit extends Entity {
     private moveTime: number = 0;
     private maxMoveTime: number = 10;
 
+    public disableMovement: boolean = false;
+    public disableRotation: boolean = false;
 
     public health: number = 0;
     public maxHealth: number = 3;
     public isDead: boolean = false;
-
+    public moveSpeed = 3;
 
     private checker = PointWalkableChecker.getInstance();
 
@@ -41,17 +43,22 @@ export class CUnit extends Entity {
         this.position.y = to.y;
     }
     public move(offset: Vector2) {
+        if (this.disableMovement) return;
         if (offset.x == 0 && offset.y == 0) return;
 
         this.moveTime = this.maxMoveTime;
         this.isMoving = true;
 
-        this.face(offset.getAngle() * bj_RADTODEG);
-        if (this.checker.checkTerrainXY(this.position.x + offset.x, this.position.y)) {
-            this.position.x += offset.x;
+        let next = Vector2.new(0, 0).polarProject(this.moveSpeed,
+            (-(offset.getAngle() * bj_RADTODEG)) + 90
+        );
+
+        this.face(next.getAngle() * bj_RADTODEG);
+        if (this.checker.checkTerrainXY(this.position.x + next.x, this.position.y)) {
+            this.position.x += next.x;
         }
-        if (this.checker.checkTerrainXY(this.position.x, this.position.y + offset.y)) {
-            this.position.y += offset.y;
+        if (this.checker.checkTerrainXY(this.position.x, this.position.y + next.y)) {
+            this.position.y += next.y;
         }
     }
     public face(angle: number) {
@@ -59,14 +66,18 @@ export class CUnit extends Entity {
     }
 
     step() {
-        this.facingAngle = Interpolation.RotDivisionSpring(this.facingAngle, this.wantedAngle, 15);
 
-        if (this.moveTime <= 0) this.isMoving = false;
-        else this.moveTime -= 1;
 
+        if (!this.disableRotation) {
+            this.facingAngle = Interpolation.RotDivisionSpring(this.facingAngle, this.wantedAngle, 15);
+        }
+        if (!this.disableMovement) {
+            if (this.moveTime <= 0) this.isMoving = false;
+            else this.moveTime -= 1;
+            if (this.isMoving != this.wasMoving) this.moveStateChanged();
+            this.wasMoving = this.isMoving;
+        }
         this.draw();
-        if (this.isMoving != this.wasMoving) this.moveStateChanged();
-        this.wasMoving = this.isMoving;
     }
     private moveStateChanged() {
         if (this.isMoving) {

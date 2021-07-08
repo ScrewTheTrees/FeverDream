@@ -4,6 +4,13 @@ import {GameConfig} from "../../GameConfig";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Interpolation} from "wc3-treelib/src/TreeLib/Utility/Interpolation";
 
+export const enum CameraMode {
+    NONE,
+    HERO,
+    CUSTOM,
+
+}
+
 export class PlayerCamera extends Entity {
     private static _instance: PlayerCamera;
     public static getInstance() {
@@ -16,25 +23,60 @@ export class PlayerCamera extends Entity {
         super(0.01);
     }
 
-    public unlock: boolean = false;
-    public followHeroes: boolean = true;
+    public cameraMode: CameraMode = CameraMode.HERO;
     public divider: number = 10;
 
+    public customPosition = Vector2.new(0, 0);
+    public zoom = 1650;
+    public angleOfAttack = 290;
+    public rotation = 90;
+
+    private standardZoom = 1650;
+    private standardAngleOfAttack = 304;
+    private standardRotation = 90;
+
     step(): void {
-        if (this.unlock) return;
-        
-        if (this.followHeroes) {
+        if (this.cameraMode == CameraMode.HERO) {
             for (let play of GameConfig.getInstance().playingPlayers) {
                 let hero = PlayerHeroes.getInstance().getHero(play);
                 if (hero == null) continue;
+                let pos = hero.position.copy();
+                pos.y += 32;
 
-                this.slideTo(hero.position, play);
+                this.moveTo(pos, play);
+                pos.recycle();
             }
+        } else if (this.cameraMode == CameraMode.CUSTOM) {
+            this.moveTo(this.customPosition, GetLocalPlayer());
         }
     }
 
+    public setHeroCamera(zoom: number = this.standardZoom) {
+        this.resetStandardCamera();
+
+        this.cameraMode = CameraMode.HERO;
+        this.zoom = zoom;
+    }
+    public setCustomCamera(pos: Vector2, zoom: number = this.standardZoom) {
+        this.resetStandardCamera();
+
+        this.customPosition.x = pos.x;
+        this.customPosition.y = pos.y;
+        this.cameraMode = CameraMode.CUSTOM;
+        this.zoom = zoom;
+    }
+
+    public resetStandardCamera() {
+        this.zoom = this.standardZoom;
+        this.angleOfAttack = this.standardAngleOfAttack;
+        this.rotation = this.standardRotation;
+    }
+
     private lastPoint: Vector2 = Vector2.new(0, 0);
-    public slideTo(position: Vector2, p: player) {
+    private lastZoom: number = 0;
+    private lastAngleOfAttack: number = 0;
+    private lastRotation: number = 0;
+    public moveTo(position: Vector2, p: player) {
         let wanted = Vector2.new(0, 0);
         if (GetLocalPlayer() == p) {
             wanted.x = Interpolation.DivisionSpring(this.lastPoint.x, position.x, this.divider);
@@ -42,6 +84,16 @@ export class PlayerCamera extends Entity {
             SetCameraPosition(wanted.x, wanted.y);
             this.lastPoint.x = wanted.x;
             this.lastPoint.y = wanted.y;
+
+            SetCameraField(CAMERA_FIELD_ZOFFSET, 0, 0.0);
+            SetCameraField(CAMERA_FIELD_FARZ, 20000, 0.0);
+
+            this.lastZoom = Interpolation.DivisionSpring(this.lastZoom, this.zoom, this.divider);
+            SetCameraField(CAMERA_FIELD_TARGET_DISTANCE, this.lastZoom, 0.0);
+            this.lastAngleOfAttack = Interpolation.RotDivisionSpring(this.lastAngleOfAttack, this.angleOfAttack, this.divider);
+            SetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK, this.lastAngleOfAttack, 0.0);
+            this.lastRotation = Interpolation.RotDivisionSpring(this.lastRotation, this.rotation, this.divider);
+            SetCameraField(CAMERA_FIELD_ROTATION, this.lastRotation, 0.0);
         }
         wanted.recycle();
     }

@@ -16,7 +16,7 @@ You must then go into InitScene# and set said variable to make sure its not null
 ###Regions/Rects
 * **Scene#Arena#Trigger#** - Triggers are what regions the player interact with to start the encounter.
 * **Scene#Arena#Tardy#** - If a hero is not inside the arena, they will be moved to these.
-* **Scene#Arena#Check#** - Check, or "moveCheck" is the rects that define the arena bounds.
+* **Scene#Arena#Check#** - Check, or "arenaCheck" is the rects that define the arena bounds.
 * **Scene#Arena#Spawn#** - Enemy/Thing SpawnPoint
 
 ###Destructables

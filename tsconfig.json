@@ -8,7 +8,7 @@
     "outDir": "./target",
     "baseUrl": "./src",
     "lib": [
-      "esnext"
+      "es6"
     ],
 
     "moduleResolution": "classic",
@@ -36,6 +36,7 @@
       "lua-types/core/table",
       "lua-types/core/os",
       "lua-types/special/5.3",
+      "typescript-to-lua/language-extensions",
       "wc3-treelib"
     ]
   },
@@ -51,7 +52,7 @@
     "luaLibImport": "require",
     "sourceMapTraceback": false,
     "noHeader": true,
-    "luaBundle": "target/tstl_output.lua",
+    "luaBundle": "tstl_output.lua",
     "luaBundleEntry": "src\\main.ts",
     "luaPlugins": [
       { "name": "tstl-doender-plugin" }

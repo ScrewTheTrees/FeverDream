@@ -65,8 +65,10 @@ export class PlayerHeroes {
     public getHeroesInside(...to: rect[]) {
         let found: CUnit[] = [];
         for (let u of this.heroes.values()) {
-            if (RectContainsCoords(ChooseOne(...to), u.position.x, u.position.y)) {
-                found.push(u);
+            for (let r of to) {
+                if (RectContainsCoords(r, u.position.x, u.position.y)) {
+                    found.push(u);
+                }
             }
         }
         return found;
