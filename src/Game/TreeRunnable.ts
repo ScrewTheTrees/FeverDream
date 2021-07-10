@@ -8,16 +8,24 @@ import {Logger} from "wc3-treelib/src/TreeLib/Logger";
  */
 export abstract class TreeThread extends Entity {
     private routine: LuaThread;
+    private _isManual: boolean = false;
     public isFinished: boolean = false;
 
-    protected constructor(timerDelay: number = 0.01) {
+    protected constructor(timerDelay: number = 0.01, manual: boolean = false) {
         super(timerDelay);
         this.routine = coroutine.create(() => this.runSecret());
+        this.isManual = manual;
     }
+
+    step(...args: any[]): void {
+        this.update();
+        this.resume(...args);
+    }
+
     public reset() {
         this.routine = coroutine.create(() => this.runSecret());
         this.isFinished = false;
-        this.add();
+        if (!this.isManual) this.add();
     }
     public yield(...args: any[]) {
         coroutine.yield(...args);
@@ -27,10 +35,13 @@ export abstract class TreeThread extends Entity {
             coroutine.yield(...args);
         }
     }
-
-    step(): void {
-        this.update();
-        coroutine.resume(this.routine);
+    public resume(...args: any[]) {
+        if (!this.isFinished) {
+            coroutine.resume(this.routine, ...args);
+        }
+    }
+    protected isolate(func: (this: void,...arg: any[]) => any) {
+        xpcall(func, Logger.critical);
     }
 
     private runSecret() {
@@ -44,4 +55,14 @@ export abstract class TreeThread extends Entity {
     public update() {
     };
     public abstract execute(): void;
+
+    get isManual(): boolean {
+        return this._isManual;
+    }
+    set isManual(value: boolean) {
+        this._isManual = value;
+        if (value) {
+            this.remove();
+        } else this.add();
+    }
 }

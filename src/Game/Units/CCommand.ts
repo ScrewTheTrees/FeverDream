@@ -3,9 +3,9 @@ import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "./CUnit";
 
 export abstract class CCommand extends TreeThread {
-
     public constructor(public owner: CUnit, public targetOffset: Vector2) {
-        super();
+        super(0.01, true);
     }
     abstract execute(): void;
 }
+

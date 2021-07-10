@@ -8,14 +8,14 @@ gg_rct_Scene1Arena1Tardy1 = nil
 gg_rct_Scene1Arena1Trigger1 = nil
 gg_rct_Scene1RespawnPoint1 = nil
 gg_rct_Scene1Arena1Check1 = nil
-gg_trg_InitScene1 = nil
-gg_dest_ATg4_0002 = nil
-gg_dest_ATg1_0003 = nil
-gg_dest_ATg1_0004 = nil
 gg_rct_Scene1Arena2Check1 = nil
 gg_rct_Scene1Arena2Trigger1 = nil
 gg_rct_Scene1Arena2Tardy1 = nil
 gg_rct_Scene1Arena2Spawn1 = nil
+gg_trg_InitScene1 = nil
+gg_dest_ATg4_0002 = nil
+gg_dest_ATg1_0003 = nil
+gg_dest_ATg1_0004 = nil
 function InitGlobals()
 end
 
@@ -54,11 +54,11 @@ function CreateRegions()
     gg_rct_Scene1Arena1Spawn1 = Rect(-25600.0, -23104.0, -24256.0, -22912.0)
     gg_rct_Scene1Arena1Spawn2 = Rect(-25632.0, -24608.0, -24288.0, -24416.0)
     gg_rct_Scene1Arena1Tardy1 = Rect(-27456.0, -23776.0, -27264.0, -23584.0)
-    gg_rct_Scene1Arena1Trigger1 = Rect(-27040.0, -24640.0, -26080.0, -22848.0)
+    gg_rct_Scene1Arena1Trigger1 = Rect(-26880.0, -24672.0, -26080.0, -22848.0)
     gg_rct_Scene1RespawnPoint1 = Rect(-28032.0, -29408.0, -27680.0, -29024.0)
     gg_rct_Scene1Arena1Check1 = Rect(-27712.0, -24672.0, -23616.0, -22688.0)
     gg_rct_Scene1Arena2Check1 = Rect(-27904.0, -22528.0, -25600.0, -20512.0)
-    gg_rct_Scene1Arena2Trigger1 = Rect(-26880.0, -21536.0, -25664.0, -20320.0)
+    gg_rct_Scene1Arena2Trigger1 = Rect(-26848.0, -21696.0, -25632.0, -20480.0)
     gg_rct_Scene1Arena2Tardy1 = Rect(-26240.0, -21248.0, -26048.0, -21056.0)
     gg_rct_Scene1Arena2Spawn1 = Rect(-27744.0, -22368.0, -27552.0, -20672.0)
 end

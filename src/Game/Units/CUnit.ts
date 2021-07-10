@@ -6,6 +6,7 @@ import {TreeThread} from "../TreeRunnable";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {Models} from "../Models";
 import {CCommand} from "./CCommand";
+import {CAIRoutine} from "./CAIRoutine";
 
 export class CProjectileLinear extends TreeThread {
     public owner: CUnit;
@@ -13,6 +14,10 @@ export class CProjectileLinear extends TreeThread {
     public effect: effect;
     public position: Vector2;
     public speed: number = 10;
+    public cliffHeight: number;
+    public visualHeight: number = 0;
+
+    public collisionSize: number = 8;
 
     public constructor(owner: CUnit, targetOffset: Vector2, model: string, x: number, y: number) {
         super();
@@ -20,12 +25,13 @@ export class CProjectileLinear extends TreeThread {
         this.targetOffset = targetOffset.copy();
         this.effect = AddSpecialEffect(model, x, y);
         this.position = Vector2.new(x, y);
+        this.cliffHeight = GetTerrainCliffLevel(this.position.x, this.position.y);
     }
 
     execute(): void {
         while (PointWalkableChecker.getInstance().checkTerrainXY(this.position.x, this.position.y)) {
             this.position.polarProject(this.speed,
-                this.targetOffset.getAngleDegrees() + 90
+                this.targetOffset.getAngleDegrees()
             );
             this.draw();
             this.yield();
@@ -40,10 +46,17 @@ export class CProjectileLinear extends TreeThread {
     private draw() {
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
-        BlzSetSpecialEffectZ(this.effect, this.position.getZ());
+        BlzSetSpecialEffectZ(this.effect, this.position.getZ() + this.visualHeight);
         BlzSetSpecialEffectYaw(this.effect,
-            ((this.targetOffset.getAngleDegrees() + 90) * bj_DEGTORAD)
+            this.targetOffset.getAngle()
         );
+    }
+}
+
+export class CProjectilePlayerShoot extends CProjectileLinear {
+    constructor(owner: CUnit, targetOffset: Vector2) {
+        super(owner, targetOffset, Models.PROJECTILE_PHOENIX_FIRE, owner.position.x, owner.position.y);
+        this.visualHeight = 32;
     }
 }
 
@@ -51,25 +64,23 @@ export class CCommandPlayerFire extends CCommand {
     execute(): void {
         this.owner.disableMovement += 1;
         this.owner.disableFaceCommand += 1;
-        this.owner.forceFacing(this.targetOffset.getAngleDegrees());
         let resetAnim = this.owner.lastAnimationType;
-        this.owner.setAnimation(ANIM_TYPE_ATTACK);
-        this.owner.setTimescale(0.02);
-        print("Start");
 
-        this.yieldTimed(0.75);
-        this.owner.setTimescale(1);
-        new CProjectileLinear(this.owner, this.targetOffset, Models.RIFLEMAN, this.owner.position.x, this.owner.position.y);
-        print("Projectile");
+        this.isolate(() => {
+            this.owner.forceFacing(this.targetOffset.getAngleDegrees());
+            this.owner.setAnimation(ANIM_TYPE_ATTACK);
+            this.owner.setTimescale(0.05);
 
-        this.yieldTimed(0.5);
+            this.yieldTimed(0.75);
+            this.owner.setTimescale(1);
+            new CProjectilePlayerShoot(this.owner, this.targetOffset);
 
-        print("Finish");
-
-        this.owner.setAnimation(resetAnim);
+            this.yieldTimed(0.5);
+            //Done
+        });
         this.owner.disableMovement -= 1;
         this.owner.disableFaceCommand -= 1;
-        this.targetOffset.recycle();
+        this.owner.setAnimation(resetAnim);
     }
 }
 
@@ -89,12 +100,17 @@ export class CUnit extends Entity {
     public disableMovement: number = 0;
     public disableRotation: number = 0;
     public disableFaceCommand: number = 0;
+    public disableCommandUpdate: number = 0;
+    public disableAI: number = 0;
 
     public health: number = 0;
     public maxHealth: number = 3;
     public isDead: boolean = false;
+    public collisionSize: number = 32;
     public moveSpeed = 3;
+    public moveSpeedBonus = 0;
 
+    public aiRoutine?: CAIRoutine;
     public dominantCommand?: CCommand;
     public asyncCommands: CCommand[] = [];
 
@@ -106,15 +122,16 @@ export class CUnit extends Entity {
         this.owner = owner;
         this.effect = AddSpecialEffect(model, x, y);
         this.position = Vector2.new(x, y);
+
     }
     step() {
-        if (this.dominantCommand && this.dominantCommand.isFinished) {
-            this.dominantCommand = undefined;
+        if (this.disableCommandUpdate <= 0) {
+            this.updateCommands();
         }
-        for (let i = this.asyncCommands.length - 1; i >= 0; i--) {
-            let command = this.asyncCommands[i];
-            if (command.isFinished) Quick.Slice(this.asyncCommands, i);
+        if (this.disableAI <= 0) {
+            this.updateAI();
         }
+
         if (this.disableRotation <= 0) {
             this.facingAngle = Interpolation.RotDivisionSpring(this.facingAngle, this.wantedAngle, 15);
         }
@@ -126,6 +143,7 @@ export class CUnit extends Entity {
         }
         this.draw();
     }
+
 
     public revive() {
         this.health = this.maxHealth;
@@ -143,8 +161,9 @@ export class CUnit extends Entity {
         this.moveTime = this.maxMoveTime;
         this.isMoving = true;
 
-        let next = Vector2.new(0, 0).polarProject(this.moveSpeed,
-            offset.getAngleDegrees() + 90
+        let next = Vector2.new(0, 0).polarProject(
+            this.moveSpeed + this.moveSpeedBonus,
+            offset.getAngleDegrees(),
         );
 
         this.setFacing(next.getAngleDegrees());
@@ -171,6 +190,34 @@ export class CUnit extends Entity {
     }
 
 
+    private updateCommands() {
+        if (this.dominantCommand) {
+            if (this.dominantCommand.isFinished) {
+                this.dominantCommand = undefined;
+            } else {
+                this.dominantCommand.timerDelay = this.timerDelay;
+                this.dominantCommand.resume();
+            }
+        }
+        for (let i = this.asyncCommands.length - 1; i >= 0; i--) {
+            let command = this.asyncCommands[i];
+            if (command.isFinished) Quick.Slice(this.asyncCommands, i);
+            else {
+                command.resume();
+                command.timerDelay = this.timerDelay;
+            }
+        }
+    }
+    private updateAI() {
+        if (this.aiRoutine) {
+            if (this.aiRoutine.isFinished) {
+                this.aiRoutine.reset();
+            } else {
+                this.aiRoutine.timerDelay = this.timerDelay;
+                this.aiRoutine.resume();
+            }
+        }
+    }
     private moveStateChanged() {
         if (this.isMoving) {
             this.setAnimation(ANIM_TYPE_WALK);
@@ -184,7 +231,7 @@ export class CUnit extends Entity {
         BlzSetSpecialEffectZ(this.effect, this.position.getZ());
         BlzSetSpecialEffectColorByPlayer(this.effect, this.owner);
         BlzSetSpecialEffectYaw(this.effect,
-            ((this.facingAngle + 90) * bj_DEGTORAD)
+            this.facingAngle * bj_DEGTORAD
         );
     }
 }
