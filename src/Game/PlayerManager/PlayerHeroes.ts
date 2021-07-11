@@ -1,7 +1,7 @@
-import { ChooseOne } from "wc3-treelib/src/TreeLib/Misc";
+import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {CUnit} from "../Units/CUnit";
+import {CUnit} from "../Units/CUnit/CUnit";
 
 export class PlayerHeroes {
     private static _instance: PlayerHeroes;
@@ -35,6 +35,16 @@ export class PlayerHeroes {
 
     public getHero(p: player) {
         return this.heroes.get(p);
+    }
+
+    public getAliveHeroes() {
+        let heroes = [];
+        for (let u of this.heroes.values()) {
+            if (!u.isDead) {
+                heroes.push(u);
+            }
+        }
+        return heroes;
     }
 
     public moveHeroesToRect(to: rect, excluding: CUnit[] = []) {

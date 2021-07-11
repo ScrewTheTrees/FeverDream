@@ -81,9 +81,11 @@ export class PlayerCamera extends Entity {
         if (GetLocalPlayer() == p) {
             wanted.x = Interpolation.DivisionSpring(this.lastPoint.x, position.x, this.divider);
             wanted.y = Interpolation.DivisionSpring(this.lastPoint.y, position.y, this.divider);
-            SetCameraPosition(wanted.x, wanted.y);
-            this.lastPoint.x = wanted.x;
-            this.lastPoint.y = wanted.y;
+            if (!wanted.equals(this.lastPoint)) {
+                SetCameraPosition(wanted.x, wanted.y);
+                this.lastPoint.x = wanted.x;
+                this.lastPoint.y = wanted.y;
+            }
 
             SetCameraField(CAMERA_FIELD_ZOFFSET, 0, 0.0);
             SetCameraField(CAMERA_FIELD_FARZ, 20000, 0.0);

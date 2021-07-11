@@ -16,6 +16,7 @@ gg_trg_InitScene1 = nil
 gg_dest_ATg4_0002 = nil
 gg_dest_ATg1_0003 = nil
 gg_dest_ATg1_0004 = nil
+gg_rct_Scene1Arena1Camera1 = nil
 function InitGlobals()
 end
 
@@ -61,6 +62,7 @@ function CreateRegions()
     gg_rct_Scene1Arena2Trigger1 = Rect(-26848.0, -21696.0, -25632.0, -20480.0)
     gg_rct_Scene1Arena2Tardy1 = Rect(-26240.0, -21248.0, -26048.0, -21056.0)
     gg_rct_Scene1Arena2Spawn1 = Rect(-27744.0, -22368.0, -27552.0, -20672.0)
+    gg_rct_Scene1Arena1Camera1 = Rect(-25376.0, -24032.0, -25120.0, -23744.0)
 end
 
 function Trig_InitScene1_Actions()

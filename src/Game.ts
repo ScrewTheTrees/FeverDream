@@ -3,7 +3,8 @@ import {GameConfig} from "./GameConfig";
 import {PlayerMaster} from "./Game/PlayerManager/PlayerMaster";
 import {SceneService} from "./Game/Scenes/SceneService";
 import {Scene1} from "./Game/Scenes/Scene";
-import {CUnitPlayer} from "./Game/Units/CUnitPlayer";
+import {CUnitTypePlayer} from "./Game/Units/CUnit/Types/CUnitTypePlayer";
+import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 
 
 // =========================================
@@ -23,18 +24,22 @@ export class Game {
             let p = Player(i);
             this.gameConfig.allPlayerSlots.push(p);
 
-            FogEnable(false);
-            FogMaskEnable(false);
-
             if (GetPlayerController(p) == MAP_CONTROL_USER && GetPlayerSlotState(p) == PLAYER_SLOT_STATE_PLAYING) {
                 this.gameConfig.playingPlayers.push(p);
-                let h = new CUnitPlayer(p,
-                    GetStartLocationX(i),
-                    GetStartLocationY(i)
+                let h = new CUnitTypePlayer(p,
+                    Vector2.fromLocationClean(GetStartLocationLoc(i))
                 );
                 this.playerMaster.playerHeroes.addHero(p, h);
             }
         }
+        for (let i = this.gameConfig.enemyIdFrom; i < this.gameConfig.enemyIdTo; i++) {
+            let p = Player(i);
+            this.gameConfig.creepPlayers.push(p);
+        }
+
+
+        FogEnable(false);
+        FogMaskEnable(false);
 
 
         this.sceneService.currentScene = new Scene1();

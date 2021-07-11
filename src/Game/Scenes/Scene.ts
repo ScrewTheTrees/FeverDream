@@ -5,6 +5,8 @@ import {Scene1Arena1, Scene1Arena2} from "./Arena";
 import {PlayerCamera} from "../PlayerManager/PlayerCamera";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {TreeThread} from "../TreeRunnable";
+import {GameConfig} from "../../GameConfig";
+import {CUnitTypeEnemyTutorialMelee} from "../Units/CUnit/Types/CUnitTypeEnemyTutorialMelee";
 
 export abstract class Scene extends TreeThread {
 
@@ -36,7 +38,7 @@ export class Scene1 extends Scene {
 
         this.yieldTimed(1);
         this.playerCamera.setCustomCamera(Vector2.fromRectCenter(gg_rct_Scene1RespawnPoint1).recycle(), 2500);
-        this.yieldTimed(10);
+        this.yieldTimed(5);
         this.playerCamera.setHeroCamera();
 
         while (!this.arena1.isPlayerTouchingTrigger()) {
@@ -47,7 +49,17 @@ export class Scene1 extends Scene {
         const exclude = this.playerHeroes.getHeroesInside(...this.arena1.arenaCheck);
         this.playerHeroes.moveHeroesToRect(ChooseOne(...this.arena1.tardy), exclude);
         this.yieldTimed(1);
-        this.playerCamera.setCustomCamera(Vector2.fromRectCenter(gg_rct_Scene1Arena1Check1).recycle(), 2400);
+        this.playerCamera.setCustomCamera(Vector2.fromRectCenter(gg_rct_Scene1Arena1Camera1).recycle(), 2400);
+
+        for (let i = 0; i < 6; i++) {
+            let place = Vector2.randomPointInRect(ChooseOne(...this.arena1.enemySpawns));
+            new CUnitTypeEnemyTutorialMelee(
+                ChooseOne(...GameConfig.getInstance().creepPlayers),
+                place
+            );
+            place.recycle();
+            this.yieldTimed(1);
+        }
 
         this.yieldTimed(5);
         this.playerCamera.setHeroCamera();

@@ -3,6 +3,8 @@ import {SceneDestructableType} from "./SceneDestructableType";
 import {GateOperation} from "./GateOperation";
 import {Rectangle} from "wc3-treelib/src/TreeLib/Utility/Data/Rectangle";
 import {PlayerHeroes} from "../PlayerManager/PlayerHeroes";
+import {CUnit} from "../Units/CUnit/CUnit";
+import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 
 export abstract class Arena {
     /*** Trigger areas that starts the engagement. */
@@ -17,6 +19,8 @@ export abstract class Arena {
     public entrance: destructable[] = [];
     /*** The exit destructables (if applicable) that should Close/Open. */
     public exit: destructable[] = [];
+
+    public enemies: CUnit[] = [];
 
     public constructor(scene: number, arena: number) {
         this.parseRegions(SceneRectType.TRIGGER, scene, arena, this.trigger);
@@ -71,6 +75,10 @@ export abstract class Arena {
     public isPlayerTouchingTrigger() {
         return PlayerHeroes.getInstance().intersects(...this.trigger);
     }
+
+    public addEnemy(cu: CUnit) {
+        Quick.PushIfMissing(this.enemies, cu);
+    }
 }
 
 export class Scene1Arena1 extends Arena {
@@ -78,6 +86,7 @@ export class Scene1Arena1 extends Arena {
         super(1, 1);
     }
 }
+
 export class Scene1Arena2 extends Arena {
     constructor() {
         super(1, 2);

@@ -18,8 +18,11 @@ export abstract class TreeThread extends Entity {
     }
 
     step(...args: any[]): void {
-        this.update();
-        this.resume(...args);
+        if (!this._isManual) {
+            this.resume(...args);
+        } else {
+            this.remove();
+        }
     }
 
     public reset() {
@@ -40,7 +43,7 @@ export abstract class TreeThread extends Entity {
             coroutine.resume(this.routine, ...args);
         }
     }
-    protected isolate(func: (this: void,...arg: any[]) => any) {
+    protected isolate(func: (this: void, ...arg: any[]) => any) {
         xpcall(func, Logger.critical);
     }
 
@@ -52,9 +55,7 @@ export abstract class TreeThread extends Entity {
         this.isFinished = true;
     }
 
-    public update() {
-    };
-    public abstract execute(): void;
+    protected abstract execute(): void;
 
     get isManual(): boolean {
         return this._isManual;
