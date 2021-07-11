@@ -46,6 +46,15 @@ export class PlayerHeroes {
         }
         return heroes;
     }
+    public countAliveHeroes() {
+        let heroes =0;
+        for (let u of this.heroes.values()) {
+            if (!u.isDead) {
+                heroes++;
+            }
+        }
+        return heroes;
+    }
 
     public moveHeroesToRect(to: rect, excluding: CUnit[] = []) {
         for (let u of this.heroes.values()) {

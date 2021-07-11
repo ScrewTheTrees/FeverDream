@@ -5,6 +5,7 @@ export enum Models {
 
 
 
-    PROJECTILE_PHOENIX_FIRE = "Abilities\\Weapons\\PhoenixMissile\\Phoenix_Missile_mini.mdl",
+    PROJECTILE_PLAYER_FIRE = "Abilities\\Weapons\\DemonHunterMissile\\DemonHunterMissile.mdx",
+    PROJECTILE_ENEMY_MELEE = "war3mapImported\\EphemeralSlashRed.mdx",
 }
 

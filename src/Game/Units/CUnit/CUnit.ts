@@ -30,6 +30,7 @@ export abstract class CUnit extends Entity {
 
     public health: number = 100;
     public maxHealth: number = 100;
+    private wasDead: boolean = false;
     public isDead: boolean = false;
     public collisionSize: number = 32;
     public poise: number = 1;
@@ -52,23 +53,41 @@ export abstract class CUnit extends Entity {
 
     }
     step() {
+        if (this.isDead && !this.wasDead) {
+            for (let i = this.subComponents.length - 1; i >= 0; i--) {
+                let comp = this.subComponents[i];
+                if (comp.removeOnDeath) {
+                    this.removeComponent(comp);
+                }
+            }
+            this.setAnimation(ANIM_TYPE_DEATH);
+            this.setTimescale(1);
+            CUnit.unitPool.update();
+        }
+        if (this.queueForRemoval) {
+            CUnit.unitPool.update();
+            this.remove();
+        }
         if (this.disableCommandUpdate <= 0) {
             this.updateCommands();
         }
-        if (this.isMoving) {
-            this.move(this.moveOffset);
-        }
-
-        if (this.disableRotation <= 0) {
-            this.facingAngle = Interpolation.RotDivisionSpring(this.facingAngle, this.wantedAngle, 15);
-        }
-        if (this.disableMovement <= 0) {
-            if (this.moveTime <= 0) this.isMoving = false;
-            else this.moveTime -= 1;
-            if (this.isMoving != this.wasMoving) this.moveStateChanged();
-            this.wasMoving = this.isMoving;
+        if (!this.isDead) {
+            if (this.isMoving) {
+                this.move(this.moveOffset);
+            }
+            if (this.disableRotation <= 0) {
+                this.facingAngle = Interpolation.RotDivisionSpring(this.facingAngle, this.wantedAngle, 15);
+            }
+            if (this.disableMovement <= 0) {
+                if (this.moveTime <= 0) this.isMoving = false;
+                else this.moveTime -= 1;
+                if (this.isMoving != this.wasMoving) this.moveStateChanged();
+                this.wasMoving = this.isMoving;
+            }
         }
         this.draw();
+
+        this.wasDead = this.isDead;
     }
 
     public isDominated() {
@@ -90,15 +109,13 @@ export abstract class CUnit extends Entity {
     public addComponent(command: IComponent) {
         if (!Quick.Contains(this.subComponents, command)) {
             this.subComponents.push(command)
+            command.timerDelay = this.timerDelay;
             command.resume();
         }
     }
     public removeComponent(command: IComponent) {
-        let index = this.subComponents.indexOf(command);
-        if (index >= 0) {
-            Quick.Slice(this.subComponents, index);
-        }
-        command.cleanup();
+        Quick.Remove(this.subComponents, command);
+        command.stop();
     }
     public revive() {
         this.health = this.maxHealth;
@@ -176,7 +193,6 @@ export abstract class CUnit extends Entity {
                 this.removeComponent(command);
             } else {
                 command.resume();
-                command.timerDelay = this.timerDelay;
             }
         }
     }
@@ -194,6 +210,17 @@ export abstract class CUnit extends Entity {
         BlzSetSpecialEffectYaw(this.effect,
             this.facingAngle * bj_DEGTORAD
         );
+    }
+
+    public onDelete() {
+        BlzSetSpecialEffectTimeScale(this.effect, 99999);
+        BlzSetSpecialEffectScale(this.effect, 0);
+        DestroyEffect(this.effect);
+
+        for (let i = this.subComponents.length - 1; i >= 0; i--) {
+            let comp = this.subComponents[i];
+            this.removeComponent(comp);
+        }
     }
 }
 

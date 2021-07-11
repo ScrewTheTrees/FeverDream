@@ -1,5 +1,7 @@
-import {Scene} from "./Scene";
+import {Scene} from "./Scenes/Scene";
 import {Entity} from "wc3-treelib/src/TreeLib/Entity";
+import {PlayerHeroes} from "../PlayerManager/PlayerHeroes";
+import {Scene1} from "./Scenes/Scene1";
 
 export class SceneService extends Entity {
     private static _instance: SceneService;
@@ -9,24 +11,24 @@ export class SceneService extends Entity {
         }
         return this._instance;
     }
-    private _currentScene!: Scene;
-    get currentScene(): Scene {
-        return this._currentScene;
-    }
-    set currentScene(value: Scene) {
-        if (this._currentScene) this._currentScene.remove();
-        this._currentScene = value;
-    }
-
+    private _currentScene?: Scene = new Scene1();
 
     private constructor() {
         super(0.1);
     }
 
+    private previousHeroesAlive = 0;
 
     step(): void {
         if (this._currentScene && this._currentScene.hasFinished) {
             print("win");
+            this._currentScene = this._currentScene.onFinish();
         }
+
+        let heroesAlive = PlayerHeroes.getInstance().countAliveHeroes();
+        if (this._currentScene && heroesAlive == 0 && this.previousHeroesAlive > 0) {
+            this._currentScene.onPlayersDeath();
+        }
+        this.previousHeroesAlive = heroesAlive;
     }
 }

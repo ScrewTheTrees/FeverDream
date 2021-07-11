@@ -2,7 +2,6 @@ import {Logger} from "wc3-treelib/src/TreeLib/Logger";
 import {GameConfig} from "./GameConfig";
 import {PlayerMaster} from "./Game/PlayerManager/PlayerMaster";
 import {SceneService} from "./Game/Scenes/SceneService";
-import {Scene1} from "./Game/Scenes/Scene";
 import {CUnitTypePlayer} from "./Game/Units/CUnit/Types/CUnitTypePlayer";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 
@@ -40,8 +39,5 @@ export class Game {
 
         FogEnable(false);
         FogMaskEnable(false);
-
-
-        this.sceneService.currentScene = new Scene1();
     }
 }

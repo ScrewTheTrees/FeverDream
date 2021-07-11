@@ -3,6 +3,7 @@ import {PlayerHeroes} from "./PlayerHeroes";
 import {GameConfig} from "../../GameConfig";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Interpolation} from "wc3-treelib/src/TreeLib/Utility/Interpolation";
+import {InputManager} from "wc3-treelib/src/TreeLib/InputManager/InputManager";
 
 export const enum CameraMode {
     NONE,
@@ -35,13 +36,35 @@ export class PlayerCamera extends Entity {
     private standardAngleOfAttack = 304;
     private standardRotation = 90;
 
+    private lastMousePos: Vector2[] = [
+        Vector2.new(0, 0),
+        Vector2.new(0, 0),
+        Vector2.new(0, 0),
+        Vector2.new(0, 0),
+    ];
+    private mouseOffset: Vector2[] = [
+        Vector2.new(0, 0),
+        Vector2.new(0, 0),
+        Vector2.new(0, 0),
+        Vector2.new(0, 0),
+    ];
+
     step(): void {
         if (this.cameraMode == CameraMode.HERO) {
             for (let play of GameConfig.getInstance().playingPlayers) {
                 let hero = PlayerHeroes.getInstance().getHero(play);
+                let id = GetPlayerId(play);
                 if (hero == null) continue;
+                if (!this.lastMousePos[id].equals(InputManager.getLastMouseCoordinate(play))) {
+                    this.lastMousePos[id].updateToPoint(InputManager.getLastMouseCoordinate(play));
+                    this.mouseOffset[id].updateToPoint(hero.position)
+                        .offsetTo(this.lastMousePos[id])
+                        .divideOffsetNum(8);
+                }
                 let pos = hero.position.copy();
-                pos.y += 32;
+
+                pos.y += 64;
+                pos.addOffset(this.mouseOffset[id]);
 
                 this.moveTo(pos, play);
                 pos.recycle();
@@ -55,6 +78,7 @@ export class PlayerCamera extends Entity {
         this.resetStandardCamera();
 
         this.cameraMode = CameraMode.HERO;
+        this.divider = 20;
         this.zoom = zoom;
     }
     public setCustomCamera(pos: Vector2, zoom: number = this.standardZoom) {
@@ -62,6 +86,7 @@ export class PlayerCamera extends Entity {
 
         this.customPosition.x = pos.x;
         this.customPosition.y = pos.y;
+        this.divider = 10;
         this.cameraMode = CameraMode.CUSTOM;
         this.zoom = zoom;
     }
@@ -81,11 +106,9 @@ export class PlayerCamera extends Entity {
         if (GetLocalPlayer() == p) {
             wanted.x = Interpolation.DivisionSpring(this.lastPoint.x, position.x, this.divider);
             wanted.y = Interpolation.DivisionSpring(this.lastPoint.y, position.y, this.divider);
-            if (!wanted.equals(this.lastPoint)) {
-                SetCameraPosition(wanted.x, wanted.y);
-                this.lastPoint.x = wanted.x;
-                this.lastPoint.y = wanted.y;
-            }
+            SetCameraPosition(wanted.x, wanted.y);
+            this.lastPoint.x = wanted.x;
+            this.lastPoint.y = wanted.y;
 
             SetCameraField(CAMERA_FIELD_ZOFFSET, 0, 0.0);
             SetCameraField(CAMERA_FIELD_FARZ, 20000, 0.0);

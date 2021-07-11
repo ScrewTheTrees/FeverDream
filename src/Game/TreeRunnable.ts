@@ -26,16 +26,25 @@ export abstract class TreeThread extends Entity {
     }
 
     public reset() {
+        if (!this.isFinished) this.onEnd();
         this.routine = coroutine.create(() => this.runSecret());
         this.isFinished = false;
         if (!this.isManual) this.add();
+        this.onStart();
     }
-    public yield(...args: any[]) {
+    public stop() {
+        if (!this.isFinished) {
+            this.onEnd();
+            this.remove();
+        }
+        this.isFinished = true;
+    }
+    protected yield(...args: any[]) {
         coroutine.yield(...args);
     }
-    public yieldTimed(totalSeconds: number, ...args: any[]) {
+    protected yieldTimed(totalSeconds: number, ...args: any[]) {
         for (let i = 0; i < totalSeconds; i += this.timerDelay) {
-            coroutine.yield(...args);
+            this.yield(...args);
         }
     }
     public resume(...args: any[]) {
@@ -48,14 +57,18 @@ export abstract class TreeThread extends Entity {
     }
 
     private runSecret() {
-        xpcall(() => {
+        this.onStart();
+        this.isolate(() => {
             this.execute();
-        }, Logger.critical)
-        this.remove();
-        this.isFinished = true;
+        });
+        this.stop();
     }
 
+    protected onStart() {
+    };
     protected abstract execute(): void;
+    protected onEnd() {
+    };
 
     get isManual(): boolean {
         return this._isManual;

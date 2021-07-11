@@ -5,7 +5,7 @@
 3) Title Sequence?
 4) Enter first combat room.
 5) Add floating text saying button to fire as camera zooms to show spawning enemies.
-6) Spawn  2\*players  of the basic one shot kill enemies.
+6) Spawn  4\*players  of the basic one shot kill enemies.
 7) After killing enemies open gate to the next arena.
 8) Next arena showcase first ranged enemy 2\*Players, after those are dead, spawn 2*p of a melee and 2*p of ranged.
 9) After enemies die, explode the exit and move the camera to show the gate breaking.

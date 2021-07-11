@@ -1,9 +1,9 @@
-import {SceneRectType} from "./SceneRectType";
-import {SceneDestructableType} from "./SceneDestructableType";
-import {GateOperation} from "./GateOperation";
+import {SceneRectType} from "../SceneRectType";
+import {SceneDestructableType} from "../SceneDestructableType";
+import {GateOperation} from "../GateOperation";
 import {Rectangle} from "wc3-treelib/src/TreeLib/Utility/Data/Rectangle";
-import {PlayerHeroes} from "../PlayerManager/PlayerHeroes";
-import {CUnit} from "../Units/CUnit/CUnit";
+import {PlayerHeroes} from "../../PlayerManager/PlayerHeroes";
+import {CUnit} from "../../Units/CUnit/CUnit";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 
 export abstract class Arena {
@@ -51,16 +51,6 @@ export abstract class Arena {
             parse = globalScope[`udg_Dest_Scene${scene}Arena${arena}${type}${count}`];
         }
     }
-    public toggleEntrances(operation: GateOperation) {
-        for (let entry of this.entrance) {
-            ModifyGateBJ(operation, entry);
-        }
-    }
-    public toggleExits(operation: GateOperation) {
-        for (let entry of this.exit) {
-            ModifyGateBJ(operation, entry);
-        }
-    }
     public GetArenaBounds() {
         if (this.arenaCheck.length == 0) return Rectangle.new(0, 0, 0, 0);
         let rec = Rectangle.fromRect(this.arenaCheck[0])
@@ -76,8 +66,43 @@ export abstract class Arena {
         return PlayerHeroes.getInstance().intersects(...this.trigger);
     }
 
+    //Enemy
     public addEnemy(cu: CUnit) {
         Quick.PushIfMissing(this.enemies, cu);
+    }
+    public countRemainingEnemies() {
+        let count = 0;
+        for (let i = this.enemies.length - 1; i >= 0; i--) {
+            let en = this.enemies[i];
+            if (en.queueForRemoval || en.isDead) {
+                Quick.Remove(this.enemies, en);
+            } else {
+                count++;
+            }
+        }
+        return count;
+    }
+    public removeAllEnemies() {
+        for (let en of this.enemies) {
+            en.queueForRemoval = true;
+        }
+        Quick.Clear(this.enemies);
+    }
+
+    //Entrances
+    public toggleEntrances(operation: GateOperation) {
+        for (let entry of this.entrance) {
+            ModifyGateBJ(operation, entry);
+        }
+    }
+    public toggleExits(operation: GateOperation) {
+        for (let entry of this.exit) {
+            ModifyGateBJ(operation, entry);
+        }
+    }
+    public closeArena() {
+        this.toggleEntrances(GateOperation.CLOSE);
+        this.toggleExits(GateOperation.CLOSE);
     }
 }
 
