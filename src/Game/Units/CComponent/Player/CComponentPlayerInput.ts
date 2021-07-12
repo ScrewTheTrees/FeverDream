@@ -1,6 +1,4 @@
 import {InputManager} from "wc3-treelib/src/TreeLib/InputManager/InputManager";
-import {GameConfig} from "../../../../GameConfig";
-import {PlayerHeroes} from "../../../PlayerManager/PlayerHeroes";
 import {MouseCallback} from "wc3-treelib/src/TreeLib/InputManager/MouseCallback";
 import {CUnit} from "../../CUnit/CUnit";
 import {CComponentPlayerFire} from "../Attacks/CComponentPlayerFire";
@@ -12,8 +10,6 @@ export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
     private keyboard = InputManager.getInstance().keyboardHandler;
     private mouse = InputManager.getInstance().mouseHandler;
-    private gameConfig = GameConfig.getInstance();
-    private playerHeroes = PlayerHeroes.getInstance();
 
     public pauseInput = false;
 

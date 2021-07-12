@@ -1,4 +1,4 @@
-# Stage 1:
+# Scene 1:
 
 1) Introduction stage show boat that got you there, show movement keys.
 2) Walkable path, demonstrate that you can only walk on walkable terrain and how wonky cliffs are.
@@ -7,11 +7,10 @@
 5) Add floating text saying button to fire as camera zooms to show spawning enemies.
 6) Spawn  4\*players  of the basic one shot kill enemies.
 7) After killing enemies open gate to the next arena.
-8) Next arena showcase first ranged enemy 2\*Players, after those are dead, spawn 2*p of a melee and 2*p of ranged.
-9) After enemies die, explode the exit and move the camera to show the gate breaking.
-10) Showcase enemies on a lower cliff level being unable to hit you but require you to kill them to proceed.
+8) Next arena showcase first kiting ranged enemy 2\*Players, after those are dead, spawn 2*p of a melee and 2*p of ranged.
+9) Open up the entire level, allow players to move to the next scene.
 
-# Stage 2:
+# Scene 2:
 
 # Chute
 

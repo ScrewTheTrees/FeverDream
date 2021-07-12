@@ -100,9 +100,12 @@ export abstract class Arena {
             ModifyGateBJ(operation, entry);
         }
     }
+    public toggleBoth(operation: GateOperation) {
+        this.toggleEntrances(operation);
+        this.toggleExits(operation);
+    }
     public closeArena() {
-        this.toggleEntrances(GateOperation.CLOSE);
-        this.toggleExits(GateOperation.CLOSE);
+        this.toggleBoth(GateOperation.CLOSE);
     }
 }
 

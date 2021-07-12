@@ -1,11 +1,25 @@
 export enum Models {
     UNIT_RIFLEMAN = "units\\human\\Rifleman\\Rifleman.mdx",
     UNIT_SKELETON = "units\\undead\\Skeleton\\Skeleton.mdx",
-
-
+    UNIT_NAGA_SIREN = "Units\\Naga\\NagaSiren\\NagaSiren.mdx",
+    UNIT_NAGA_MYRMIDION = "units\\naga\\NagaMyrmidon\\NagaMyrmidon.mdx",
 
 
     PROJECTILE_PLAYER_FIRE = "Abilities\\Weapons\\DemonHunterMissile\\DemonHunterMissile.mdx",
+
     PROJECTILE_ENEMY_MELEE = "war3mapImported\\EphemeralSlashRed.mdx",
+    PROJECTILE_ENEMY_RANGED_SMALL = "Abilities\\Weapons\\WitchDoctorMissile\\WitchDoctorMissile.mdx",
+
+
+    EFFECT_BLOOD_RED = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodPeasant.mdl",
+    EFFECT_BLOOD_PURPLE = "Objects\\Spawnmodels\\NightElf\\NightElfBlood\\NightElfBloodArcher.mdl",
+    EFFECT_BLOOD_GREEN = "Objects\\Spawnmodels\\Naga\\NagaBlood\\NagaBloodWindserpent.mdl",
+    EFFECT_BALLISTA_IMPACT = "Abilities\\Weapons\\BallistaMissile\\BallistaMissileTarget.mdl",
+
+    EFFECT_DARK_RITUAL_SPAWN = "Abilities\\Spells\\Undead\\DarkRitual\\DarkRitualTarget.mdx",
+    //EFFECT_WATER_SPLASH = "Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveMissile.mdx",
+    EFFECT_WATER_SPLASH = "Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdx",
+
+
 }
 

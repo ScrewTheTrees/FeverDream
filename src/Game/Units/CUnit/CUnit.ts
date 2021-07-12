@@ -5,6 +5,9 @@ import {Interpolation} from "wc3-treelib/src/TreeLib/Utility/Interpolation";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {IComponent} from "../CComponent/CCoroutineComponent";
 import {CUnitPool} from "./CUnitPool";
+import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
+import {Models} from "../../Models";
+import {CProjectile} from "../Projectiles/CProjectile";
 
 export abstract class CUnit extends Entity {
     public static unitPool: CUnitPool = new CUnitPool();
@@ -13,6 +16,7 @@ export abstract class CUnit extends Entity {
     public effect: effect;
     public lastAnimationType: animtype = ANIM_TYPE_STAND;
     public queueForRemoval: boolean = false;
+    public modelScale: number = 1;
 
     public position: Vector2;
     public facingAngle: number = 0;
@@ -60,6 +64,9 @@ export abstract class CUnit extends Entity {
                     this.removeComponent(comp);
                 }
             }
+            this.moveTime = 0;
+            this.isMoving = false;
+            this.wasMoving = false;
             this.setAnimation(ANIM_TYPE_DEATH);
             this.setTimescale(1);
             CUnit.unitPool.update();
@@ -158,8 +165,12 @@ export abstract class CUnit extends Entity {
     public forceFacing(angle: number) {
         this.wantedAngle = angle % 360;
     }
-    public setAnimation(type: animtype) {
+    public setAnimation(type: animtype, ...subanims: subanimtype[]) {
+        BlzSpecialEffectClearSubAnimations(this.effect);
         this.lastAnimationType = type;
+        for (let subAnim of subanims) {
+            BlzSpecialEffectAddSubAnimation(this.effect,subAnim);
+        }
         BlzPlaySpecialEffect(this.effect, type);
     }
     public setTimescale(scale: number) {
@@ -176,6 +187,14 @@ export abstract class CUnit extends Entity {
     public dealHealing(damage: number, healer: CUnit) {
         this.health += damage;
         this.clampHealth();
+    }
+    public createSpawnEffect(effectPath: string, scale: number = 1, duration: number = 2) {
+        let eff = AddSpecialEffect(effectPath, this.position.x, this.position.y);
+        BlzSetSpecialEffectScale(eff, scale);
+        Delay.addDelay(() => {
+            DestroyEffect(eff);
+        }, duration);
+        return eff;
     }
 
     private clampHealth() {
@@ -207,6 +226,7 @@ export abstract class CUnit extends Entity {
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ());
+        BlzSetSpecialEffectScale(this.effect, this.modelScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.facingAngle * bj_DEGTORAD
         );
@@ -215,12 +235,16 @@ export abstract class CUnit extends Entity {
     public onDelete() {
         BlzSetSpecialEffectTimeScale(this.effect, 99999);
         BlzSetSpecialEffectScale(this.effect, 0);
+        this.modelScale = 0;
         DestroyEffect(this.effect);
 
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             this.removeComponent(comp);
         }
+    }
+    public onHit(other: CProjectile) {
+        this.createSpawnEffect(Models.EFFECT_BLOOD_RED, 1, 5);
     }
 }
 

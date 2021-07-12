@@ -6,17 +6,19 @@ gg_rct_Scene1Arena1Spawn1 = nil
 gg_rct_Scene1Arena1Spawn2 = nil
 gg_rct_Scene1Arena1Tardy1 = nil
 gg_rct_Scene1Arena1Trigger1 = nil
-gg_rct_Scene1RespawnPoint1 = nil
+gg_rct_Scene1Start = nil
 gg_rct_Scene1Arena1Check1 = nil
 gg_rct_Scene1Arena2Check1 = nil
 gg_rct_Scene1Arena2Trigger1 = nil
 gg_rct_Scene1Arena2Tardy1 = nil
 gg_rct_Scene1Arena2Spawn1 = nil
 gg_rct_Scene1Arena1Camera1 = nil
+gg_rct_Scene1Ending = nil
 gg_trg_InitScene1 = nil
 gg_dest_ATg4_0002 = nil
 gg_dest_ATg1_0003 = nil
 gg_dest_ATg1_0004 = nil
+gg_rct_Scene1Arena2Camera1 = nil
 function InitGlobals()
 end
 
@@ -52,17 +54,19 @@ end
 
 function CreateRegions()
     local we
-    gg_rct_Scene1Arena1Spawn1 = Rect(-24832.0, -23648.0, -24320.0, -23072.0)
-    gg_rct_Scene1Arena1Spawn2 = Rect(-24832.0, -24480.0, -24320.0, -23872.0)
-    gg_rct_Scene1Arena1Tardy1 = Rect(-27456.0, -23776.0, -27264.0, -23584.0)
+    gg_rct_Scene1Arena1Spawn1 = Rect(-24832.0, -24320.0, -24256.0, -23328.0)
+    gg_rct_Scene1Arena1Spawn2 = Rect(-27296.0, -24224.0, -26688.0, -23232.0)
+    gg_rct_Scene1Arena1Tardy1 = Rect(-26880.0, -23840.0, -26688.0, -23648.0)
     gg_rct_Scene1Arena1Trigger1 = Rect(-26880.0, -24672.0, -26080.0, -22848.0)
-    gg_rct_Scene1RespawnPoint1 = Rect(-28032.0, -29408.0, -27680.0, -29024.0)
+    gg_rct_Scene1Start = Rect(-28032.0, -29408.0, -27680.0, -29024.0)
     gg_rct_Scene1Arena1Check1 = Rect(-27712.0, -24672.0, -23616.0, -22688.0)
     gg_rct_Scene1Arena2Check1 = Rect(-27904.0, -22528.0, -25600.0, -20512.0)
-    gg_rct_Scene1Arena2Trigger1 = Rect(-26848.0, -21696.0, -25632.0, -20480.0)
+    gg_rct_Scene1Arena2Trigger1 = Rect(-26848.0, -21568.0, -25632.0, -20480.0)
     gg_rct_Scene1Arena2Tardy1 = Rect(-26240.0, -21248.0, -26048.0, -21056.0)
-    gg_rct_Scene1Arena2Spawn1 = Rect(-27744.0, -22368.0, -27392.0, -20672.0)
+    gg_rct_Scene1Arena2Spawn1 = Rect(-27744.0, -22240.0, -27456.0, -20800.0)
     gg_rct_Scene1Arena1Camera1 = Rect(-25376.0, -24032.0, -25120.0, -23744.0)
+    gg_rct_Scene1Ending = Rect(-26592.0, -18784.0, -26272.0, -18528.0)
+    gg_rct_Scene1Arena2Camera1 = Rect(-27296.0, -21696.0, -27040.0, -21408.0)
 end
 
 function Trig_InitScene1_Actions()
@@ -162,22 +166,16 @@ function InitCustomTeams()
 end
 
 function InitAllyPriorities()
-    SetStartLocPrioCount(0, 3)
-    SetStartLocPrio(0, 0, 1, MAP_LOC_PRIO_HIGH)
-    SetStartLocPrio(0, 1, 2, MAP_LOC_PRIO_HIGH)
-    SetStartLocPrio(0, 2, 3, MAP_LOC_PRIO_LOW)
-    SetStartLocPrioCount(1, 3)
-    SetStartLocPrio(1, 0, 0, MAP_LOC_PRIO_HIGH)
-    SetStartLocPrio(1, 1, 2, MAP_LOC_PRIO_LOW)
-    SetStartLocPrio(1, 2, 3, MAP_LOC_PRIO_HIGH)
-    SetStartLocPrioCount(2, 3)
+    SetStartLocPrioCount(0, 1)
+    SetStartLocPrio(0, 0, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(1, 2)
+    SetStartLocPrio(1, 0, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(1, 1, 3, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(2, 2)
     SetStartLocPrio(2, 0, 0, MAP_LOC_PRIO_HIGH)
-    SetStartLocPrio(2, 1, 1, MAP_LOC_PRIO_LOW)
-    SetStartLocPrio(2, 2, 3, MAP_LOC_PRIO_HIGH)
-    SetStartLocPrioCount(3, 3)
-    SetStartLocPrio(3, 0, 0, MAP_LOC_PRIO_LOW)
-    SetStartLocPrio(3, 1, 1, MAP_LOC_PRIO_HIGH)
-    SetStartLocPrio(3, 2, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(2, 1, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(3, 1)
+    SetStartLocPrio(3, 0, 1, MAP_LOC_PRIO_HIGH)
 end
 
 function main()
@@ -202,10 +200,10 @@ function config()
     SetPlayers(6)
     SetTeams(6)
     SetGamePlacement(MAP_PLACEMENT_TEAMS_TOGETHER)
-    DefineStartLocation(0, -28928.0, -28800.0)
-    DefineStartLocation(1, -28544.0, -28800.0)
-    DefineStartLocation(2, -28928.0, -29184.0)
-    DefineStartLocation(3, -28544.0, -29184.0)
+    DefineStartLocation(0, -28544.0, -29376.0)
+    DefineStartLocation(1, -28160.0, -29376.0)
+    DefineStartLocation(2, -28352.0, -29376.0)
+    DefineStartLocation(3, -27968.0, -29376.0)
     DefineStartLocation(4, 9408.0, 4608.0)
     DefineStartLocation(5, 23360.0, 13376.0)
     InitCustomPlayerSlots()

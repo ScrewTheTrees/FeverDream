@@ -1,9 +1,9 @@
 import {CCoroutineComponent} from "../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
-import {CProjectileEnemyMelee} from "../../Projectiles/CProjectile";
+import {CProjectileEnemyRangedAttackSmall} from "../../Projectiles/Enemy/CProjectileEnemyRangedAttackSmall";
 
-export class CComponentEnemyMeleeSwing extends CCoroutineComponent {
+export class CComponentEnemyRangedAttackSmall extends CCoroutineComponent {
     public targetOffset: Vector2;
     removeOnDeath = true;
 
@@ -28,10 +28,13 @@ export class CComponentEnemyMeleeSwing extends CCoroutineComponent {
 
         this.owner.setTimescale(1);
         this.yieldTimed(0.25);
-        new CProjectileEnemyMelee(this.owner, this.targetOffset);
-        this.yieldTimed(GetRandomReal(1.25, 2));
+        this.createProjectile();
+        this.yieldTimed(1);
         //Done
         this.owner.setAnimation(resetAnim);
+    }
+    private createProjectile() {
+        new CProjectileEnemyRangedAttackSmall(this.owner, this.targetOffset);
     }
     protected onEnd() {
         this.owner.dominated -= 1;

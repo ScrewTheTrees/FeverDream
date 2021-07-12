@@ -49,6 +49,7 @@ export class PlayerCamera extends Entity {
         Vector2.new(0, 0),
     ];
 
+    private maxMouseOffset = 200;
     step(): void {
         if (this.cameraMode == CameraMode.HERO) {
             for (let play of GameConfig.getInstance().playingPlayers) {
@@ -60,11 +61,19 @@ export class PlayerCamera extends Entity {
                     this.mouseOffset[id].updateToPoint(hero.position)
                         .offsetTo(this.lastMousePos[id])
                         .divideOffsetNum(8);
+                    this.mouseOffset[id].x = math.max(
+                        -this.maxMouseOffset,
+                        math.min(this.maxMouseOffset, this.mouseOffset[id].x)
+                    );
+                    this.mouseOffset[id].y = math.max(
+                        -this.maxMouseOffset,
+                        math.min(this.maxMouseOffset, this.mouseOffset[id].y)
+                    );
                 }
                 let pos = hero.position.copy();
 
-                pos.y += 64;
-                pos.addOffset(this.mouseOffset[id]);
+                pos.y += 128;
+                //pos.addOffset(this.mouseOffset[id]);
 
                 this.moveTo(pos, play);
                 pos.recycle();

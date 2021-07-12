@@ -14,14 +14,13 @@ export class SceneService extends Entity {
     private _currentScene?: Scene = new Scene1();
 
     private constructor() {
-        super(0.1);
+        super(0.2);
     }
 
     private previousHeroesAlive = 0;
 
     step(): void {
-        if (this._currentScene && this._currentScene.hasFinished) {
-            print("win");
+        if (this._currentScene && this._currentScene.isFinished) {
             this._currentScene = this._currentScene.onFinish();
         }
 

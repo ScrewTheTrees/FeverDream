@@ -3,14 +3,14 @@ import {PlayerHeroes} from "../../PlayerManager/PlayerHeroes";
 import {PlayerCamera} from "../../PlayerManager/PlayerCamera";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {GateOperation} from "../GateOperation";
-import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {CUnitTypeEnemyTutorialMelee} from "../../Units/CUnit/Types/CUnitTypeEnemyTutorialMelee";
-import {GameConfig} from "../../../GameConfig";
 import {Scene} from "./Scene";
+import {CUnitTypeEnemyRangedSiren} from "../../Units/CUnit/Types/CUnitTypeEnemyRangedSiren";
+import {CUnitTypeEnemyMeleeMyrmidion} from "../../Units/CUnit/Types/CUnitTypeEnemyMeleeMyrmidion";
 
 export class Scene1 extends Scene {
-    public checkpoint1 = gg_rct_Scene1RespawnPoint1;
+    public checkpoint1 = gg_rct_Scene1Start;
 
     public arena1 = new Scene1Arena1();
     public arena2 = new Scene1Arena2();
@@ -21,7 +21,7 @@ export class Scene1 extends Scene {
     public constructor() {
         super();
 
-        let pos = Vector2.fromRectCenter(gg_rct_Scene1RespawnPoint1);
+        let pos = Vector2.fromRectCenter(this.checkpoint1);
         this.moveHelpText = CreateTextTag();
         SetTextTagText(this.moveHelpText, "WASD to move.", 0.024);
         SetTextTagPos(this.moveHelpText, pos.x, pos.y, 16);
@@ -36,8 +36,8 @@ export class Scene1 extends Scene {
         SetTextTagPermanent(this.attackHelpText, true);
     }
 
-    private moveHelpText: texttag;
-    private attackHelpText: texttag;
+    public moveHelpText: texttag;
+    public attackHelpText: texttag;
 
     public execute() {
         this.playerCamera.setHeroCamera();
@@ -45,56 +45,74 @@ export class Scene1 extends Scene {
         this.arena1.closeArena();
         this.arena1.toggleEntrances(GateOperation.OPEN);
 
-        this.yieldTimed(1);
-        this.playerCamera.setCustomCamera(Vector2.fromRectCenter(gg_rct_Scene1RespawnPoint1).recycle(), 2500);
-        this.yieldTimed(3);
-        this.playerCamera.setHeroCamera();
+        this.cameraShowActionThenResetHeroCamera(Vector2.fromRectCenter(this.checkpoint1).recycle(),
+            undefined
+            , 2500, 1, 3);
 
         this.waitUntilPlayerTriggerArena(this.arena1);
         this.startStandardCombatArena(this.arena1);
 
-        Delay.addDelay(() => {
-            this.generateSpawn(this.arena1, (ep, place, focus) => {
-                return new CUnitTypeEnemyTutorialMelee(ep, place, focus)
-            });
-        }, 1 / this.numberOfPlayers(), 8 * this.numberOfPlayers());
+        this.generateSpawnPerPlayerAsync(this.arena1, (ep, place, focus) => {
+            return new CUnitTypeEnemyTutorialMelee(ep, place, focus);
+        }, 1, 4, this.arena1.enemySpawns[0]);
 
-        this.yieldTimed(1);
-        this.playerCamera.setCustomCamera(Vector2.fromRectCenter(gg_rct_Scene1Arena1Camera1).recycle(), 2400);
 
-        this.yieldTimed(4);
+        this.cameraShowActionThenResetHeroCamera(Vector2.fromRectCenter(gg_rct_Scene1Arena1Camera1).recycle(),
+            undefined
+            , 2400, 1, 4);
 
-        this.playerCamera.setHeroCamera();
+        this.waitWhileArenaHasEnemies(this.arena1, this.numberOfPlayers());
+
+        this.generateSpawnPerPlayerAsync(this.arena1, (ep, place, focus) => {
+            return new CUnitTypeEnemyTutorialMelee(ep, place, focus);
+        }, 1, 6);
 
         this.waitWhileArenaHasEnemies(this.arena1);
 
         this.yieldTimed(2);
-        this.playerCamera.setCustomCamera(Vector2.fromWidget(this.arena1.exit[0]));
-        this.yieldTimed(1);
-        this.arena1.toggleExits(GateOperation.OPEN);
-        this.yieldTimed(1);
-        this.playerCamera.setHeroCamera();
+        this.cameraShowActionThenResetHeroCamera(Vector2.fromWidget(this.arena1.exit[0]),
+            () => this.arena1.toggleExits(GateOperation.OPEN));
 
         this.waitUntilPlayerTriggerArena(this.arena2);
         this.startStandardCombatArena(this.arena2);
 
-        while (1 == 1) {
-            if (this.arena2.countRemainingEnemies() < 50) {
-                this.generateSpawn(this.arena2, (ep, place, focus) => {
-                    return new CUnitTypeEnemyTutorialMelee(ep, place, focus)
-                });
-            }
-            this.yieldTimed(0.5);
-        }
+        this.generateSpawnPerPlayerAsync(this.arena2, (ep, place, focus) => {
+            return new CUnitTypeEnemyRangedSiren(ep, place, focus);
+        }, 1, 2);
 
-        this.yieldTimed(5);
-        this.arena2.toggleExits(GateOperation.DESTROY);
+        this.cameraShowActionThenResetHeroCamera(Vector2.fromRectCenter(gg_rct_Scene1Arena2Camera1).recycle(),
+            undefined
+            , 2400, 1, 3);
+
+        this.waitWhileArenaHasEnemies(this.arena2);
+
+        this.generateSpawnPerPlayerAsync(this.arena2, (ep, place, focus) => {
+            return new CUnitTypeEnemyMeleeMyrmidion(ep, place, focus);
+        }, 2, 2);
+        this.yieldTimed(1);
+        this.generateSpawnPerPlayerAsync(this.arena2, (ep, place, focus) => {
+            return new CUnitTypeEnemyRangedSiren(ep, place, focus);
+        }, 2, 2);
+
+
+        this.waitWhileArenaHasEnemies(this.arena2);
+        this.yieldTimed(1);
+
+        //Open up the entire level.
+        this.arena1.toggleBoth(GateOperation.DESTROY);
+        this.arena2.toggleBoth(GateOperation.DESTROY);
+
+        this.waitUntilPlayerTriggerRect(gg_rct_Scene1Ending);
+        //this.movePlayersToRect(gg_rct_Scene2Start);
+        //Finish
     }
 
     //Return next scene.
     public onFinish(): Scene | undefined {
         DestroyTextTag(this.moveHelpText);
         DestroyTextTag(this.attackHelpText);
+
+        print("A winner is you!");
 
         return undefined
     }

@@ -58,3 +58,15 @@ STRING 12
 Force 2
 }
 
+STRING 13
+// Destructibles: B001 (Pathing Blocker (Walkable)), Name (Name)
+{
+Pathing Blocker (Walkable)
+}
+
+STRING 14
+// Destructibles: B000 (Pathing Blocker (Walkable) (Large)), Name (Name)
+{
+Pathing Blocker (Walkable) (Large)
+}
+

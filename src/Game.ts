@@ -39,5 +39,8 @@ export class Game {
 
         FogEnable(false);
         FogMaskEnable(false);
+        BlzHideOriginFrames(true);
+        let frame = BlzGetFrameByName("ConsoleUIBackdrop", 0);
+        BlzFrameSetVisible(frame, false);
     }
 }
