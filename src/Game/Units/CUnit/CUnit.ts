@@ -223,9 +223,13 @@ export abstract class CUnit extends Entity {
         }
     }
     private draw() {
+        let zExtra = 0;
+        if (IsTerrainPathable(this.position.x, this.position.y, PATHING_TYPE_AMPHIBIOUSPATHING)) {
+            zExtra -= 32;
+        }
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
-        BlzSetSpecialEffectZ(this.effect, this.position.getZ());
+        BlzSetSpecialEffectZ(this.effect, this.position.getZ() + zExtra);
         BlzSetSpecialEffectScale(this.effect, this.modelScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.facingAngle * bj_DEGTORAD

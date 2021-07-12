@@ -1,14 +1,22 @@
+# In general
+* Always make enemy spawning points distinct in some way.
+
 # Scene 1:
 
 1) Introduction stage show boat that got you there, show movement keys.
 2) Walkable path, demonstrate that you can only walk on walkable terrain and how wonky cliffs are.
 3) Title Sequence?
 4) Enter first combat room.
-5) Add floating text saying button to fire as camera zooms to show spawning enemies.
-6) Spawn  4\*players  of the basic one shot kill enemies.
-7) After killing enemies open gate to the next arena.
-8) Next arena showcase first kiting ranged enemy 2\*Players, after those are dead, spawn 2*p of a melee and 2*p of ranged.
-9) Open up the entire level, allow players to move to the next scene.
+    1) Add floating text saying button to fire as camera zooms to show spawning enemies.
+    2) Spawn  4\*players  of the basic one shot kill enemies. 
+    3) When 1\*players enemies remaining, spawn in 6 more enemies, but introduce another spawning zone.
+5) After killing enemies open gate to the next arena.
+6) When approaching exit, start next more advanced combat room.
+    1) Spawn 2\*Player of tanky slow melee enemies. 
+    2) When all dead, Spawn 2\*Player of first ranged / kiting enemies.
+    3) Combine both of the previous
+7) Open up the entire level by exploding all doors.
+   1) Introduce some type of easter egg
 
 # Scene 2:
 

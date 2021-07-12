@@ -43,7 +43,7 @@ export abstract class Scene extends TreeThread {
         PlayerHeroes.getInstance().moveHeroesToRect(ChooseOne(...place));
     }
     public waitWhileArenaHasEnemies(arena: Arena, minimum = 0) {
-        this.yieldTimed(2);
+        this.yieldTimed(3);
         while (arena.countRemainingEnemies() > minimum) {
             this.yieldTimed(0.1);
         }

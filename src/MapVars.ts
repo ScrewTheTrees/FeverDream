@@ -18,3 +18,4 @@ declare const gg_rct_Scene1Arena2Spawn1: rect;
 declare const gg_rct_Scene1Arena1Camera1: rect;
 declare const gg_rct_Scene1Ending: rect;
 declare const gg_rct_Scene1Arena2Camera1: rect;
+declare const gg_rct_Scene2Start: rect;

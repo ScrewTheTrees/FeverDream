@@ -11,7 +11,8 @@ export class CUnitTypeEnemyTutorialMelee extends CUnit {
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_SKELETON, position);
         this.moveSpeed = 2;
-        this.modelScale = 0.8;
+        this.modelScale = 0.7;
+        this.collisionSize = 22;
         this.setMaxHealth(1);
         this.addComponent(new CAIEnemyMelee(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));

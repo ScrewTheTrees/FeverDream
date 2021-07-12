@@ -15,11 +15,15 @@ export class CAIEnemyMelee extends CCoroutineComponent {
     public attackRange: number = 100;
     public approachRange: number = 50;
 
-    public constructor(owner: CUnit, primaryTarget?: CUnit,scale?: number) {
+    public constructor(owner: CUnit, primaryTarget?: CUnit, scale?: number) {
         super(owner);
         this.primaryTarget = primaryTarget;
         this.scale = scale;
     }
+
+    public atkDelay = 1;
+    public curving = this.getNewCurving();
+    public angleUpdate = 1;
 
     execute(): void {
         this.yieldTimed(2);
@@ -30,7 +34,8 @@ export class CAIEnemyMelee extends CCoroutineComponent {
                 hero = this.primaryTarget;
             }
             this.offset.updateTo(0, 0).polarProject(this.approachRange, TreeMath.RandAngle());
-            let atkDelay = this.getNewAttackDelay();
+            this.atkDelay = this.getNewAttackDelay();
+            this.angleUpdate = 1;
 
             while (hero != null && !hero.isDead && !this.owner.isDead) {
                 this.target.updateToPoint(hero.position).addOffset(this.offset);
@@ -38,13 +43,9 @@ export class CAIEnemyMelee extends CCoroutineComponent {
 
                 let ang = this.angle.getAngleDegrees() + curving;
 
-                this.angle.updateTo(0,0).polarProject(1, ang);
+                this.angle.updateTo(0, 0).polarProject(1, ang);
 
-                let walk =this.owner.position.copy().polarProject(this.owner.moveSpeed, ang);
-                if (!PointWalkableChecker.getInstance().checkTerrainXY(walk.x, walk.y)) {
-                    curving = this.getNewCurving();
-                }
-                walk.recycle();
+                this.doAngleReadjusting(hero, ang);
 
                 if (this.owner.position.distanceTo(this.target) > 10) {
                     this.owner.setAutoMoveData(this.angle);
@@ -52,21 +53,31 @@ export class CAIEnemyMelee extends CCoroutineComponent {
                 if (this.owner.position.distanceTo(hero.position) < this.attackRange
                     && !this.owner.isDominated()
                 ) {
-                    if (atkDelay <= 0 && !this.owner.isDisabledMovement()) {
+                    if (this.atkDelay <= 0 && !this.owner.isDisabledMovement()) {
                         if (!this.owner.isDominated()) {
                             this.onAttack(hero);
-                            atkDelay = this.getNewAttackDelay();
+                            this.atkDelay = this.getNewAttackDelay();
                         }
                     }
-                    if (atkDelay > 0) {
-                        atkDelay -= this.timerDelay;
+                    if (this.atkDelay > 0) {
+                        this.atkDelay -= this.timerDelay;
                     }
                 }
                 this.yield();
             } //while
             this.yield();
         } //while
-
+    }
+    private doAngleReadjusting(hero: CUnit, ang: number) {
+        if (this.angleUpdate <= 0) {
+            let walk = this.owner.position.copy().polarProject(this.owner.moveSpeed, ang);
+            if (!PointWalkableChecker.getInstance().checkTerrainXY(walk.x, walk.y)) {
+                this.curving = this.getNewCurving();
+            }
+            walk.recycle();
+            this.angleUpdate = 2;
+        }
+        this.angleUpdate -= this.timerDelay;
     }
     public getNewAttackDelay() {
         return GetRandomReal(0.2, 0.5);
