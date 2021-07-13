@@ -3,6 +3,7 @@ import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
 import {CProjectileEnemyMelee} from "../../Projectiles/Enemy/CProjectileEnemyMelee";
 import {CProjectileEnemyMeleeLarge} from "../../Projectiles/Enemy/CProjectileEnemyMeleeLarge";
+import {GameConfig} from "../../../../GameConfig";
 
 export class CComponentEnemyMeleeSlowLarge extends CCoroutineComponent {
     public targetOffset: Vector2;
@@ -23,16 +24,16 @@ export class CComponentEnemyMeleeSlowLarge extends CCoroutineComponent {
         let resetAnim = this.owner.lastAnimationType;
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
         this.owner.setAnimation(ANIM_TYPE_ATTACK);
-        this.owner.setTimescale(0.5);
-        this.yieldTimed(0.5);
+        this.owner.setVisualTimeScale(0.5);
+        this.yieldTimed(0.5 / GameConfig.getInstance().timeScale);
 
-        this.owner.setTimescale(0.1);
-        this.yieldTimed(0.5);
+        this.owner.setVisualTimeScale(0.1);
+        this.yieldTimed(0.5 / GameConfig.getInstance().timeScale);
 
-        this.owner.setTimescale(1);
-        this.yieldTimed(0.12);
+        this.owner.setVisualTimeScale(1);
+        this.yieldTimed(0.12 / GameConfig.getInstance().timeScale);
         this.createProjectile();
-        this.yieldTimed(1);
+        this.yieldTimed(1 / GameConfig.getInstance().timeScale);
         //Done
         this.owner.setAnimation(resetAnim);
     }

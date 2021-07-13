@@ -2,6 +2,7 @@ import {CUnit} from "../CUnit/CUnit";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {CProjectile} from "./CProjectile";
+import {GameConfig} from "../../../GameConfig";
 
 export class CProjectileMeleeCircle extends CProjectile {
     public effect: effect;
@@ -29,7 +30,7 @@ export class CProjectileMeleeCircle extends CProjectile {
             }
             Quick.Clear(this.targets);
             this.draw();
-            this.durability -= this.timerDelay;
+            this.durability -= this.timerDelay * GameConfig.getInstance().timeScale;
             this.yield();
         }
         this.yieldTimed(2);
@@ -39,6 +40,7 @@ export class CProjectileMeleeCircle extends CProjectile {
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ() + this.visualHeight);
+        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.getInstance().timeScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.targetOffset.getAngle()
         );

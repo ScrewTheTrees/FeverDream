@@ -50,6 +50,7 @@ export abstract class TreeThread extends Entity {
     public resume(...args: any[]) {
         if (!this.isFinished) {
             coroutine.resume(this.routine, ...args);
+            this.onUpdateStep();
         }
     }
     protected isolate(func: (this: void, ...arg: any[]) => any) {
@@ -65,6 +66,8 @@ export abstract class TreeThread extends Entity {
     }
 
     protected onStart() {
+    };
+    protected onUpdateStep(): void {
     };
     protected abstract execute(): void;
     protected onEnd() {

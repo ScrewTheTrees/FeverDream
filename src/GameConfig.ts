@@ -23,4 +23,8 @@ export class GameConfig {
     public readonly allPlayerSlots: player[] = [];
     public readonly playingPlayers: player[] = [];
     public readonly creepPlayers: player[] = [];
+
+
+    //asd
+    public timeScale: number = 1;
 }

@@ -2,6 +2,7 @@ import {CCoroutineComponent} from "../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
 import {CProjectilePlayerShoot} from "../../Projectiles/Player/CProjectilePlayerShoot";
+import {GameConfig} from "../../../../GameConfig";
 
 export class CComponentPlayerFire extends CCoroutineComponent {
     removeOnDeath = true;
@@ -21,11 +22,11 @@ export class CComponentPlayerFire extends CCoroutineComponent {
         let resetAnim = this.owner.lastAnimationType;
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
         this.owner.setAnimation(ANIM_TYPE_ATTACK);
-        this.owner.setTimescale(0.1);
+        this.owner.setVisualTimeScale(0.1);
 
-        this.yieldTimed(0.75);
+        this.yieldTimed(0.8);
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
-        this.owner.setTimescale(1);
+        this.owner.setVisualTimeScale(1);
         new CProjectilePlayerShoot(this.owner, this.targetOffset);
 
         this.yieldTimed(0.75);

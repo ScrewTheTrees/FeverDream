@@ -6,8 +6,8 @@ import {CUnit} from "./CUnit";
 import {Logger} from "wc3-treelib/src/TreeLib/Logger";
 
 export class CUnitPool extends Entity {
-    private alivePool: CUnit[] = [];
-    private deadPool: CUnit[] = [];
+    public alivePool: CUnit[] = [];
+    public deadPool: CUnit[] = [];
 
     constructor() {
         super(1);

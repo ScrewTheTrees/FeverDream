@@ -3,7 +3,6 @@ import {CComponentEnemyMeleeNormal} from "../Attacks/CComponentEnemyMeleeNormal"
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
 import {CCoroutineComponent} from "../CCoroutineComponent";
-import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
 
 export class CAIEnemyMelee extends CCoroutineComponent {
     removeOnDeath = false;
@@ -33,11 +32,11 @@ export class CAIEnemyMelee extends CCoroutineComponent {
             if (this.primaryTarget && !this.primaryTarget.isDead) {
                 hero = this.primaryTarget;
             }
-            this.offset.updateTo(0, 0).polarProject(this.approachRange, TreeMath.RandAngle());
             this.atkDelay = this.getNewAttackDelay();
             this.angleUpdate = 1;
 
             while (hero != null && !hero.isDead && !this.owner.isDead) {
+                this.offset.updateTo(0, 0).polarProject(this.approachRange, TreeMath.RandAngle());
                 this.target.updateToPoint(hero.position).addOffset(this.offset);
                 this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
 
@@ -60,7 +59,7 @@ export class CAIEnemyMelee extends CCoroutineComponent {
                         }
                     }
                     if (this.atkDelay > 0) {
-                        this.atkDelay -= this.timerDelay;
+                        this.atkDelay -= this.timeScale;
                     }
                 }
                 this.yield();
@@ -70,20 +69,16 @@ export class CAIEnemyMelee extends CCoroutineComponent {
     }
     private doAngleReadjusting(hero: CUnit, ang: number) {
         if (this.angleUpdate <= 0) {
-            let walk = this.owner.position.copy().polarProject(this.owner.moveSpeed, ang);
-            if (!PointWalkableChecker.getInstance().checkTerrainXY(walk.x, walk.y)) {
-                this.curving = this.getNewCurving();
-            }
-            walk.recycle();
+            this.curving = this.getNewCurving();
             this.angleUpdate = 2;
         }
-        this.angleUpdate -= this.timerDelay;
+        this.angleUpdate -= this.timeScale;
     }
     public getNewAttackDelay() {
         return GetRandomReal(0.2, 0.5);
     }
     public getNewCurving() {
-        return GetRandomReal(-30, 30);
+        return GetRandomReal(-35, 35);
     }
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyMeleeNormal(this.owner,

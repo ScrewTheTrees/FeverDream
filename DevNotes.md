@@ -10,15 +10,21 @@
     1) Add floating text saying button to fire as camera zooms to show spawning enemies.
     2) Spawn  4\*players  of the basic one shot kill enemies. 
     3) When 1\*players enemies remaining, spawn in 6 more enemies, but introduce another spawning zone.
-5) After killing enemies open gate to the next arena.
-6) When approaching exit, start next more advanced combat room.
-    1) Spawn 2\*Player of tanky slow melee enemies. 
-    2) When all dead, Spawn 2\*Player of first ranged / kiting enemies.
-    3) Combine both of the previous
-7) Open up the entire level by exploding all doors.
-   1) Introduce some type of easter egg
+5) After killing enemies open gate to the next Scene. (Same section still.)
 
 # Scene 2:
+1) Update checkpoint.
+2) When approaching exit, start next more advanced combat room.
+   1) Spawn 2\*Player of tanky slow melee enemies.
+   2) When all dead, Spawn 2\*Player of first ranged / kiting enemies.
+   3) Combine both of the previous engagements into one.
+3) Open up the entire level by exploding all doors.
+   1) Introduce some type of easter egg when exploring backwards.
+   2) This easter egg should provide some type of minor buff.
+4) Once ready, players can head down a few ramps into the cave to start their descent.
+
+# Scene 3:
+1) Update checkpoint, there is no going back now.
 
 # Chute
 

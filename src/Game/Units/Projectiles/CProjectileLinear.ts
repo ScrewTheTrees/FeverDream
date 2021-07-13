@@ -3,6 +3,7 @@ import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {CProjectile} from "./CProjectile";
+import {GameConfig} from "../../../GameConfig";
 
 export class CProjectileLinear extends CProjectile {
     public effect: effect;
@@ -21,7 +22,7 @@ export class CProjectileLinear extends CProjectile {
     execute(): void {
         while (this.durability > 0) {
             if (PointWalkableChecker.getInstance().checkTerrainXY(this.position.x, this.position.y)) {
-                this.position.polarProject(this.speed,
+                this.position.polarProject(this.speed * GameConfig.getInstance().timeScale,
                     this.targetOffset.getAngleDegrees()
                 );
                 this.targets = CUnit.unitPool.getAliveUnitsInRange(this.position, this.collisionSize + 128);
@@ -46,6 +47,7 @@ export class CProjectileLinear extends CProjectile {
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ() + this.visualHeight);
+        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.getInstance().timeScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.targetOffset.getAngle()
         );

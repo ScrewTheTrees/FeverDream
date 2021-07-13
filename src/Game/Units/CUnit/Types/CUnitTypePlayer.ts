@@ -8,6 +8,7 @@ export class CUnitTypePlayer extends CUnit {
         super(owner, Models.UNIT_RIFLEMAN, position);
 
         this.addComponent(new CComponentPlayerInput(this));
+        this.modelScale = 0.9;
     }
 }
 

@@ -5,6 +5,7 @@ import {CComponentPlayerFire} from "../Attacks/CComponentPlayerFire";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CStepComponent} from "../CCoroutineComponent";
 import {KeyCallback} from "wc3-treelib/src/TreeLib/InputManager/KeyCallback";
+import {GameConfig} from "../../../../GameConfig";
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
@@ -25,6 +26,15 @@ export class CComponentPlayerInput extends CStepComponent {
         this.mcb = this.mouse.addMousePressCallback(MOUSE_BUTTON_TYPE_RIGHT, (callback) => this.onFire(callback));
         this.mtt = this.keyboard.addKeyboardPressCallback(OSKEY_T, () => {
             this.owner.isDead = true;
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_M, () => {
+            GameConfig.getInstance().timeScale += 0.1;
+            print(GameConfig.getInstance().timeScale);
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_N, () => {
+            GameConfig.getInstance().timeScale -= 0.1;
+            if (GameConfig.getInstance().timeScale < 0) GameConfig.getInstance().timeScale = 0;
+            print(GameConfig.getInstance().timeScale);
         });
     }
     cleanup() {

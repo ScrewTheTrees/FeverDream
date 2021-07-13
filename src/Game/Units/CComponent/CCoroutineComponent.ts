@@ -1,5 +1,6 @@
 import {TreeThread} from "../../TreeRunnable";
 import {CUnit} from "../CUnit/CUnit";
+import {GameConfig} from "../../../GameConfig";
 
 export interface IComponent {
     isFinished: boolean;
@@ -28,6 +29,14 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
         this.cleanup();
         this.isFinished = true;
     }
+    public get timeScale(): number {
+        return this.timerDelay * GameConfig.getInstance().timeScale;
+    }
+    protected yieldTimed(totalSeconds: number, ...args: any[]) {
+        for (let i = 0; i < totalSeconds; i += this.timeScale) {
+            this.yield(...args);
+        }
+    }
 }
 
 export abstract class CStepComponent implements IComponent {
@@ -48,7 +57,7 @@ export abstract class CStepComponent implements IComponent {
     }
     private _timerDelay: number = 0.01;
     get timerDelay(): number {
-        return this._timerDelay;
+        return this._timerDelay * GameConfig.getInstance().timeScale;
     }
     set timerDelay(delay: number) {
         this._timerDelay = delay;

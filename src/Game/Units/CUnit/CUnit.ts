@@ -8,6 +8,7 @@ import {CUnitPool} from "./CUnitPool";
 import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {Models} from "../../Models";
 import {CProjectile} from "../Projectiles/CProjectile";
+import {GameConfig} from "../../../GameConfig";
 
 export abstract class CUnit extends Entity {
     public static unitPool: CUnitPool = new CUnitPool();
@@ -17,6 +18,7 @@ export abstract class CUnit extends Entity {
     public lastAnimationType: animtype = ANIM_TYPE_STAND;
     public queueForRemoval: boolean = false;
     public modelScale: number = 1;
+    public visualtimeScale: number = 1;
 
     public position: Vector2;
     public facingAngle: number = 0;
@@ -68,7 +70,7 @@ export abstract class CUnit extends Entity {
             this.isMoving = false;
             this.wasMoving = false;
             this.setAnimation(ANIM_TYPE_DEATH);
-            this.setTimescale(1);
+            this.setVisualTimeScale(1);
             CUnit.unitPool.update();
         }
         if (this.queueForRemoval) {
@@ -83,7 +85,7 @@ export abstract class CUnit extends Entity {
                 this.move(this.moveOffset);
             }
             if (this.disableRotation <= 0) {
-                this.facingAngle = Interpolation.RotDivisionSpring(this.facingAngle, this.wantedAngle, 15);
+                this.facingAngle = Interpolation.RotDivisionSpring(this.facingAngle, this.wantedAngle, 15 / GameConfig.getInstance().timeScale);
             }
             if (this.disableMovement <= 0) {
                 if (this.moveTime <= 0) this.isMoving = false;
@@ -146,7 +148,7 @@ export abstract class CUnit extends Entity {
         if (offset.x == 0 && offset.y == 0) return;
 
         let next = Vector2.new(0, 0).polarProject(
-            this.moveSpeed + this.moveSpeedBonus,
+            (this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale,
             offset.getAngleDegrees(),
         );
 
@@ -173,8 +175,8 @@ export abstract class CUnit extends Entity {
         }
         BlzPlaySpecialEffect(this.effect, type);
     }
-    public setTimescale(scale: number) {
-        BlzSetSpecialEffectTimeScale(this.effect, scale)
+    public setVisualTimeScale(scale: number) {
+        this.visualtimeScale = scale;
     }
     public dealDamage(damage: number, attacker: CUnit) {
         this.health -= damage;
@@ -231,6 +233,7 @@ export abstract class CUnit extends Entity {
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ() + zExtra);
         BlzSetSpecialEffectScale(this.effect, this.modelScale);
+        BlzSetSpecialEffectTimeScale(this.effect, this.visualtimeScale * GameConfig.getInstance().timeScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.facingAngle * bj_DEGTORAD
         );

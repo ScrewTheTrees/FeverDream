@@ -16,6 +16,7 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
     public minRange: number = 500;
     public maxRange: number = 900;
     public attackRange: number = 1000;
+    public approachRange: number = 50;
 
     public atkDelay = 1;
     public curving = this.getNewCurving();
@@ -41,14 +42,15 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
             this.towards = true;
 
             while (hero != null && !hero.isDead && !this.owner.isDead) {
+                this.offset.updateTo(0, 0).polarProject(this.approachRange, TreeMath.RandAngle());
                 this.target.updateToPoint(hero.position).addOffset(this.offset);
                 this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
 
                 let ang = this.angle.getAngleDegrees() + this.curving;
-                if (!this.towards) ang += 180;
-
-                this.angle.updateTo(0, 0).polarProject(1, ang);
                 this.doAngleReadjusting(hero, ang);
+
+                if (!this.towards) ang += 180;
+                this.angle.updateTo(0, 0).polarProject(1, ang);
 
                 if (this.owner.position.distanceTo(this.target) > 10) {
                     this.owner.setAutoMoveData(this.angle);
@@ -64,24 +66,23 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
                         }
                     }
                     if (this.atkDelay > 0) {
-                        this.atkDelay -= this.timerDelay;
+                        this.atkDelay -= this.timeScale;
                     }
                 }
                 this.yield();
             } //while
             this.yield();
         } //while
-
     }
     private doAngleReadjusting(hero: CUnit, ang: number) {
+        if (!this.towards && this.owner.position.distanceTo(hero.position) > this.maxRange) {
+            this.towards = true;
+            this.curving = this.getNewCurving();
+        } else if (this.towards && this.owner.position.distanceTo(hero.position) < this.minRange) {
+            this.towards = false;
+            this.curving = this.getNewCurving();
+        }
         if (this.angleUpdate <= 0) {
-            if (!this.towards && this.owner.position.distanceTo(hero.position) > this.maxRange) {
-                this.towards = true;
-                this.curving = this.getNewCurving();
-            } else if (this.towards && this.owner.position.distanceTo(hero.position) < this.minRange) {
-                this.towards = false;
-                this.curving = this.getNewCurving();
-            }
             let walk = this.owner.position.copy().polarProject(this.owner.moveSpeed, ang);
             if (!PointWalkableChecker.getInstance().checkTerrainXY(walk.x, walk.y)) {
                 this.curving = this.getNewCurving();
@@ -90,7 +91,7 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
             walk.recycle();
             this.angleUpdate = 2;
         }
-        this.angleUpdate -= this.timerDelay;
+        this.angleUpdate -= this.timeScale;
     }
 
     public getNewAttackDelay() {
@@ -98,7 +99,7 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
     }
     public getNewCurving() {
         return ChooseOne(
-            GetRandomReal(-30, -60),
+            GetRandomReal(-60, -30),
             GetRandomReal(30, 60),
         );
     }

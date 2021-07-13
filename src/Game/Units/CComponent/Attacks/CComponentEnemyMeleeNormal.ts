@@ -22,13 +22,13 @@ export class CComponentEnemyMeleeNormal extends CCoroutineComponent {
         let resetAnim = this.owner.lastAnimationType;
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
         this.owner.setAnimation(ANIM_TYPE_ATTACK);
-        this.owner.setTimescale(1);
+        this.owner.setVisualTimeScale(1);
         this.yieldTimed(0.25);
 
-        this.owner.setTimescale(0.2);
+        this.owner.setVisualTimeScale(0.2);
         this.yieldTimed(0.25);
 
-        this.owner.setTimescale(1);
+        this.owner.setVisualTimeScale(1);
         this.yieldTimed(0.25);
         this.createProjectile();
         this.yieldTimed(1);

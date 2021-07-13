@@ -22,33 +22,33 @@ export abstract class Arena {
 
     public enemies: CUnit[] = [];
 
-    public constructor(scene: number, arena: number) {
-        this.parseRegions(SceneRectType.TRIGGER, scene, arena, this.trigger);
-        this.parseRegions(SceneRectType.MOVECHECK, scene, arena, this.arenaCheck);
-        this.parseRegions(SceneRectType.TARDY, scene, arena, this.tardy);
-        this.parseRegions(SceneRectType.ENEMY_SPAWN, scene, arena, this.enemySpawns);
-        this.parseDestructable(SceneDestructableType.ENTRANCE, scene, arena, this.entrance);
-        this.parseDestructable(SceneDestructableType.EXIT, scene, arena, this.exit);
+    public constructor( arena: number) {
+        this.parseRegions(SceneRectType.TRIGGER, arena, this.trigger);
+        this.parseRegions(SceneRectType.MOVECHECK, arena, this.arenaCheck);
+        this.parseRegions(SceneRectType.TARDY, arena, this.tardy);
+        this.parseRegions(SceneRectType.ENEMY_SPAWN, arena, this.enemySpawns);
+        this.parseDestructable(SceneDestructableType.ENTRANCE, arena, this.entrance);
+        this.parseDestructable(SceneDestructableType.EXIT, arena, this.exit);
     }
 
-    private parseRegions(type: SceneRectType, scene: number, arena: number, arr: rect[]) {
+    private parseRegions(type: SceneRectType, arena: number, arr: rect[]) {
         let globalScope: any = _G;
         let count = 1;
-        let parse = globalScope[`gg_rct_Scene${scene}Arena${arena}${type}${count}`];
+        let parse = globalScope[`gg_rct_Arena${arena}${type}${count}`];
         while (parse != null) {
             arr.push(parse);
             count++;
-            parse = globalScope[`gg_rct_Scene${scene}Arena${arena}${type}${count}`];
+            parse = globalScope[`gg_rct_Arena${arena}${type}${count}`];
         }
     }
-    private parseDestructable(type: SceneDestructableType, scene: number, arena: number, arr: destructable[]) {
+    private parseDestructable(type: SceneDestructableType, arena: number, arr: destructable[]) {
         let globalScope: any = _G;
         let count = 1;
-        let parse = globalScope[`udg_Dest_Scene${scene}Arena${arena}${type}${count}`];
+        let parse = globalScope[`udg_Dest_Arena${arena}${type}${count}`];
         while (parse != null) {
             arr.push(parse);
             count++;
-            parse = globalScope[`udg_Dest_Scene${scene}Arena${arena}${type}${count}`];
+            parse = globalScope[`udg_Dest_Arena${arena}${type}${count}`];
         }
     }
     public GetArenaBounds() {
@@ -109,14 +109,14 @@ export abstract class Arena {
     }
 }
 
-export class Scene1Arena1 extends Arena {
+export class Arena1Combat extends Arena {
     constructor() {
-        super(1, 1);
+        super(1);
     }
 }
 
-export class Scene1Arena2 extends Arena {
+export class Arena2Combat extends Arena {
     constructor() {
-        super(1, 2);
+        super( 2);
     }
 }

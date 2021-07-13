@@ -11,7 +11,7 @@ export enum Models {
     PROJECTILE_ENEMY_RANGED_SMALL = "Abilities\\Weapons\\WitchDoctorMissile\\WitchDoctorMissile.mdx",
 
 
-    EFFECT_BLOOD_RED = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodPeasant.mdl",
+    EFFECT_BLOOD_RED = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodLarge0.mdl",
     EFFECT_BLOOD_PURPLE = "Objects\\Spawnmodels\\NightElf\\NightElfBlood\\NightElfBloodArcher.mdl",
     EFFECT_BLOOD_GREEN = "Objects\\Spawnmodels\\Naga\\NagaBlood\\NagaBloodWindserpent.mdl",
     EFFECT_BALLISTA_IMPACT = "Abilities\\Weapons\\BallistaMissile\\BallistaMissileTarget.mdl",

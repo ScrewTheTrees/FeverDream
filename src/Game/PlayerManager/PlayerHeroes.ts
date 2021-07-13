@@ -70,9 +70,9 @@ export class PlayerHeroes {
             }
         }
     }
-    public intersects(...to: rect[]) {
+    public intersects(...to: rect[]): boolean {
         for (let u of this.heroes.values()) {
-            if (u.isDead) return;
+            if (u.isDead) continue;
             for (let r of to) {
                 if (RectContainsCoords(r, u.position.x, u.position.y)) {
                     return true;
