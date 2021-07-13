@@ -4,7 +4,6 @@ import {CUnit} from "../../CUnit/CUnit";
 import {CComponentPlayerFire} from "../Attacks/CComponentPlayerFire";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CStepComponent} from "../CCoroutineComponent";
-import {KeyCallback} from "wc3-treelib/src/TreeLib/InputManager/KeyCallback";
 import {GameConfig} from "../../../../GameConfig";
 
 export class CComponentPlayerInput extends CStepComponent {
@@ -19,35 +18,37 @@ export class CComponentPlayerInput extends CStepComponent {
     public keyUp: oskeytype = OSKEY_W;
     public keyDown: oskeytype = OSKEY_S;
     private mcb: MouseCallback;
-    private mtt: KeyCallback;
 
     public constructor(owner: CUnit) {
         super(owner);
         this.mcb = this.mouse.addMousePressCallback(MOUSE_BUTTON_TYPE_RIGHT, (callback) => this.onFire(callback));
-        this.mtt = this.keyboard.addKeyboardPressCallback(OSKEY_T, () => {
+
+        this.keyboard.addKeyboardPressCallback(OSKEY_T, () => {
             this.owner.isDead = true;
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_M, () => {
-            GameConfig.getInstance().timeScale += 0.1;
-            print(GameConfig.getInstance().timeScale);
+        this.keyboard.addKeyboardPressCallback(OSKEY_M, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                GameConfig.getInstance().timeScale += 0.1;
+                print(GameConfig.getInstance().timeScale);
+            }
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_N, () => {
-            GameConfig.getInstance().timeScale -= 0.1;
-            if (GameConfig.getInstance().timeScale < 0) GameConfig.getInstance().timeScale = 0;
-            print(GameConfig.getInstance().timeScale);
+        this.keyboard.addKeyboardPressCallback(OSKEY_N, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                GameConfig.getInstance().timeScale -= 0.1;
+                if (GameConfig.getInstance().timeScale < 0) GameConfig.getInstance().timeScale = 0;
+                print(GameConfig.getInstance().timeScale);
+            }
         });
     }
     cleanup() {
         this.mouse.removeMouseCallback(this.mcb);
-        this.keyboard.removeKeyCallback(this.mtt);
     }
-    private onFire(callback: MouseCallback) {
-        let hero = this.owner;
-        if (hero && !hero.isDead) {
-            let mouse = this.mouse.getLastMouseCoordinate(callback.triggeringPlayer);
-            let facing = hero.position.createOffsetTo(mouse);
-            if (!hero.isDominated()) {
-                hero.addComponent(new CComponentPlayerFire(hero, facing));
+    private onFire(call: MouseCallback) {
+        if (!this.owner.isDead && call.triggeringPlayer == this.owner.owner) {
+            let mouse = this.mouse.getLastMouseCoordinate(call.triggeringPlayer);
+            let facing = this.owner.position.createOffsetTo(mouse);
+            if (!this.owner.isDominated()) {
+                this.owner.addComponent(new CComponentPlayerFire(this.owner, facing));
             }
         }
     }

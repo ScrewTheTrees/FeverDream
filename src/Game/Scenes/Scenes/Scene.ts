@@ -64,6 +64,7 @@ export abstract class Scene extends TreeThread {
         Delay.addDelay(() => {
             if (id >= GameConfig.getInstance().playingPlayers.length) id = 0;
             let play = GameConfig.getInstance().playingPlayers[id];
+            id++;
 
             let place = spawnRect != null ? Vector2.randomPointInRect(spawnRect) : Vector2.randomPointInRect(ChooseOne(...arena.enemySpawns));
             if (spawnRect) Vector2.randomPointInRect(spawnRect);
