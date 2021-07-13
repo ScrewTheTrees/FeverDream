@@ -3,6 +3,7 @@ import {CComponentEnemyMeleeNormal} from "../Attacks/CComponentEnemyMeleeNormal"
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
 import {CCoroutineComponent} from "../CCoroutineComponent";
+import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
 
 export class CAIEnemyMelee extends CCoroutineComponent {
     removeOnDeath = false;
@@ -22,7 +23,8 @@ export class CAIEnemyMelee extends CCoroutineComponent {
 
     public atkDelay = 1;
     public curving = this.getNewCurving();
-    public angleUpdate = 1;
+    public angleUpdateIfBlocked = 1;
+    public angleUpdateConst = 1;
 
     execute(): void {
         this.yieldTimed(2);
@@ -33,7 +35,6 @@ export class CAIEnemyMelee extends CCoroutineComponent {
                 hero = this.primaryTarget;
             }
             this.atkDelay = this.getNewAttackDelay();
-            this.angleUpdate = 1;
 
             while (hero != null && !hero.isDead && !this.owner.isDead) {
                 this.offset.updateTo(0, 0).polarProject(this.approachRange, TreeMath.RandAngle());
@@ -68,11 +69,20 @@ export class CAIEnemyMelee extends CCoroutineComponent {
         } //while
     }
     private doAngleReadjusting(hero: CUnit, ang: number) {
-        if (this.angleUpdate <= 0) {
-            this.curving = this.getNewCurving();
-            this.angleUpdate = 2;
+        if (this.angleUpdateIfBlocked <= 0) {
+            let walk = this.owner.position.copy().polarProject(this.owner.moveSpeed, ang);
+            if (!PointWalkableChecker.getInstance().checkTerrainXY(walk.x, walk.y)) {
+                this.curving = this.getNewCurving();
+            }
+            walk.recycle();
+            this.angleUpdateIfBlocked = 2;
         }
-        this.angleUpdate -= this.timeScale;
+        this.angleUpdateIfBlocked -= this.timeScale;
+        if (this.angleUpdateConst <= 0) {
+            this.curving = this.getNewCurving();
+            this.angleUpdateConst = 10;
+        }
+        this.angleUpdateConst -= this.timeScale;
     }
     public getNewAttackDelay() {
         return GetRandomReal(0.2, 0.5);
