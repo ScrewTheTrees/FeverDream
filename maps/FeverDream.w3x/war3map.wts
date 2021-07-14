@@ -43,21 +43,6 @@ STRING 9
 Player 4
 }
 
-STRING 10
-{
-Enemy 5
-}
-
-STRING 11
-{
-Enemy 6
-}
-
-STRING 12
-{
-Force 2
-}
-
 STRING 13
 // Destructibles: B001 (Pathing Blocker (Walkable)), Name (Name)
 {

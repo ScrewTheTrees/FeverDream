@@ -24,17 +24,7 @@ export class Scene2 extends Scene {
     private hasEntered: boolean = false;
 
     onUpdateStep(): void {
-        if (!this.hasEntered) {
-            if (this.playerHeroes.intersects(gg_rct_Arena2Spawn1)) {
-                this.hasEntered = true;
-                this.generateSpawnPerPlayerAsync(this.combatArena2, (ep, place, focus) => {
-                    return new CUnitTypeEnemyMeleeMyrmidion(ep, place, focus);
-                }, 0.4, 4);
-                this.generateSpawnPerPlayerAsync(this.combatArena2, (ep, place, focus) => {
-                    return new CUnitTypeEnemyRangedSiren(ep, place, focus);
-                }, 0.4, 4);
-            }
-        }
+
     };
     public execute() {
         print("Scene2 starting.");
@@ -84,8 +74,6 @@ export class Scene2 extends Scene {
         this.waitUntilPlayerTriggerRect(gg_rct_Scene2Ending);
         this.movePlayersToRect(gg_rct_Scene3Start);
         //Finish
-
-        ArenaService.getInstance().clearAllEnemies();
     }
 
     //Return next scene.

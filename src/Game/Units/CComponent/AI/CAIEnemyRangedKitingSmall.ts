@@ -1,32 +1,19 @@
 import {CUnit} from "../../CUnit/CUnit";
-import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
-import {CCoroutineComponent} from "../CCoroutineComponent";
 import {CComponentEnemyRangedAttackSmall} from "../Attacks/CComponentEnemyRangedAttack";
 import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
-import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
+import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
 
-export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
-    removeOnDeath = false;
-    public target = Vector2.new(0, 0);
-    public offset = Vector2.new(0, 0);
-    public angle = Vector2.new(0, 0);
-    public primaryTarget: CUnit | undefined;
-
+export class CAIEnemyRangedKitingSmall extends CAIEnemyGeneric {
     public minRange: number = 500;
     public maxRange: number = 900;
-    public attackRange: number = 1000;
-    public approachRange: number = 50;
 
-    public atkDelay = 1;
-    public curving = this.getNewCurving();
-    public angleUpdateIfBlocked = 1;
-    public angleUpdateConst = 1;
     public towards = true;
 
     public constructor(owner: CUnit, primaryTarget?: CUnit) {
         super(owner);
         this.primaryTarget = primaryTarget;
+        this.attackRange = 1000;
+        this.approachRange = 50;
     }
 
     execute(): void {
@@ -36,19 +23,19 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
             if (this.primaryTarget && !this.primaryTarget.isDead) {
                 hero = this.primaryTarget;
             }
-            this.offset.updateTo(0, 0).polarProject(50, TreeMath.RandAngle());
+            this.updateOffset();
             this.atkDelay = 1;
             this.curving = this.getNewCurving();
-            this.angleUpdateIfBlocked = 1;
             this.towards = true;
 
             while (hero != null && !hero.isDead && !this.owner.isDead) {
-                this.offset.updateTo(0, 0).polarProject(this.approachRange, TreeMath.RandAngle());
-                this.target.updateToPoint(hero.position).addOffset(this.offset);
+                this.calculateTarget(hero);
+
                 this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
 
                 let ang = this.angle.getAngleDegrees() + this.curving;
                 this.doAngleReadjusting(hero, ang);
+
 
                 if (!this.towards) ang += 180;
                 this.angle.updateTo(0, 0).polarProject(1, ang);
@@ -60,7 +47,8 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
                     && !this.owner.isDominated()
                 ) {
                     if (this.atkDelay <= 0 && !this.owner.isDisabledMovement()) {
-                        if (!this.owner.isDominated()) {
+                        if (!this.owner.isDominated()
+                            && !this.pathfinder.terrainRayCastIsHit(this.owner.position, hero.position)) {
                             this.onAttack(hero);
                             this.atkDelay = this.getNewAttackDelay();
                             this.curving = this.getNewCurving();
@@ -75,7 +63,8 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
             this.yield();
         } //while
     }
-    private doAngleReadjusting(hero: CUnit, ang: number) {
+
+    public doAngleReadjusting(hero: CUnit, ang: number) {
         if (!this.towards && this.owner.position.distanceTo(hero.position) > this.maxRange) {
             this.towards = true;
             this.curving = this.getNewCurving();
@@ -83,18 +72,9 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
             this.towards = false;
             this.curving = this.getNewCurving();
         }
-        if (this.angleUpdateIfBlocked <= 0) {
-            let walk = this.owner.position.copy().polarProject(this.owner.moveSpeed, ang);
-            if (!PointWalkableChecker.getInstance().checkTerrainXY(walk.x, walk.y)) {
-                this.curving = this.getNewCurving();
-                this.towards = !this.towards;
-            }
-            walk.recycle();
-            this.angleUpdateIfBlocked = 2;
-        }
-        this.angleUpdateIfBlocked -= this.timeScale;
         if (this.angleUpdateConst <= 0) {
             this.curving = this.getNewCurving();
+            this.updateOffset();
             this.angleUpdateConst = 10;
         }
         this.angleUpdateConst -= this.timeScale;
@@ -113,10 +93,5 @@ export class CAIEnemyRangedKitingSmall extends CCoroutineComponent {
         this.owner.addComponent(new CComponentEnemyRangedAttackSmall(this.owner,
             this.target.updateToPoint(this.owner.position).offsetTo(hero.position)
         ));
-    }
-    cleanup(): void {
-        this.offset.recycle();
-        this.target.recycle();
-        this.angle.recycle();
     }
 }

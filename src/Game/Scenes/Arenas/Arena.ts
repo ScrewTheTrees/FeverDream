@@ -109,6 +109,10 @@ export abstract class Arena {
     }
 }
 
+
+
+
+
 export class Arena1Combat extends Arena {
     constructor() {
         super(1);

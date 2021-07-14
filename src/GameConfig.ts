@@ -1,4 +1,5 @@
 import {Hooks} from "wc3-treelib/src/TreeLib/Hooks";
+import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
 
 export class GameConfig {
     private static instance: GameConfig;
@@ -22,7 +23,7 @@ export class GameConfig {
 
     public readonly allPlayerSlots: player[] = [];
     public readonly playingPlayers: player[] = [];
-    public readonly creepPlayers: player[] = [];
+    public readonly creepPlayer: player = Players.NEUTRAL_HOSTILE;
 
 
     //asd

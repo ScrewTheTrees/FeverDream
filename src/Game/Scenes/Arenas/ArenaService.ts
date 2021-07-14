@@ -12,8 +12,11 @@ export class ArenaService {
 
     }
 
+    //Section 1.
     public combatArena1 = new Arena1Combat();
     public combatArena2 = new Arena2Combat();
+
+    //Section 2.
 
     public clearAllEnemies() {
         this.combatArena1.removeAllEnemies();

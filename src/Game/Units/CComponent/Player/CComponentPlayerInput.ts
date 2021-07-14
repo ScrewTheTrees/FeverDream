@@ -5,6 +5,11 @@ import {CComponentPlayerFire} from "../Attacks/CComponentPlayerFire";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CStepComponent} from "../CCoroutineComponent";
 import {GameConfig} from "../../../../GameConfig";
+import {CUnitTypeEnemyTutorialMelee} from "../../CUnit/Types/CUnitTypeEnemyTutorialMelee";
+import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
+import {CUnitTypeEnemyMeleeMyrmidion} from "../../CUnit/Types/CUnitTypeEnemyMeleeMyrmidion";
+import {CUnitTypeEnemyRangedSiren} from "../../CUnit/Types/CUnitTypeEnemyRangedSiren";
+import {BootlegPathfinding} from "../../BootlegPathfinding";
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
@@ -25,6 +30,22 @@ export class CComponentPlayerInput extends CStepComponent {
 
         this.keyboard.addKeyboardPressCallback(OSKEY_T, () => {
             this.owner.isDead = true;
+        });
+
+        this.keyboard.addKeyboardPressCallback(OSKEY_1, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                new CUnitTypeEnemyTutorialMelee(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_2, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                new CUnitTypeEnemyMeleeMyrmidion(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_3, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                new CUnitTypeEnemyRangedSiren(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
+            }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_M, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {

@@ -4,6 +4,7 @@ import {PlayerMaster} from "./Game/PlayerManager/PlayerMaster";
 import {SceneService} from "./Game/Scenes/SceneService";
 import {CUnitTypePlayer} from "./Game/Units/CUnit/Types/CUnitTypePlayer";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
+import {BootlegPathfinding} from "./Game/Units/BootlegPathfinding";
 
 
 // =========================================
@@ -14,10 +15,11 @@ export class Game {
     private gameConfig = GameConfig.getInstance();
     private playerMaster = PlayerMaster.getInstance();
     private sceneService = SceneService.getInstance();
+    private pathfinding = BootlegPathfinding.getInstance();
 
     constructor() {
-        Logger.doLogVerbose = false;
-        Logger.doLogDebug = false;
+        Logger.doLogVerbose = true;
+        Logger.doLogDebug = true;
 
         for (let i = this.gameConfig.playerIdFrom; i < this.gameConfig.playerIdTo; i++) {
             let p = Player(i);
@@ -30,10 +32,6 @@ export class Game {
                 );
                 this.playerMaster.playerHeroes.addHero(p, h);
             }
-        }
-        for (let i = this.gameConfig.enemyIdFrom; i < this.gameConfig.enemyIdTo; i++) {
-            let p = Player(i);
-            this.gameConfig.creepPlayers.push(p);
         }
 
 

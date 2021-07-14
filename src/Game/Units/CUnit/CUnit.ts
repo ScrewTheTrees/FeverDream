@@ -18,7 +18,7 @@ export abstract class CUnit extends Entity {
     public lastAnimationType: animtype = ANIM_TYPE_STAND;
     public queueForRemoval: boolean = false;
     public modelScale: number = 1;
-    public visualtimeScale: number = 1;
+    public visualTimeScale: number = 1;
 
     public position: Vector2;
     public facingAngle: number = 0;
@@ -130,7 +130,6 @@ export abstract class CUnit extends Entity {
         this.health = this.maxHealth;
         this.isDead = false;
     }
-
     public teleport(to: Vector2) {
         this.position.x = to.x;
         this.position.y = to.y;
@@ -171,12 +170,12 @@ export abstract class CUnit extends Entity {
         BlzSpecialEffectClearSubAnimations(this.effect);
         this.lastAnimationType = type;
         for (let subAnim of subanims) {
-            BlzSpecialEffectAddSubAnimation(this.effect,subAnim);
+            BlzSpecialEffectAddSubAnimation(this.effect, subAnim);
         }
         BlzPlaySpecialEffect(this.effect, type);
     }
     public setVisualTimeScale(scale: number) {
-        this.visualtimeScale = scale;
+        this.visualTimeScale = scale;
     }
     public dealDamage(damage: number, attacker: CUnit) {
         this.health -= damage;
@@ -233,17 +232,19 @@ export abstract class CUnit extends Entity {
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ() + zExtra);
         BlzSetSpecialEffectScale(this.effect, this.modelScale);
-        BlzSetSpecialEffectTimeScale(this.effect, this.visualtimeScale * GameConfig.getInstance().timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.facingAngle * bj_DEGTORAD
         );
     }
 
     public onDelete() {
+        BlzSetSpecialEffectPosition(this.effect, 30000, 30000, -6000);
         BlzSetSpecialEffectTimeScale(this.effect, 99999);
         BlzSetSpecialEffectScale(this.effect, 0);
         this.modelScale = 0;
         DestroyEffect(this.effect);
+        this.setAnimation(ANIM_TYPE_DECAY);
 
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];

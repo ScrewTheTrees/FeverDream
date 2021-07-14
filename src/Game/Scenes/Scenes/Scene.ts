@@ -51,7 +51,7 @@ export abstract class Scene extends TreeThread {
     //Spawning
     public generateSpawn(arena: Arena, func: (enemyPlayer: player, place: Vector2) => CUnit, spawnRect?: rect) {
         let place = spawnRect != null ? Vector2.randomPointInRect(spawnRect) : Vector2.randomPointInRect(ChooseOne(...arena.enemySpawns));
-        let enemyPlayer = ChooseOne(...GameConfig.getInstance().creepPlayers);
+        let enemyPlayer = GameConfig.getInstance().creepPlayer;
         let u = func(enemyPlayer, place);
         arena.addEnemy(u);
         place.recycle();
@@ -68,7 +68,7 @@ export abstract class Scene extends TreeThread {
 
             let place = spawnRect != null ? Vector2.randomPointInRect(spawnRect) : Vector2.randomPointInRect(ChooseOne(...arena.enemySpawns));
             if (spawnRect) Vector2.randomPointInRect(spawnRect);
-            let enemyPlayer = ChooseOne(...GameConfig.getInstance().creepPlayers);
+            let enemyPlayer = GameConfig.getInstance().creepPlayer;
             let focusTarget = PlayerHeroes.getInstance().getHero(play);
             let u = func(enemyPlayer, place, focusTarget);
             arena.addEnemy(u);
