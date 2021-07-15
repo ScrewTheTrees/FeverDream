@@ -3,10 +3,15 @@ import {PlayerCamera} from "../../PlayerManager/PlayerCamera";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {GateOperation} from "../GateOperation";
 import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
-import {CUnitTypeEnemyTutorialMelee} from "../../Units/CUnit/Types/CUnitTypeEnemyTutorialMelee";
+import {
+    CUnitTypeEnemyMeleeFodderSkeleton
+} from "../../Units/CUnit/Types/CUnitTypeEnemyMeleeFodderSkeleton";
 import {Scene} from "./Scene";
 import {Scene2} from "./Scene2";
 import {ArenaService} from "../Arenas/ArenaService";
+import {Music} from "../../Music";
+import {GameConfig} from "../../../GameConfig";
+import {CUnitTypeEnemyRangedFodderSkeleton} from "../../Units/CUnit/Types/CUnitTypeEnemyRangedFodderSkeleton";
 
 export class Scene1 extends Scene {
     public checkpoint1 = gg_rct_Scene1Start;
@@ -40,6 +45,7 @@ export class Scene1 extends Scene {
     public execute() {
         this.playerCamera.setHeroCamera();
         this.playerHeroes.reviveHeroesIfDead(this.checkpoint1);
+        this.playMusic(Music.NONE);
 
         this.combatArena1.closeArena();
         this.combatArena1.toggleEntrances(GateOperation.OPEN);
@@ -49,11 +55,14 @@ export class Scene1 extends Scene {
             , 2500, 1, 3);
 
         /** ARENA 1 */
+
         this.waitUntilPlayerTriggerArena(this.combatArena1);
         this.startStandardCombatArena(this.combatArena1);
+        this.playMusic(Music.SECTION_1);
+        this.yieldTimed(1);
 
         this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
-            return new CUnitTypeEnemyTutorialMelee(ep, place, focus);
+            return new CUnitTypeEnemyMeleeFodderSkeleton(ep, place, focus);
         }, 1, 4, this.combatArena1.enemySpawns[0]);
 
 
@@ -64,15 +73,27 @@ export class Scene1 extends Scene {
         this.waitWhileArenaHasEnemies(this.combatArena1, this.numberOfPlayers());
 
         this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
-            return new CUnitTypeEnemyTutorialMelee(ep, place, focus);
-        }, 1, 3, this.combatArena1.enemySpawns[0]);
+            return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
+        }, 1, 2, this.combatArena1.enemySpawns[0]);
         this.yieldTimed(0.5);
         this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
-            return new CUnitTypeEnemyTutorialMelee(ep, place, focus);
-        }, 1, 3, this.combatArena1.enemySpawns[1]);
+            return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
+        }, 1, 2, this.combatArena1.enemySpawns[1]);
 
         this.waitWhileArenaHasEnemies(this.combatArena1);
 
+
+        this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
+            return new CUnitTypeEnemyMeleeFodderSkeleton(ep, place, focus);
+        }, 1, 3);
+        this.yieldTimed(1.5);
+        this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
+            return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
+        }, 1, 3);
+
+        this.waitWhileArenaHasEnemies(this.combatArena1);
+
+        this.playMusic(Music.NONE);
         this.yieldTimed(2);
         this.cameraShowActionThenResetHeroCamera(Vector2.fromWidget(this.combatArena1.exit[0]),
             () => this.combatArena1.toggleExits(GateOperation.OPEN));
@@ -85,13 +106,12 @@ export class Scene1 extends Scene {
         DestroyTextTag(this.attackHelpText);
 
         ArenaService.getInstance().clearAllEnemies();
-
-        print("A winner is you!");
         //Return next scene.
         return new Scene2();
     }
     onPlayersDeath(): void {
         this.remove();
+        this.playMusic(Music.NONE);
 
         Delay.addDelay(() => {
             ArenaService.getInstance().clearAllEnemies();

@@ -5,11 +5,15 @@ import {CComponentPlayerFire} from "../Attacks/CComponentPlayerFire";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CStepComponent} from "../CCoroutineComponent";
 import {GameConfig} from "../../../../GameConfig";
-import {CUnitTypeEnemyTutorialMelee} from "../../CUnit/Types/CUnitTypeEnemyTutorialMelee";
+import {CUnitTypeEnemyMeleeFodderSkeleton} from "../../CUnit/Types/CUnitTypeEnemyMeleeFodderSkeleton";
 import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
 import {CUnitTypeEnemyMeleeMyrmidion} from "../../CUnit/Types/CUnitTypeEnemyMeleeMyrmidion";
 import {CUnitTypeEnemyRangedSiren} from "../../CUnit/Types/CUnitTypeEnemyRangedSiren";
 import {BootlegPathfinding} from "../../BootlegPathfinding";
+import {PlayerStats} from "../../../PlayerManager/PlayerStats";
+import {Models} from "../../../Models";
+import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
+import {CUnitTypeEnemyRangedFodderSkeleton} from "../../CUnit/Types/CUnitTypeEnemyRangedFodderSkeleton";
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
@@ -34,17 +38,49 @@ export class CComponentPlayerInput extends CStepComponent {
 
         this.keyboard.addKeyboardPressCallback(OSKEY_1, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
-                new CUnitTypeEnemyTutorialMelee(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
+                new CUnitTypeEnemyMeleeFodderSkeleton(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_2, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
-                new CUnitTypeEnemyMeleeMyrmidion(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
+                new CUnitTypeEnemyRangedFodderSkeleton(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_3, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
+                new CUnitTypeEnemyMeleeMyrmidion(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_4, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
                 new CUnitTypeEnemyRangedSiren(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_P, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                PlayerStats.getInstance().fireRate *= 2;
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_O, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                PlayerStats.getInstance().fireRate /= 2;
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_J, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                BootlegPathfinding.getInstance().find(this.owner.position, this.mouse.getLastMouseCoordinate(this.owner.owner),
+                    (result) => {
+                        let path = result.path;
+                        let things: effect[] = [];
+                        for (let p of path) {
+                            things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.x, p.y));
+                        }
+                        Delay.addDelay(() => {
+                            for (let p of things) {
+                                DestroyEffect(p);
+                            }
+                        }, 10);
+                    });
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_M, (call) => {

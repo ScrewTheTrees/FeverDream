@@ -7,11 +7,11 @@ import {CComponentRemoveOnDeath} from "../../CComponent/CComponentRemoveOnDeath"
 import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
 import {CProjectile} from "../../Projectiles/CProjectile";
 
-export class CUnitTypeEnemyTutorialMelee extends CUnit {
+export class CUnitTypeEnemyMeleeFodderSkeleton extends CUnit {
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_SKELETON, position);
         this.moveSpeed = 2;
-        this.modelScale = 0.7;
+        this.modelScale = 0.8;
         this.collisionSize = 22;
         this.setMaxHealth(1);
         this.addComponent(new CAIEnemyMelee(this, focus));

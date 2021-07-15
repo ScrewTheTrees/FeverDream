@@ -17,8 +17,8 @@ export interface IComponent {
 export abstract class CCoroutineComponent extends TreeThread implements IComponent {
     public owner: CUnit;
     public abstract removeOnDeath: boolean;
-    public constructor(owner: CUnit) {
-        super(0.01, true);
+    public constructor(owner: CUnit, timerDelay: number = 0.01) {
+        super(timerDelay, true);
         this.owner = owner;
     }
     abstract execute(): void;

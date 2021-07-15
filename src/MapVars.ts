@@ -20,3 +20,5 @@ declare const gg_rct_Scene2Ending: rect;
 declare const gg_rct_Arena2Camera1: rect;
 declare const gg_rct_Scene3Start: rect;
 declare const gg_rct_Scene2Start: rect;
+declare const gg_rct_Scene3EnemySpawner: rect;
+declare const gg_rct_Section2TriggerStart: rect;

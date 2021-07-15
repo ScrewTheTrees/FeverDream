@@ -17,10 +17,12 @@ gg_rct_Scene2Ending = nil
 gg_rct_Arena2Camera1 = nil
 gg_rct_Scene3Start = nil
 gg_rct_Scene2Start = nil
+gg_rct_Scene3EnemySpawner = nil
 gg_trg_InitScene1 = nil
 gg_dest_ATg4_0002 = nil
 gg_dest_ATg1_0003 = nil
 gg_dest_ATg1_0004 = nil
+gg_rct_Section2TriggerStart = nil
 function InitGlobals()
 end
 
@@ -70,8 +72,10 @@ function CreateRegions()
     gg_rct_Scene1Camera1 = Rect(-25376.0, -24032.0, -25120.0, -23744.0)
     gg_rct_Scene2Ending = Rect(-26592.0, -18752.0, -26272.0, -18528.0)
     gg_rct_Arena2Camera1 = Rect(-27296.0, -21696.0, -27040.0, -21408.0)
-    gg_rct_Scene3Start = Rect(-28096.0, -15616.0, -27744.0, -15232.0)
+    gg_rct_Scene3Start = Rect(-28096.0, -15712.0, -27712.0, -15424.0)
     gg_rct_Scene2Start = Rect(-25888.0, -23296.0, -25568.0, -22976.0)
+    gg_rct_Scene3EnemySpawner = Rect(-29152.0, -11616.0, -28704.0, -11232.0)
+    gg_rct_Section2TriggerStart = Rect(-28544.0, -15104.0, -27328.0, -14144.0)
 end
 
 function Trig_InitScene1_Actions()

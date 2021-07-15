@@ -1,5 +1,6 @@
 import {Hooks} from "wc3-treelib/src/TreeLib/Hooks";
 import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
+import {MusicChange} from "./MusicChange";
 
 export class GameConfig {
     private static instance: GameConfig;
@@ -28,4 +29,15 @@ export class GameConfig {
 
     //asd
     public timeScale: number = 1;
+
+
+    //
+    public music: string = "";
+    public setMusic(track: string) {
+        if (track != this.music) {
+            this.music = track;
+            new MusicChange(track);
+        }
+    }
 }
+

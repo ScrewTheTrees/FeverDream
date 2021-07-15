@@ -7,6 +7,9 @@ import {CUnitTypeEnemyMeleeMyrmidion} from "../../Units/CUnit/Types/CUnitTypeEne
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnitTypeEnemyRangedSiren} from "../../Units/CUnit/Types/CUnitTypeEnemyRangedSiren";
 import {ArenaService} from "../Arenas/ArenaService";
+import {Scene3} from "./Scene3";
+import {GameConfig} from "../../../GameConfig";
+import {Music} from "../../Music";
 
 export class Scene2 extends Scene {
     public checkpoint1 = gg_rct_Scene2Start;
@@ -21,15 +24,9 @@ export class Scene2 extends Scene {
         super();
     }
 
-    private hasEntered: boolean = false;
-
-    onUpdateStep(): void {
-
-    };
     public execute() {
-        print("Scene2 starting.");
-
         /** ARENA 2 */
+        this.playMusic(Music.NONE);
         this.playerCamera.setHeroCamera();
         this.playerHeroes.reviveHeroesIfDead(this.checkpoint1);
 
@@ -38,6 +35,8 @@ export class Scene2 extends Scene {
 
         this.waitUntilPlayerTriggerArena(this.combatArena2);
         this.startStandardCombatArena(this.combatArena2);
+        this.playMusic(Music.SECTION_1);
+        this.yieldTimed(1);
 
         this.generateSpawnPerPlayerAsync(this.combatArena2, (ep, place, focus) => {
             return new CUnitTypeEnemyMeleeMyrmidion(ep, place, focus);
@@ -65,6 +64,7 @@ export class Scene2 extends Scene {
 
 
         this.waitWhileArenaHasEnemies(this.combatArena2);
+        this.playMusic(Music.NONE);
         this.yieldTimed(1);
 
         //Open up the entire tutorial.
@@ -78,16 +78,14 @@ export class Scene2 extends Scene {
 
     //Return next scene.
     public onFinish(): Scene | undefined {
-        print("A winner is you!");
-
         ArenaService.getInstance().clearAllEnemies();
 
-        return undefined;
+        return new Scene3();
     }
     onPlayersDeath(): void {
         this.remove();
 
-        this.hasEntered = false;
+        this.playMusic(Music.NONE);
 
         Delay.addDelay(() => {
             ArenaService.getInstance().clearAllEnemies();

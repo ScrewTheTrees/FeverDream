@@ -17,10 +17,17 @@ export abstract class Scene extends TreeThread {
     /** Returns next scene */
     abstract onFinish(): Scene | undefined;
 
+    public playMusic(music: string) {
+        GameConfig.getInstance().setMusic(music);
+    }
     public numberOfPlayers() {
         return GameConfig.getInstance().playingPlayers.length;
     }
+    public movePlayersToRect(...place: rect[]) {
+        PlayerHeroes.getInstance().moveHeroesToRect(ChooseOne(...place));
+    }
 
+    //Arenas
     public startStandardCombatArena(arena: Arena) {
         arena.closeArena();
         this.moveTardyPlayersToArena(arena);
@@ -38,9 +45,6 @@ export abstract class Scene extends TreeThread {
     public moveTardyPlayersToArena(arena: Arena) {
         let exclude = PlayerHeroes.getInstance().getHeroesInside(...arena.arenaCheck);
         PlayerHeroes.getInstance().moveHeroesToRect(ChooseOne(...arena.tardy), exclude);
-    }
-    public movePlayersToRect(...place: rect[]) {
-        PlayerHeroes.getInstance().moveHeroesToRect(ChooseOne(...place));
     }
     public waitWhileArenaHasEnemies(arena: Arena, minimum = 0) {
         this.yieldTimed(3);

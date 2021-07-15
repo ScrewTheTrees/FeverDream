@@ -75,7 +75,6 @@ export abstract class CUnit extends Entity {
         }
         if (this.queueForRemoval) {
             CUnit.unitPool.update();
-            this.remove();
         }
         if (this.disableCommandUpdate <= 0) {
             this.updateCommands();
@@ -239,17 +238,19 @@ export abstract class CUnit extends Entity {
     }
 
     public onDelete() {
+        this.position.updateTo(30000, 30000);
         BlzSetSpecialEffectPosition(this.effect, 30000, 30000, -6000);
-        BlzSetSpecialEffectTimeScale(this.effect, 99999);
-        BlzSetSpecialEffectScale(this.effect, 0);
         this.modelScale = 0;
-        DestroyEffect(this.effect);
-        this.setAnimation(ANIM_TYPE_DECAY);
-
+        Delay.addDelay(() => {
+            BlzSetSpecialEffectTimeScale(this.effect, 1);
+            BlzSetSpecialEffectScale(this.effect, 0);
+            DestroyEffect(this.effect);
+        });
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             this.removeComponent(comp);
         }
+        this.remove();
     }
     public onHit(other: CProjectile) {
         this.createSpawnEffect(Models.EFFECT_BLOOD_RED, 1, 5);

@@ -18,8 +18,8 @@ export class Game {
     private pathfinding = BootlegPathfinding.getInstance();
 
     constructor() {
-        Logger.doLogVerbose = true;
-        Logger.doLogDebug = true;
+        Logger.doLogVerbose = false;
+        Logger.doLogDebug = false;
 
         for (let i = this.gameConfig.playerIdFrom; i < this.gameConfig.playerIdTo; i++) {
             let p = Player(i);

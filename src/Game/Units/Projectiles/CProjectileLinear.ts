@@ -11,6 +11,7 @@ export class CProjectileLinear extends CProjectile {
     public cliffHeight: number;
     public visualHeight: number = 0;
     public collisionSize: number = 16;
+    public travelTime: number = 10;
     public targets: CUnit[] = [];
 
     public constructor(owner: CUnit, targetOffset: Vector2, model: string, position: Vector2) {
@@ -21,6 +22,10 @@ export class CProjectileLinear extends CProjectile {
 
     execute(): void {
         while (this.durability > 0) {
+            this.travelTime -= this.timerDelay;
+            if (this.travelTime <= 0) {
+                this.onDestroy();
+            }
             if (PointWalkableChecker.getInstance().checkTerrainXY(this.position.x, this.position.y)) {
                 this.position.polarProject(this.speed * GameConfig.getInstance().timeScale,
                     this.targetOffset.getAngleDegrees()

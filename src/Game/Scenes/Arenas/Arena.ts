@@ -124,3 +124,8 @@ export class Arena2Combat extends Arena {
         super( 2);
     }
 }
+export class ArenaDummy extends Arena {
+    constructor() {
+        super( 0);
+    }
+}

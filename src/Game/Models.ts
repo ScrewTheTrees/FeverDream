@@ -1,6 +1,7 @@
 export enum Models {
     UNIT_RIFLEMAN = "units\\human\\Rifleman\\Rifleman.mdx",
     UNIT_SKELETON = "units\\undead\\Skeleton\\Skeleton.mdx",
+    UNIT_SKELETON_RANGED_BURNING = "Units\\Creeps\\BurningArcher\\BurningArcher.mdx",
     UNIT_NAGA_SIREN = "Units\\Naga\\NagaSiren\\NagaSiren.mdx",
     UNIT_NAGA_MYRMIDION = "units\\naga\\NagaMyrmidon\\NagaMyrmidon.mdx",
 
@@ -8,7 +9,8 @@ export enum Models {
     PROJECTILE_PLAYER_FIRE = "Abilities\\Weapons\\DemonHunterMissile\\DemonHunterMissile.mdx",
 
     PROJECTILE_ENEMY_MELEE = "war3mapImported\\EphemeralSlashRed.mdx",
-    PROJECTILE_ENEMY_RANGED_SMALL = "Abilities\\Weapons\\WitchDoctorMissile\\WitchDoctorMissile.mdx",
+    PROJECTILE_ENEMY_RANGED_MAGIC = "Abilities\\Weapons\\WitchDoctorMissile\\WitchDoctorMissile.mdx",
+    PROJECTILE_ENEMY_RANGED_ARROW = "Abilities\\Weapons\\SearingArrow\\SearingArrowMissile.mdl",
 
 
     EFFECT_BLOOD_RED = "Objects\\Spawnmodels\\Human\\HumanBlood\\HumanBloodLarge0.mdl",
@@ -22,4 +24,3 @@ export enum Models {
 
 
 }
-

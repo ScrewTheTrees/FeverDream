@@ -1,9 +1,9 @@
 import {CCoroutineComponent} from "../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
-import {CProjectileEnemyRangedAttackSmall} from "../../Projectiles/Enemy/CProjectileEnemyRangedAttackSmall";
+import {CProjectileEnemyRangedAttackMagic} from "../../Projectiles/Enemy/CProjectileEnemyRangedAttackMagic";
 
-export class CComponentEnemyRangedAttackSmall extends CCoroutineComponent {
+export class CComponentEnemyRangedMagic extends CCoroutineComponent {
     public targetOffset: Vector2;
     removeOnDeath = true;
 
@@ -34,7 +34,7 @@ export class CComponentEnemyRangedAttackSmall extends CCoroutineComponent {
         this.owner.setAnimation(resetAnim);
     }
     private createProjectile() {
-        new CProjectileEnemyRangedAttackSmall(this.owner, this.targetOffset);
+        new CProjectileEnemyRangedAttackMagic(this.owner, this.targetOffset);
     }
     protected onEnd() {
         this.owner.dominated -= 1;

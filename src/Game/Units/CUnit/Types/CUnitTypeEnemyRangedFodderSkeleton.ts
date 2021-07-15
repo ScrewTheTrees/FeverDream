@@ -1,29 +1,29 @@
 import {CUnit} from "../CUnit";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Models} from "../../../Models";
-import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
+import {CAIEnemyRangedNormal} from "../../CComponent/AI/CAIEnemyRangedNormal";
 import {CComponentRemoveOnDeath} from "../../CComponent/CComponentRemoveOnDeath";
+import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
 import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
-import {CAIEnemyRangedKiting} from "../../CComponent/AI/CAIEnemyRangedKiting";
 import {CProjectile} from "../../Projectiles/CProjectile";
 
-export class CUnitTypeEnemyRangedSiren extends CUnit {
+export class CUnitTypeEnemyRangedFodderSkeleton extends CUnit {
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
-        super(owner, Models.UNIT_NAGA_SIREN, position);
-        this.moveSpeed = 1.5;
-        this.modelScale = 0.6;
-        this.setMaxHealth(50);
-        this.addComponent(new CAIEnemyRangedKiting(this, focus));
+        super(owner, Models.UNIT_SKELETON_RANGED_BURNING, position);
+        this.moveSpeed = 2;
+        this.modelScale = 0.8;
+        this.collisionSize = 22;
+        this.setMaxHealth(1);
+        this.addComponent(new CAIEnemyRangedNormal(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));
 
+        this.createSpawnEffect(Models.EFFECT_DARK_RITUAL_SPAWN);
         BlzSetSpecialEffectColorByPlayer(this.effect, Players.NEUTRAL_HOSTILE);
         this.facingAngle = TreeMath.RandAngle();
         this.wantedAngle = this.facingAngle;
-
-        this.createSpawnEffect(Models.EFFECT_WATER_SPLASH, 2);
-        this.setAnimation(ANIM_TYPE_MORPH, SUBANIM_TYPE_ALTERNATE_EX);
     }
+
     public onHit(other: CProjectile) {
-        this.createSpawnEffect(Models.EFFECT_BLOOD_GREEN, 1, 5);
+        this.createSpawnEffect(Models.EFFECT_BALLISTA_IMPACT, 1, 5);
     }
 }
