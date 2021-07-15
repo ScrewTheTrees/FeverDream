@@ -39,27 +39,3 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     }
 }
 
-export abstract class CStepComponent implements IComponent {
-    public isFinished: boolean = false;
-    public owner: CUnit;
-    public abstract removeOnDeath: boolean;
-    public constructor(owner: CUnit) {
-        this.owner = owner;
-    }
-    abstract execute(): void;
-    abstract cleanup(): void;
-
-    resume(...args: any[]): any {
-        this.execute();
-    }
-    stop() {
-        this.cleanup();
-    }
-    private _timerDelay: number = 0.01;
-    get timerDelay(): number {
-        return this._timerDelay * GameConfig.getInstance().timeScale;
-    }
-    set timerDelay(delay: number) {
-        this._timerDelay = delay;
-    }
-}

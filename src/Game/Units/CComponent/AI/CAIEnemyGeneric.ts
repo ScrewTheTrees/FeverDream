@@ -1,16 +1,17 @@
-import {CCoroutineComponent} from "../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
 import {BootlegPathfinding} from "../../BootlegPathfinding";
 import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
+import {CStepComponent} from "../CStepComponent";
 
-export abstract class CAIEnemyGeneric extends CCoroutineComponent {
+export abstract class CAIEnemyGeneric extends CStepComponent {
     removeOnDeath = false;
     public target = Vector2.new(0, 0);
     public offset = Vector2.new(0, 0);
     public angle = Vector2.new(0, 0);
     public primaryTarget: CUnit | undefined;
     public projectileScale: number | undefined;
+    public startupTime: number = 2;
 
     public attackRange: number = 100;
     public attackDelay = 1;
@@ -19,11 +20,13 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
     public curving = this.getNewCurving();
     public angleUpdateConst = 1;
 
+    public hero: CUnit | undefined;
+
     public pathfinder: BootlegPathfinding = BootlegPathfinding.getInstance();
     public pathFindDistance: number = 1000;
     public pathFindFrequentDistance: number = 400;
     public pathFindUpdateDelay: number = GetRandomReal(2.3, 2.7);
-    public pathFindUpdateDelayTime: number = 0;
+    public pathFindUpdateDelayTime: number = 3;
     public pathFindCurrent: Vector2[] = [];
     public pathFindCurrentId: number = 0;
     public pathFindFollowing: boolean = false;
@@ -32,6 +35,14 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
         super(owner, 0.05);
         this.primaryTarget = primaryTarget;
         this.projectileScale = scale;
+    }
+
+    public hasStarted() {
+        if (this.startupTime > 0) {
+            this.startupTime -= this.timeScale;
+            return false;
+        }
+        return true;
     }
 
     public calculateTarget(hero: CUnit) {
@@ -43,19 +54,18 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
                 let to = hero.position.copy().addOffset(this.offset);
                 if (this.pathFindFollowing) to.polarProject(32, this.angle.getAngleDegrees());
                 else to.polarProject(32, this.owner.position.directionTo(hero.position));
-                this.pathfinder.find(from, to, (result) => {
-                    for (let v of this.pathFindCurrent) {
-                        v.recycle();
-                    }
-                    this.pathFindCurrent = result.path;
-                    this.pathFindCurrentId = 0;
-                    this.curving = GetRandomReal(-10, 10);
-                    this.pathFindFollowing = true;
-                });
+                for (let v of this.pathFindCurrent) {
+                    v.recycle();
+                }
+
+                this.pathFindCurrent = this.pathfinder.find(from, to).path;
+
+                this.pathFindCurrentId = 0;
+                this.curving = GetRandomReal(-10, 10);
+                this.pathFindFollowing = true;
                 this.pathFindUpdateDelayTime = 0;
                 from.recycle();
                 to.recycle();
-
             } else {
                 this.pathFindFollowing = false;
             }

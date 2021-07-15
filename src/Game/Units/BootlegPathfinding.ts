@@ -20,8 +20,8 @@ export class BootlegPathfinding {
         this.pathfinder.useCache = false;
 
     }
-    public find(from: Vector2, to: Vector2, callback: (result: PathfindResult) => any) {
-        this.pathfinder.findPathAsync(from, to, callback,2048);
+    public find(from: Vector2, to: Vector2) {
+        return this.pathfinder.findPath(from, to,512);
     }
 
     public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 32, maxLength: number = 2000) {

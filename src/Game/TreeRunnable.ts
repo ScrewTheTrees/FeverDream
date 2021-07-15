@@ -7,13 +7,13 @@ import {Logger} from "wc3-treelib/src/TreeLib/Logger";
  * Runs in a 0.01 interval
  */
 export abstract class TreeThread extends Entity {
-    private routine: LuaThread;
+    private routine: Function | undefined;
     private _isManual: boolean = false;
     public isFinished: boolean = false;
 
     protected constructor(timerDelay: number = 0.01, manual: boolean = false) {
         super(timerDelay);
-        this.routine = coroutine.create(() => this.runSecret());
+        this.routine = coroutine.wrap(() => this.runSecret());
         this.isManual = manual;
     }
 
@@ -27,7 +27,7 @@ export abstract class TreeThread extends Entity {
 
     public reset() {
         if (!this.isFinished) this.onEnd();
-        this.routine = coroutine.create(() => this.runSecret());
+        this.routine = coroutine.wrap(() => this.runSecret());
         this.isFinished = false;
         if (!this.isManual) this.add();
         this.onStart();
@@ -36,6 +36,7 @@ export abstract class TreeThread extends Entity {
         if (!this.isFinished) {
             this.onEnd();
             this.remove();
+            this.routine = undefined;
         }
         this.isFinished = true;
     }
@@ -49,7 +50,7 @@ export abstract class TreeThread extends Entity {
     }
     public resume(...args: any[]) {
         if (!this.isFinished) {
-            coroutine.resume(this.routine, ...args);
+            if (this.routine) this.routine();
             this.onUpdateStep();
         }
     }

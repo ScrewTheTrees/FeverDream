@@ -11,46 +11,42 @@ export class CAIEnemyMelee extends CAIEnemyGeneric {
     }
 
     execute(): void {
-        this.yieldTimed(2);
-        while (!this.owner.queueForRemoval) {
-            let hero = CUnit.unitPool.getRandomAliveEnemy(this.owner);
-            let curving = this.getNewCurving();
-            if (this.primaryTarget && !this.primaryTarget.isDead) {
-                hero = this.primaryTarget;
+        if (!this.hasStarted()) return;
+        if (!this.owner.queueForRemoval && this.hero != null && !this.hero.isDead && !this.owner.isDead) {
+            this.calculateTarget(this.hero);
+
+            this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
+
+            let ang = this.angle.getAngleDegrees() + this.curving;
+            this.doAngleReadjusting(this.hero, ang);
+
+            this.angle.updateTo(0, 0).polarProject(1, ang);
+
+            if (this.owner.position.distanceTo(this.target) > 10) {
+                this.owner.setAutoMoveData(this.angle);
             }
-            this.attackDelay = this.getNewAttackDelay();
+            if (this.owner.position.distanceTo(this.hero.position) < this.attackRange
+                && !this.owner.isDominated()
+            ) {
+                if (this.attackDelay <= 0 && !this.owner.isDisabledMovement()) {
+                    if (!this.owner.isDominated()) {
+                        this.onAttack(this.hero);
+                        this.attackDelay = this.getNewAttackDelay();
+                    }
+                }
+                if (this.attackDelay > 0) {
+                    this.attackDelay -= this.timeScale;
+                }
+            }
+        } else {
+            this.hero = CUnit.unitPool.getRandomAliveEnemy(this.owner);
+            if (this.primaryTarget && !this.primaryTarget.isDead) {
+                this.hero = this.primaryTarget;
+            }
             this.updateOffset();
-
-            while (hero != null && !hero.isDead && !this.owner.isDead) {
-                this.calculateTarget(hero);
-
-                this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
-
-                let ang = this.angle.getAngleDegrees() + curving;
-                this.doAngleReadjusting(hero, ang);
-
-                this.angle.updateTo(0, 0).polarProject(1, ang);
-
-                if (this.owner.position.distanceTo(this.target) > 10) {
-                    this.owner.setAutoMoveData(this.angle);
-                }
-                if (this.owner.position.distanceTo(hero.position) < this.attackRange
-                    && !this.owner.isDominated()
-                ) {
-                    if (this.attackDelay <= 0 && !this.owner.isDisabledMovement()) {
-                        if (!this.owner.isDominated()) {
-                            this.onAttack(hero);
-                            this.attackDelay = this.getNewAttackDelay();
-                        }
-                    }
-                    if (this.attackDelay > 0) {
-                        this.attackDelay -= this.timeScale;
-                    }
-                }
-                this.yield();
-            } //while
-            this.yield();
-        } //while
+            this.attackDelay = 1;
+            this.curving = this.getNewCurving();
+        }
     }
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyMeleeNormal(this.owner,

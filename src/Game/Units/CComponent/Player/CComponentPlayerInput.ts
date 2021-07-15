@@ -3,7 +3,6 @@ import {MouseCallback} from "wc3-treelib/src/TreeLib/InputManager/MouseCallback"
 import {CUnit} from "../../CUnit/CUnit";
 import {CComponentPlayerFire} from "../Attacks/CComponentPlayerFire";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {CStepComponent} from "../CCoroutineComponent";
 import {GameConfig} from "../../../../GameConfig";
 import {CUnitTypeEnemyMeleeFodderSkeleton} from "../../CUnit/Types/CUnitTypeEnemyMeleeFodderSkeleton";
 import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
@@ -14,6 +13,7 @@ import {PlayerStats} from "../../../PlayerManager/PlayerStats";
 import {Models} from "../../../Models";
 import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {CUnitTypeEnemyRangedFodderSkeleton} from "../../CUnit/Types/CUnitTypeEnemyRangedFodderSkeleton";
+import {CStepComponent} from "../CStepComponent";
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
@@ -68,9 +68,7 @@ export class CComponentPlayerInput extends CStepComponent {
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_J, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
-                BootlegPathfinding.getInstance().find(this.owner.position, this.mouse.getLastMouseCoordinate(this.owner.owner),
-                    (result) => {
-                        let path = result.path;
+                let path = BootlegPathfinding.getInstance().find(this.owner.position, this.mouse.getLastMouseCoordinate(this.owner.owner)).path
                         let things: effect[] = [];
                         for (let p of path) {
                             things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.x, p.y));
@@ -80,7 +78,6 @@ export class CComponentPlayerInput extends CStepComponent {
                                 DestroyEffect(p);
                             }
                         }, 10);
-                    });
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_M, (call) => {
