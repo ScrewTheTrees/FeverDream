@@ -14,6 +14,7 @@ import {Models} from "../../../Models";
 import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {CUnitTypeEnemyRangedFodderSkeleton} from "../../CUnit/Types/CUnitTypeEnemyRangedFodderSkeleton";
 import {CStepComponent} from "../CStepComponent";
+import {SceneService} from "../../../Scenes/SceneService";
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
@@ -69,6 +70,25 @@ export class CComponentPlayerInput extends CStepComponent {
         this.keyboard.addKeyboardPressCallback(OSKEY_J, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
                 let path = BootlegPathfinding.getInstance().find(this.owner.position, this.mouse.getLastMouseCoordinate(this.owner.owner)).path
+                let things: effect[] = [];
+                for (let p of path) {
+                    things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.x, p.y));
+                }
+                Delay.addDelay(() => {
+                    for (let p of things) {
+                        DestroyEffect(p);
+                    }
+                }, 10);
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_H, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                BootlegPathfinding.getInstance().findAsync(
+                    this.owner.position,
+                    this.mouse.getLastMouseCoordinate(this.owner.owner),
+                    (result) => {
+                        let path = result.path
+
                         let things: effect[] = [];
                         for (let p of path) {
                             things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.x, p.y));
@@ -78,12 +98,18 @@ export class CComponentPlayerInput extends CStepComponent {
                                 DestroyEffect(p);
                             }
                         }, 10);
+                    })
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_M, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
                 GameConfig.getInstance().timeScale += 0.1;
                 print(GameConfig.getInstance().timeScale);
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD0, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                SceneService.getInstance().finishScene();
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_N, (call) => {

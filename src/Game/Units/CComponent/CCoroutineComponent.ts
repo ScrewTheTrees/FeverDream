@@ -1,6 +1,6 @@
-import {TreeThread} from "../../TreeRunnable";
 import {CUnit} from "../CUnit/CUnit";
 import {GameConfig} from "../../../GameConfig";
+import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 
 export interface IComponent {
     isFinished: boolean;
@@ -34,7 +34,7 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     }
     protected yieldTimed(totalSeconds: number, ...args: any[]) {
         for (let i = 0; i < totalSeconds; i += this.timeScale) {
-            this.yield(...args);
+            this.yield();
         }
     }
 }

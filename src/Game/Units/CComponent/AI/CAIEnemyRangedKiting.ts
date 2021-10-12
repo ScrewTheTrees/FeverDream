@@ -1,59 +1,67 @@
 import {CUnit} from "../../CUnit/CUnit";
 import {CComponentEnemyRangedMagic} from "../Attacks/CComponentEnemyRangedMagic";
 import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
-import {CAIEnemyRangedNormal} from "./CAIEnemyRangedNormal";
+import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
 
-export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
+export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
+    public minRange: number = 500;
+    public maxRange: number = 900;
+
+    public towards = true;
+
     public constructor(owner: CUnit, primaryTarget?: CUnit) {
         super(owner);
         this.primaryTarget = primaryTarget;
-        this.minRange = 500;
-        this.maxRange = 900;
         this.attackRange = 1000;
         this.approachRange = 50;
     }
 
     execute(): void {
-        if (!this.hasStarted()) return;
-        if (!this.owner.queueForRemoval && this.hero != null && !this.hero.isDead && !this.owner.isDead) {
-            this.calculateTarget(this.hero);
 
-            this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
-
-            let ang = this.angle.getAngleDegrees() + this.curving;
-            this.doAngleReadjusting(this.hero, ang);
-
-            if (!this.towards) ang += 180;
-            this.angle.updateTo(0, 0).polarProject(1, ang);
-
-            if (this.owner.position.distanceTo(this.target) > 10) {
-                this.owner.setAutoMoveData(this.angle);
-            }
-            if (this.owner.position.distanceTo(this.hero.position) < this.attackRange
-                && !this.owner.isDominated()
-            ) {
-                if (this.attackDelay <= 0 && !this.owner.isDisabledMovement()) {
-                    if (!this.owner.isDominated()
-                        && !this.pathfinder.terrainRayCastIsHit(this.owner.position, this.hero.position)) {
-                        this.onAttack(this.hero);
-                        this.attackDelay = this.getNewAttackDelay();
-                        this.curving = this.getNewCurving();
-                    }
-                }
-                if (this.attackDelay > 0) {
-                    this.attackDelay -= this.timeScale;
-                }
-            }
-        } else {
-            this.hero = CUnit.unitPool.getRandomAliveEnemy(this.owner);
+        this.yieldTimed(2);
+        while (!this.owner.queueForRemoval) {
+            let hero = CUnit.unitPool.getRandomAliveEnemy(this.owner);
             if (this.primaryTarget && !this.primaryTarget.isDead) {
-                this.hero = this.primaryTarget;
+                hero = this.primaryTarget;
             }
             this.updateOffset();
             this.attackDelay = 1;
             this.curving = this.getNewCurving();
             this.towards = true;
-        }
+
+            while (hero != null && !hero.isDead && !this.owner.isDead) {
+                this.calculateTarget(hero);
+
+                this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
+
+                let ang = this.angle.getAngleDegrees() + this.curving;
+                this.doAngleReadjusting(hero, ang);
+
+                if (!this.towards) ang += 180;
+                this.angle.updateTo(0, 0).polarProject(1, ang);
+
+                if (this.owner.position.distanceTo(this.target) > 10) {
+                    this.owner.setAutoMoveData(this.angle);
+                }
+                if (this.owner.position.distanceTo(hero.position) < this.attackRange
+                    && !this.owner.isDominated()
+                ) {
+                    if (this.attackDelay <= 0 && !this.owner.isDisabledMovement()) {
+                        if (!this.owner.isDominated()
+                            && !this.pathfinder.terrainRayCastIsHit(this.owner.position, hero.position)) {
+                            this.onAttack(hero);
+                            this.attackDelay = this.getNewAttackDelay();
+                            this.curving = this.getNewCurving();
+                        }
+                    }
+                    if (this.attackDelay > 0) {
+                        this.attackDelay -= this.timeScale;
+                    }
+                }
+                this.yield();
+            } //while
+            this.yield();
+        } //while
     }
 
     public doAngleReadjusting(hero: CUnit, ang: number) {

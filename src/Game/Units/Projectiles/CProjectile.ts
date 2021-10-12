@@ -1,4 +1,4 @@
-import {TreeThread} from "../../TreeRunnable";
+import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {CUnit} from "../CUnit/CUnit";

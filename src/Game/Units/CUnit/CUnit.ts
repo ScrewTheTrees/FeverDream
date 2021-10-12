@@ -48,6 +48,7 @@ export abstract class CUnit extends Entity {
     public subComponents: IComponent[] = [];
 
     private checker = PointWalkableChecker.getInstance();
+    private thiccness: number = 16;
 
     public constructor(owner: player, model: string, position: Vector2) {
         super(0.01);
@@ -151,10 +152,10 @@ export abstract class CUnit extends Entity {
         );
 
         this.setFacing(next.getAngleDegrees());
-        if (this.checker.checkTerrainXY(this.position.x + next.x, this.position.y)) {
+        if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x + next.x, this.position.y, this.thiccness)) {
             this.position.x += next.x;
         }
-        if (this.checker.checkTerrainXY(this.position.x, this.position.y + next.y)) {
+        if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x, this.position.y + next.y, this.thiccness)) {
             this.position.y += next.y;
         }
     }

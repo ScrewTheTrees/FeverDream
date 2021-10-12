@@ -30,4 +30,10 @@ export class SceneService extends Entity {
         }
         this.previousHeroesAlive = heroesAlive;
     }
+
+    public finishScene() {
+        if (this._currentScene) {
+            this._currentScene.isFinished = true;
+        }
+    }
 }

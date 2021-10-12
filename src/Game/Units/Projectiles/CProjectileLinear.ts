@@ -26,7 +26,7 @@ export class CProjectileLinear extends CProjectile {
             if (this.travelTime <= 0) {
                 this.onDestroy();
             }
-            if (PointWalkableChecker.getInstance().checkTerrainXY(this.position.x, this.position.y)) {
+            if (PointWalkableChecker.getInstance().checkTerrainIsWalkableXY(this.position.x, this.position.y)) {
                 this.position.polarProject(this.speed * GameConfig.getInstance().timeScale,
                     this.targetOffset.getAngleDegrees()
                 );

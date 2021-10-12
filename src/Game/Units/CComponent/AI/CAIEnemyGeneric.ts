@@ -1,17 +1,16 @@
+import {CCoroutineComponent} from "../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
 import {BootlegPathfinding} from "../../BootlegPathfinding";
 import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
-import {CStepComponent} from "../CStepComponent";
 
-export abstract class CAIEnemyGeneric extends CStepComponent {
+export abstract class CAIEnemyGeneric extends CCoroutineComponent {
     removeOnDeath = false;
     public target = Vector2.new(0, 0);
     public offset = Vector2.new(0, 0);
     public angle = Vector2.new(0, 0);
     public primaryTarget: CUnit | undefined;
     public projectileScale: number | undefined;
-    public startupTime: number = 2;
 
     public attackRange: number = 100;
     public attackDelay = 1;
@@ -20,13 +19,12 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     public curving = this.getNewCurving();
     public angleUpdateConst = 1;
 
-    public hero: CUnit | undefined;
-
     public pathfinder: BootlegPathfinding = BootlegPathfinding.getInstance();
     public pathFindDistance: number = 1000;
-    public pathFindFrequentDistance: number = 400;
-    public pathFindUpdateDelay: number = GetRandomReal(2.3, 2.7);
-    public pathFindUpdateDelayTime: number = 3;
+    public pathFindFrequentDistance: number = 300;
+    public pathFindSlowDistance: number = 900;
+    public pathFindUpdateDelay: number = GetRandomReal(3, 4);
+    public pathFindUpdateDelayTime: number = 0;
     public pathFindCurrent: Vector2[] = [];
     public pathFindCurrentId: number = 0;
     public pathFindFollowing: boolean = false;
@@ -35,37 +33,42 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         super(owner, 0.05);
         this.primaryTarget = primaryTarget;
         this.projectileScale = scale;
-    }
 
-    public hasStarted() {
-        if (this.startupTime > 0) {
-            this.startupTime -= this.timeScale;
-            return false;
+        if (!this.primaryTarget) {
+            this.primaryTarget = CUnit.unitPool.getRandomAliveEnemy(this.owner);
         }
-        return true;
+        if (this.primaryTarget) {
+            this.calculateTarget(this.primaryTarget, true);
+        }
     }
 
-    public calculateTarget(hero: CUnit) {
+    public calculateTarget(hero: CUnit, ignoreDelay: boolean = false) {
         let dist = this.owner.position.distanceTo(hero.position);
+        let delay = this.pathFindUpdateDelay;
+        if (dist < this.pathFindFrequentDistance) delay /= 2;
+        else if (dist > this.pathFindSlowDistance) delay *= 2;
+
         this.pathFindUpdateDelayTime += this.timerDelay;
-        if (this.pathFindUpdateDelayTime >= (dist < this.pathFindFrequentDistance ? this.pathFindUpdateDelay / 2 : this.pathFindUpdateDelay)) {
-            if (dist > this.pathFindDistance || this.pathfinder.terrainRayCastIsHit(this.owner.position, hero.position)) {
+        if (ignoreDelay || this.pathFindUpdateDelayTime >= delay) {
+            if (dist > this.pathFindDistance || this.pathfinder.terrainRayCastIsHit(this.owner.position, hero.position, 16)) {
                 let from = this.owner.position.copy();
-                let to = hero.position.copy().addOffset(this.offset);
-                if (this.pathFindFollowing) to.polarProject(32, this.angle.getAngleDegrees());
-                else to.polarProject(32, this.owner.position.directionTo(hero.position));
-                for (let v of this.pathFindCurrent) {
-                    v.recycle();
-                }
+                let to = hero.position.copy();
 
-                this.pathFindCurrent = this.pathfinder.find(from, to).path;
+                this.pathFindUpdateDelayTime = -1337; //Wait for pathfinder promise.
 
-                this.pathFindCurrentId = 0;
-                this.curving = GetRandomReal(-10, 10);
-                this.pathFindFollowing = true;
-                this.pathFindUpdateDelayTime = 0;
+                this.pathfinder.findAsync(from, to, (result) => {
+                    for (let v of this.pathFindCurrent) {
+                        v.recycle();
+                    }
+                    this.pathFindCurrent = result.path;
+                    this.pathFindCurrentId = 1;
+                    this.curving = GetRandomReal(-10, 10);
+                    this.pathFindFollowing = true;
+                    this.pathFindUpdateDelayTime = 0;
+                });
                 from.recycle();
                 to.recycle();
+
             } else {
                 this.pathFindFollowing = false;
             }

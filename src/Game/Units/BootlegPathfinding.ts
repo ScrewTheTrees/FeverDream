@@ -16,12 +16,15 @@ export class BootlegPathfinding {
 
     private constructor() {
         this.pathfinder = new PathfinderGrid(31000, 31000, -31000, -31000,
-            64, true, true, true);
+            64, true, true, false);
         this.pathfinder.useCache = false;
 
     }
+    public findAsync(from: Vector2, to: Vector2, onFinish: (result: PathfindResult) => any) {
+        return this.pathfinder.findPathAsync(from, to,4096, 32, onFinish);
+    }
     public find(from: Vector2, to: Vector2) {
-        return this.pathfinder.findPath(from, to,512);
+        return this.pathfinder.findPath(from, to,4096);
     }
 
     public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 32, maxLength: number = 2000) {
@@ -31,7 +34,7 @@ export class BootlegPathfinding {
         let currentDist = 0;
         while (currentDist < finalDist) {
             start.polarProject(accuracy, finalAngle);
-            if (!PointWalkableChecker.getInstance().checkTerrainXY(start.x, start.y)) {
+            if (!PointWalkableChecker.getInstance().checkTerrainIsWalkableXY(start.x, start.y)) {
                 return currentDist;
             }
             currentDist += 32;

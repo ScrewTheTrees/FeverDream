@@ -1,4 +1,4 @@
-import {TreeThread} from "../../TreeRunnable";
+import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 import {GameConfig} from "../../../GameConfig";
 import {Arena} from "../Arenas/Arena";
 import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
