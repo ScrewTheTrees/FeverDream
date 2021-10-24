@@ -34,7 +34,7 @@ export class CComponentPlayerInput extends CStepComponent {
         this.mcb = this.mouse.addMousePressCallback(MOUSE_BUTTON_TYPE_RIGHT, (callback) => this.onFire(callback));
 
         this.keyboard.addKeyboardPressCallback(OSKEY_T, () => {
-            this.owner.isDead = true;
+            this.owner.killUnit();
         });
 
         this.keyboard.addKeyboardPressCallback(OSKEY_1, (call) => {
@@ -72,7 +72,7 @@ export class CComponentPlayerInput extends CStepComponent {
                 let path = BootlegPathfinding.getInstance().find(this.owner.position, this.mouse.getLastMouseCoordinate(this.owner.owner)).path
                 let things: effect[] = [];
                 for (let p of path) {
-                    things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.x, p.y));
+                    things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.point.x, p.point.y));
                 }
                 Delay.addDelay(() => {
                     for (let p of things) {
@@ -85,13 +85,23 @@ export class CComponentPlayerInput extends CStepComponent {
             if (call.triggeringPlayer == this.owner.owner) {
                 BootlegPathfinding.getInstance().findAsync(
                     this.owner.position,
-                    this.mouse.getLastMouseCoordinate(this.owner.owner),
+                    this.mouse.getLastMouseCoordinate(this.owner.owner)).then(
                     (result) => {
                         let path = result.path
 
                         let things: effect[] = [];
                         for (let p of path) {
-                            things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.x, p.y));
+                            things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.point.x, p.point.y));
+                        }
+                        Delay.addDelay(() => {
+                            for (let p of things) {
+                                DestroyEffect(p);
+                            }
+                        }, 10);
+
+                        //path = result.optimisePath();
+                        for (let p of path) {
+                            things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_ARROW, p.point.x, p.point.y));
                         }
                         Delay.addDelay(() => {
                             for (let p of things) {
@@ -110,6 +120,11 @@ export class CComponentPlayerInput extends CStepComponent {
         this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD0, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
                 SceneService.getInstance().finishScene();
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD9, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                BootlegPathfinding.getInstance().pathfinder.hardDebug = !BootlegPathfinding.getInstance().pathfinder.hardDebug;
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_N, (call) => {

@@ -4,8 +4,8 @@ import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
 
 export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
-    public minRange: number = 500;
-    public maxRange: number = 900;
+    public minRange: number = 400;
+    public maxRange: number = 800;
 
     public towards = true;
 
@@ -30,7 +30,7 @@ export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
             this.towards = true;
 
             while (hero != null && !hero.isDead && !this.owner.isDead) {
-                this.calculateTarget(hero);
+                this.calculateTargetPoint(hero);
 
                 this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
 
@@ -43,24 +43,10 @@ export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
                 if (this.owner.position.distanceTo(this.target) > 10) {
                     this.owner.setAutoMoveData(this.angle);
                 }
-                if (this.owner.position.distanceTo(hero.position) < this.attackRange
-                    && !this.owner.isDominated()
-                ) {
-                    if (this.attackDelay <= 0 && !this.owner.isDisabledMovement()) {
-                        if (!this.owner.isDominated()
-                            && !this.pathfinder.terrainRayCastIsHit(this.owner.position, hero.position)) {
-                            this.onAttack(hero);
-                            this.attackDelay = this.getNewAttackDelay();
-                            this.curving = this.getNewCurving();
-                        }
-                    }
-                    if (this.attackDelay > 0) {
-                        this.attackDelay -= this.timeScale;
-                    }
-                }
-                this.yield();
+                this.evaluateToAttack(hero);
+                this.aiYield();
             } //while
-            this.yield();
+            this.aiYield();
         } //while
     }
 
@@ -77,7 +63,7 @@ export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
             this.updateOffset();
             this.angleUpdateConst = 10;
         }
-        this.angleUpdateConst -= this.timeScale;
+        this.angleUpdateConst -= this.lastYieldDuration;
     }
 
     public getNewAttackDelay() {
@@ -85,8 +71,8 @@ export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
     }
     public getNewCurving() {
         return ChooseOne(
-            GetRandomReal(-60, -30),
-            GetRandomReal(30, 60),
+            GetRandomReal(-70, -40),
+            GetRandomReal(40, 70),
         );
     }
     public onAttack(hero: CUnit) {

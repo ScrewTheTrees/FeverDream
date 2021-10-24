@@ -8,11 +8,14 @@ import {CAIEnemyMeleeSlowLarge} from "../../CComponent/AI/CAIEnemyMeleeSlowLarge
 import {CProjectile} from "../../Projectiles/CProjectile";
 
 export class CUnitTypeEnemyMeleeMyrmidion extends CUnit {
+    public poise = 2;
+    public moveSpeed = 1.5;
+    public modelScale = 0.6;
+    public collisionSize = 32;
+
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_NAGA_MYRMIDION, position);
-        this.moveSpeed = 1.5;
-        this.modelScale = 0.6;
-        this.setMaxHealth(75);
+        this.setMaxHealth(85); //4 Hits at the start, should be 3 hits after 2 damage upgrades.
         this.addComponent(new CAIEnemyMeleeSlowLarge(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));
 

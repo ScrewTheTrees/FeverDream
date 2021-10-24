@@ -25,8 +25,8 @@ export abstract class CUnit extends Entity {
     public wantedAngle: number = 0;
     public isMoving: boolean = false;
     public wasMoving: boolean = false;
-    private moveTime: number = 0;
-    private maxMoveTime: number = 3;
+    protected moveTime: number = 0;
+    protected maxMoveTime: number = 25;
 
     public disableMovement: number = 0;
     public disableRotation: number = 0;
@@ -60,23 +60,6 @@ export abstract class CUnit extends Entity {
 
     }
     step() {
-        if (this.isDead && !this.wasDead) {
-            for (let i = this.subComponents.length - 1; i >= 0; i--) {
-                let comp = this.subComponents[i];
-                if (comp.removeOnDeath) {
-                    this.removeComponent(comp);
-                }
-            }
-            this.moveTime = 0;
-            this.isMoving = false;
-            this.wasMoving = false;
-            this.setAnimation(ANIM_TYPE_DEATH);
-            this.setVisualTimeScale(1);
-            CUnit.unitPool.update();
-        }
-        if (this.queueForRemoval) {
-            CUnit.unitPool.update();
-        }
         if (this.disableCommandUpdate <= 0) {
             this.updateCommands();
         }
@@ -93,12 +76,35 @@ export abstract class CUnit extends Entity {
                 if (this.isMoving != this.wasMoving) this.moveStateChanged();
                 this.wasMoving = this.isMoving;
             }
+            this.handleCrowding();
         }
         this.draw();
 
         this.wasDead = this.isDead;
     }
 
+    private crowdingOffsetUpdate = 0;
+    private crowdingOffset = Vector2.new(0, 0);
+    private handleCrowding() {
+        this.crowdingOffsetUpdate++;
+        if (this.crowdingOffsetUpdate >= 25) {
+            let other = CUnit.unitPool.getClosestAliveNotSelf(this);
+            if (other) {
+                this.crowdingOffset.updateTo(0, 0);
+
+                let intersectingThicc = (this.thiccness + other.thiccness) * 2;
+                let distance = this.position.distanceTo(other.position);
+                if (distance < intersectingThicc) {
+                    this.crowdingOffset.polarProject(1 - (distance / intersectingThicc), this.position.directionFrom(other.position));
+                    this.crowdingOffset.divideOffsetNum(0.5);
+                    this.crowdingOffset.divideOffsetNum(this.poise);
+                }
+            }
+            if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
+                this.moveRaw(this.crowdingOffset)
+            }
+        }
+    }
     public isDominated() {
         return this.dominated > 0;
     }
@@ -129,6 +135,7 @@ export abstract class CUnit extends Entity {
     public revive() {
         this.health = this.maxHealth;
         this.isDead = false;
+        CUnit.unitPool.update();
     }
     public teleport(to: Vector2) {
         this.position.x = to.x;
@@ -152,11 +159,14 @@ export abstract class CUnit extends Entity {
         );
 
         this.setFacing(next.getAngleDegrees());
-        if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x + next.x, this.position.y, this.thiccness)) {
-            this.position.x += next.x;
+        this.moveRaw(next);
+    }
+    public moveRaw(offset: Vector2) {
+        if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x + offset.x, this.position.y, this.thiccness)) {
+            this.position.x += offset.x;
         }
-        if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x, this.position.y + next.y, this.thiccness)) {
-            this.position.y += next.y;
+        if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x, this.position.y + offset.y, this.thiccness)) {
+            this.position.y += offset.y;
         }
     }
     public setFacing(angle: number) {
@@ -179,7 +189,7 @@ export abstract class CUnit extends Entity {
     }
     public dealDamage(damage: number, attacker: CUnit) {
         this.health -= damage;
-        this.clampHealth();
+        this.clampHealth(attacker);
     }
     public setMaxHealth(mh: number) {
         this.maxHealth = mh;
@@ -187,7 +197,7 @@ export abstract class CUnit extends Entity {
     }
     public dealHealing(damage: number, healer: CUnit) {
         this.health += damage;
-        this.clampHealth();
+        this.clampHealth(healer);
     }
     public createSpawnEffect(effectPath: string, scale: number = 1, duration: number = 2) {
         let eff = AddSpecialEffect(effectPath, this.position.x, this.position.y);
@@ -197,13 +207,30 @@ export abstract class CUnit extends Entity {
         }, duration);
         return eff;
     }
+    public killUnit() {
+        for (let i = this.subComponents.length - 1; i >= 0; i--) {
+            let comp = this.subComponents[i];
+            if (comp.removeOnDeath) {
+                this.removeComponent(comp);
+            }
+        }
+        this.health = 0;
+        this.moveTime = 0;
+        this.isDead = true;
+        this.isMoving = false;
+        this.wasMoving = false;
+        this.setAnimation(ANIM_TYPE_DEATH);
+        this.setVisualTimeScale(1);
+        CUnit.unitPool.update();
+    }
 
-    private clampHealth() {
+    private clampHealth(dealer?: CUnit) {
         if (this.health >= this.maxHealth) {
             this.health = this.maxHealth;
         }
         if (this.health <= 0) {
             this.isDead = true;
+            this.killUnit();
         }
     }
     private updateCommands() {

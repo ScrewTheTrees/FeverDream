@@ -20,11 +20,12 @@
    3) Combine both of the previous engagements into one.
 3) Open up the entire level by exploding all doors.
    1) Introduce some type of easter egg when exploring backwards.
-   2) This easter egg should provide some type of minor buff.
+   2) This easter egg should provide some type of minor buff, maybe higher attack rate.
 4) Once ready, players can head down a few ramps into the cave to start their descent.
 
 # Scene 3:
 1) Update checkpoint, there is no going back now.
+2) 
 
 # Chute
 

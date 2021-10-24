@@ -1,5 +1,6 @@
 import {PathfinderGrid} from "wc3-treelib/src/TreeLib/Pathfinder/PathfinderGrid";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
+import {TreePromise} from "wc3-treelib/src/TreeLib/Utility/TreePromise";
 import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
 import {PathfindResult} from "wc3-treelib/src/TreeLib/Pathfinder/PathfindResult";
 
@@ -16,18 +17,17 @@ export class BootlegPathfinding {
 
     private constructor() {
         this.pathfinder = new PathfinderGrid(31000, 31000, -31000, -31000,
-            64, true, true, false);
-        this.pathfinder.useCache = false;
+            64, true, true, true);
 
     }
-    public findAsync(from: Vector2, to: Vector2, onFinish: (result: PathfindResult) => any) {
-        return this.pathfinder.findPathAsync(from, to,4096, 32, onFinish);
+    public findAsync(from: Vector2, to: Vector2): TreePromise<PathfindResult> {
+        return this.pathfinder.findPathAsync(from, to,4096, 16);
     }
     public find(from: Vector2, to: Vector2) {
         return this.pathfinder.findPath(from, to,4096);
     }
 
-    public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 32, maxLength: number = 2000) {
+    public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 15, maxLength: number = 960) {
         let start = from.copy();
         let finalDist = math.min(from.distanceTo(to), maxLength);
         let finalAngle = from.directionTo(to);
@@ -35,9 +35,10 @@ export class BootlegPathfinding {
         while (currentDist < finalDist) {
             start.polarProject(accuracy, finalAngle);
             if (!PointWalkableChecker.getInstance().checkTerrainIsWalkableXY(start.x, start.y)) {
+                start.recycle();
                 return currentDist;
             }
-            currentDist += 32;
+            currentDist += accuracy;
         }
         start.recycle();
         return -1;

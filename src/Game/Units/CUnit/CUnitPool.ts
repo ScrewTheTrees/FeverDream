@@ -10,7 +10,7 @@ export class CUnitPool extends Entity {
     public deadPool: CUnit[] = [];
 
     constructor() {
-        super(1);
+        super(0.1);
     }
     step(): void {
         this.update();
@@ -49,23 +49,18 @@ export class CUnitPool extends Entity {
         } else {
             Quick.PushIfMissing(this.deadPool, u);
         }
-
-        this.update();
     }
     public removeUnit(u: CUnit) {
         Quick.Remove(this.alivePool, u);
         Quick.Remove(this.deadPool, u);
-
-        this.update();
     }
-    public getClosestAlive(pos: Vector2, filter?: (u: CUnit) => boolean) {
-        this.update();
-
+    public getClosestAliveToPosition(pos: Vector2, filter?: (u: CUnit) => boolean) {
         let distance = math.maxinteger;
         let candidate = undefined;
         for (let i = 0; i < this.alivePool.length; i++) {
             let candice = this.alivePool[i];
-            let dist = candice.position.distanceTo(pos);
+            if (candice.isDead) continue;
+            let dist = candice.position.distanceToSquared(pos);
             if (dist < distance) {
                 if (!filter || filter(candice)) {
                     candidate = candice;
@@ -75,12 +70,26 @@ export class CUnitPool extends Entity {
         }
         return candidate;
     }
-    public getAliveUnitsInRange(pos: Vector2, range: number, filter?: (filterUnit: CUnit) => boolean) {
-        this.update();
-
-        let units = [];
+    public getClosestAliveNotSelf(u: CUnit, filter?: (u: CUnit) => boolean) {
+        let distance = math.maxinteger;
+        let candidate = undefined;
+        for (let i = 0; i < this.alivePool.length; i++) {
+            let candice = this.alivePool[i];
+            if (candice == u || u.isDead) continue;
+            let dist = candice.position.distanceToSquared(u.position);
+            if (dist < distance) {
+                if (!filter || filter(candice)) {
+                    candidate = candice;
+                    distance = dist;
+                }
+            }
+        }
+        return candidate;
+    }
+    public getAliveUnitsInRange(pos: Vector2, range: number, filter?: (filterUnit: CUnit) => boolean, checkArr?: CUnit[]) {
+        let units = checkArr || [];
         for (let u of this.alivePool) {
-            if (u.position.distanceTo(pos) <= range) {
+            if (!u.isDead && u.position.distanceTo(pos) <= range) {
                 if (filter == null || filter(u)) {
                     units.push(u);
                 }
@@ -89,12 +98,10 @@ export class CUnitPool extends Entity {
         return units;
     }
     public getRandomAlive(filter?: (filterUnit: CUnit) => boolean) {
-        this.update();
-
         let arr = this.checkArr;
         for (let i = 0; i < this.alivePool.length; i++) {
             let u = this.alivePool[i];
-            if (filter == null || filter(u)) {
+            if (!u.isDead && (filter == null || filter(u))) {
                 arr.push(u);
             }
         }
@@ -106,7 +113,7 @@ export class CUnitPool extends Entity {
         return this.getAliveUnitsInRange(dude.position, range, (u) => IsPlayerEnemy(u.owner, dude.owner))
     }
     public getClosestAliveEnemy(pos: Vector2, unit: CUnit) {
-        return this.getClosestAlive(pos, (u) => IsPlayerEnemy(unit.owner, u.owner));
+        return this.getClosestAliveToPosition(pos, (u) => IsPlayerEnemy(unit.owner, u.owner));
     }
     public getRandomAliveEnemy(unit: CUnit) {
         return this.getRandomAlive((u) => IsPlayerEnemy(unit.owner, u.owner));

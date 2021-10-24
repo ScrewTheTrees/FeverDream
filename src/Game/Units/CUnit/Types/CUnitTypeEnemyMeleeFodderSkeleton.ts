@@ -8,11 +8,13 @@ import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
 import {CProjectile} from "../../Projectiles/CProjectile";
 
 export class CUnitTypeEnemyMeleeFodderSkeleton extends CUnit {
+    public poise = 0.5;
+    public moveSpeed = 2;
+    public modelScale = 0.8;
+    public collisionSize = 22;
+
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_SKELETON, position);
-        this.moveSpeed = 2;
-        this.modelScale = 0.8;
-        this.collisionSize = 22;
         this.setMaxHealth(1);
         this.addComponent(new CAIEnemyMelee(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));

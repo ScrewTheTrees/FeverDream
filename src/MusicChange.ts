@@ -1,16 +1,16 @@
 import {Entity} from "wc3-treelib/src/TreeLib/Entity";
 
 export class MusicChange extends Entity {
-    public constructor(public toTrack: string) {
-        super(0.04);
+    public constructor(public toTrack: string, public speed: number = 0.5) {
+        super(0.02);
     }
     public count = 60;
     public finishing = false;
     step(): void {
         if (!this.finishing) {
-            this.count--;
+            this.count -= this.speed;
         } else {
-            this.count++;
+            this.count += this.speed;
         }
         if (this.count <= 0) {
             this.count = 0;
@@ -23,7 +23,7 @@ export class MusicChange extends Entity {
             this.count = 64;
             this.remove();
         }
-        SetMusicVolume(this.count);
+        SetMusicVolume(Math.round(this.count));
     }
 
 }

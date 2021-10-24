@@ -35,11 +35,11 @@ export class Scene3 extends Scene {
         while (!this.hasEntered) {
             this.generateSpawnPerPlayerAsync(this.dummyArena, (owner, position, focusPlayer) => {
                 return new CUnitTypeEnemyMeleeFodderSkeleton(owner, position, focusPlayer);
-            }, 0.1, 4, gg_rct_Scene3EnemySpawner);
+            }, 0.1, 3, gg_rct_Scene3EnemySpawner);
             this.yieldTimed(0.5);
             this.generateSpawnPerPlayerAsync(this.dummyArena, (owner, position, focusPlayer) => {
                 return new CUnitTypeEnemyRangedFodderSkeleton(owner, position, focusPlayer);
-            }, 0.1, 4, gg_rct_Scene3EnemySpawner);
+            }, 0.1, 2, gg_rct_Scene3EnemySpawner);
             this.yieldTimed(30);
         }
     }

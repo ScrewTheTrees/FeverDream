@@ -17,7 +17,8 @@ export interface IComponent {
 export abstract class CCoroutineComponent extends TreeThread implements IComponent {
     public owner: CUnit;
     public abstract removeOnDeath: boolean;
-    public constructor(owner: CUnit, timerDelay: number = 0.01) {
+
+    protected constructor(owner: CUnit, timerDelay: number = 0.01) {
         super(timerDelay, true);
         this.owner = owner;
     }
@@ -29,13 +30,14 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
         this.cleanup();
         this.isFinished = true;
     }
-    public get timeScale(): number {
-        return this.timerDelay * GameConfig.getInstance().timeScale;
+    public get timeStep(): number {
+        return this._timerDelay * GameConfig.getInstance().timeScale;
     }
     protected yieldTimed(totalSeconds: number, ...args: any[]) {
-        for (let i = 0; i < totalSeconds; i += this.timeScale) {
+        for (let i = 0; i < totalSeconds; i += this.timeStep) {
             this.yield();
         }
+        this.lastYieldDuration = totalSeconds;
     }
 }
 

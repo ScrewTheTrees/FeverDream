@@ -8,10 +8,11 @@ import {CAIEnemyRangedKiting} from "../../CComponent/AI/CAIEnemyRangedKiting";
 import {CProjectile} from "../../Projectiles/CProjectile";
 
 export class CUnitTypeEnemyRangedSiren extends CUnit {
+    public moveSpeed = 1.5;
+    public modelScale = 0.6;
+
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_NAGA_SIREN, position);
-        this.moveSpeed = 1.5;
-        this.modelScale = 0.6;
         this.setMaxHealth(50);
         this.addComponent(new CAIEnemyRangedKiting(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));

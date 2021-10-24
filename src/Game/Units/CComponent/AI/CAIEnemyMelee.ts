@@ -23,7 +23,7 @@ export class CAIEnemyMelee extends CAIEnemyGeneric {
             this.updateOffset();
 
             while (hero != null && !hero.isDead && !this.owner.isDead) {
-                this.calculateTarget(hero);
+                this.calculateTargetPoint(hero);
 
                 this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
 
@@ -32,7 +32,7 @@ export class CAIEnemyMelee extends CAIEnemyGeneric {
 
                 this.angle.updateTo(0, 0).polarProject(1, ang);
 
-                if (this.owner.position.distanceTo(this.target) > 10) {
+                if (this.owner.position.distanceTo(this.target) > 0) {
                     this.owner.setAutoMoveData(this.angle);
                 }
                 if (this.owner.position.distanceTo(hero.position) < this.attackRange
@@ -45,12 +45,12 @@ export class CAIEnemyMelee extends CAIEnemyGeneric {
                         }
                     }
                     if (this.attackDelay > 0) {
-                        this.attackDelay -= this.timeScale;
+                        this.attackDelay -= this.lastYieldDuration;
                     }
                 }
-                this.yield();
+                this.aiYield();
             } //while
-            this.yield();
+            this.aiYield();
         } //while
     }
     public onAttack(hero: CUnit) {
