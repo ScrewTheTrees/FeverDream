@@ -23,7 +23,7 @@ export class CProjectileMeleeCircle extends CProjectile {
             this.targets = CUnit.unitPool.getAliveUnitsInRange(this.position, this.collisionSize + 128);
             for (let targ of this.targets) {
                 if (targ != this.owner) {
-                    if (this.position.distanceTo(targ.position) < this.collisionSize + targ.collisionSize) {
+                    if (this.position.distanceTo(targ.position) < this.collisionSize + targ.projectileCollisionSize) {
                         this.onHit(targ);
                     }
                 }

@@ -1,8 +1,10 @@
-import {PathfinderGrid} from "wc3-treelib/src/TreeLib/Pathfinder/PathfinderGrid";
+import {PathfinderRectangle} from "wc3-treelib/src/TreeLib/Pathfinder/PathfinderRectangle";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {TreePromise} from "wc3-treelib/src/TreeLib/Utility/TreePromise";
 import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
 import {PathfindResult} from "wc3-treelib/src/TreeLib/Pathfinder/PathfindResult";
+import { RectangleNode } from "wc3-treelib/src/TreeLib/Pathfinder/Node";
+import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 
 export class BootlegPathfinding {
     private static _instance: BootlegPathfinding;
@@ -13,18 +15,18 @@ export class BootlegPathfinding {
         return this._instance;
     }
 
-    public pathfinder: PathfinderGrid;
+    public pathfinder: PathfinderRectangle;
 
     private constructor() {
-        this.pathfinder = new PathfinderGrid(31000, 31000, -31000, -31000,
+        this.pathfinder = new PathfinderRectangle(31000, 31000, -31000, -31000,
             64, true, true, true);
 
     }
-    public findAsync(from: Vector2, to: Vector2): TreePromise<PathfindResult> {
-        return this.pathfinder.findPathAsync(from, to,4096, 16);
+    public findAsync(from: Vector2, to: Vector2): TreePromise<PathfindResult<RectangleNode>, TreeThread> {
+        return this.pathfinder.findPathAsync(from, to,1024, 8);
     }
     public find(from: Vector2, to: Vector2) {
-        return this.pathfinder.findPath(from, to,4096);
+        return this.pathfinder.findPath(from, to,1024);
     }
 
     public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 15, maxLength: number = 960) {

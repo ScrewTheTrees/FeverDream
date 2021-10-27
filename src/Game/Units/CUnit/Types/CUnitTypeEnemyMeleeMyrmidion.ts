@@ -11,7 +11,7 @@ export class CUnitTypeEnemyMeleeMyrmidion extends CUnit {
     public poise = 2;
     public moveSpeed = 1.5;
     public modelScale = 0.6;
-    public collisionSize = 32;
+    public projectileCollisionSize = 32;
 
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_NAGA_MYRMIDION, position);

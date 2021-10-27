@@ -11,7 +11,7 @@ export class CUnitTypeEnemyMeleeFodderSkeleton extends CUnit {
     public poise = 0.5;
     public moveSpeed = 2;
     public modelScale = 0.8;
-    public collisionSize = 22;
+    public projectileCollisionSize = 22;
 
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_SKELETON, position);

@@ -12,7 +12,7 @@ export class CAIEnemyMelee extends CAIEnemyGeneric {
 
     execute(): void {
 
-        this.yieldTimed(2);
+        this.yieldTimed(3);
         while (!this.owner.queueForRemoval) {
             let hero = CUnit.unitPool.getRandomAliveEnemy(this.owner);
             let curving = this.getNewCurving();

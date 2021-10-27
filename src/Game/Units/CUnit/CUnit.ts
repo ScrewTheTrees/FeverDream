@@ -38,7 +38,9 @@ export abstract class CUnit extends Entity {
     public maxHealth: number = 100;
     private wasDead: boolean = false;
     public isDead: boolean = false;
-    public collisionSize: number = 32;
+    public projectileCollisionSize: number = 32;
+    public thiccness: number = 16;
+
     public poise: number = 1;
 
     public moveOffset: Vector2 = Vector2.new(0, 0);
@@ -48,7 +50,6 @@ export abstract class CUnit extends Entity {
     public subComponents: IComponent[] = [];
 
     private checker = PointWalkableChecker.getInstance();
-    private thiccness: number = 16;
 
     public constructor(owner: player, model: string, position: Vector2) {
         super(0.01);
@@ -154,12 +155,15 @@ export abstract class CUnit extends Entity {
         if (offset.x == 0 && offset.y == 0) return;
 
         let next = Vector2.new(0, 0).polarProject(
-            (this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale,
+            this.getActualMoveSpeed(),
             offset.getAngleDegrees(),
         );
 
         this.setFacing(next.getAngleDegrees());
         this.moveRaw(next);
+    }
+    getActualMoveSpeed() {
+        return (this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale;
     }
     public moveRaw(offset: Vector2) {
         if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x + offset.x, this.position.y, this.thiccness)) {

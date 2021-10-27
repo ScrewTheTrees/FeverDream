@@ -15,6 +15,8 @@ import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {CUnitTypeEnemyRangedFodderSkeleton} from "../../CUnit/Types/CUnitTypeEnemyRangedFodderSkeleton";
 import {CStepComponent} from "../CStepComponent";
 import {SceneService} from "../../../Scenes/SceneService";
+import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
+import {LightningEffects} from "wc3-treelib/src/TreeLib/Structs/LightningEffects";
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
@@ -87,10 +89,9 @@ export class CComponentPlayerInput extends CStepComponent {
                     this.owner.position,
                     this.mouse.getLastMouseCoordinate(this.owner.owner)).then(
                     (result) => {
-                        let path = result.path
 
                         let things: effect[] = [];
-                        for (let p of path) {
+                        for (let p of result.path) {
                             things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.point.x, p.point.y));
                         }
                         Delay.addDelay(() => {
@@ -99,9 +100,31 @@ export class CComponentPlayerInput extends CStepComponent {
                             }
                         }, 10);
 
+                        let asd = function (pos: Vector2, index: number, offsetTowardsNextNode: boolean) {
+                            //let previousNode = result.getNode(index - 1) || result.getNode(index);
+                            let node = result.getNode(index);
+
+                            if (!offsetTowardsNextNode) {
+                                return node.getClosestPointWithBoundary(pos, 16);
+                            }
+                            let nextNode = result.getNode(index + 1);
+                            if (nextNode == null) return node.point.copy();
+
+                            let nextNodePos = nextNode.getClosestPointWithBoundary(pos, 16);
+                            let currNodePos = node.getClosestPointWithBoundary(nextNodePos, 16)
+                            nextNodePos.recycle();
+                            return currNodePos;
+                        }
+
                         //path = result.optimisePath();
-                        for (let p of path) {
-                            things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_ARROW, p.point.x, p.point.y));
+                        for (let i = 0; i < result.path.length; i++) {
+                            let pp = result.getNode(i - 1) ? result.getNode(i - 1).point : this.owner.position;
+                            let point = asd(pp, i, false);
+                            things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_ARROW, point.x, point.y));
+                            let point2 = asd(point, i, true);
+                            things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_ARROW, point2.x, point2.y));
+                            point.recycle();
+                            point2.recycle();
                         }
                         Delay.addDelay(() => {
                             for (let p of things) {
@@ -132,6 +155,40 @@ export class CComponentPlayerInput extends CStepComponent {
                 GameConfig.getInstance().timeScale -= 0.1;
                 if (GameConfig.getInstance().timeScale < 0) GameConfig.getInstance().timeScale = 0;
                 print(GameConfig.getInstance().timeScale);
+            }
+        });
+
+        TreeThread.RunUntilDone(() => {
+            let top = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
+            let bottom = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
+            let left = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
+            let right = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
+            let center = AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, 0, 0);
+            let toNeighbors: effect[] = [];
+
+            while (true) {
+                let mouse = this.mouse.getLastMouseCoordinate(Player(0));
+                let node = BootlegPathfinding.getInstance().pathfinder.getGridElementByCoordinate(mouse.x, mouse.y);
+                if (node != null) {
+                    MoveLightning(top, false, node.boundary.xMin, node.boundary.yMax, node.boundary.xMax, node.boundary.yMax);
+                    MoveLightning(bottom, false, node.boundary.xMin, node.boundary.yMin, node.boundary.xMax, node.boundary.yMin);
+                    MoveLightning(left, false, node.boundary.xMin, node.boundary.yMin, node.boundary.xMin, node.boundary.yMax);
+                    MoveLightning(right, false, node.boundary.xMax, node.boundary.yMin, node.boundary.xMax, node.boundary.yMax);
+                    BlzSetSpecialEffectPosition(center, node.point.x, node.point.y, node.point.getZ());
+                    for (let f of toNeighbors) {
+                        BlzSetSpecialEffectPosition(f, 0, 0, 0);
+                    }
+                    for (let i = 0; i < node.neighbors.length; i++) {
+                        let neighbor = node.neighbors[i];
+                        let gfx = toNeighbors[i];
+                        if (gfx == null) {
+                            gfx = AddSpecialEffect(Models.PROJECTILE_PLAYER_FIRE, 0, 0);
+                            toNeighbors[i] = gfx;
+                        }
+                        BlzSetSpecialEffectPosition(gfx, neighbor.point.x, neighbor.point.y, neighbor.point.getZ());
+                    }
+                }
+                coroutine.yield();
             }
         });
     }

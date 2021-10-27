@@ -1,7 +1,7 @@
 # In general
 * Always make enemy spawning points distinct in some way.
 
-# Scene 1:
+# Scene 1 (Tutorial 1):
 
 1) Introduction stage show boat that got you there, show movement keys.
 2) Walkable path, demonstrate that you can only walk on walkable terrain and how wonky cliffs are.
@@ -12,7 +12,7 @@
     3) When 1\*players enemies remaining, spawn in 6 more enemies, but introduce another spawning zone.
 5) After killing enemies open gate to the next Scene. (Same section still.)
 
-# Scene 2:
+# Scene 2 (Tutorial 2):
 1) Update checkpoint.
 2) When approaching exit, start next more advanced combat room.
    1) Spawn 2\*Player of tanky slow melee enemies.
