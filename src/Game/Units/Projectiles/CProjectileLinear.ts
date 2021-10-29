@@ -4,6 +4,7 @@ import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkabl
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {CProjectile} from "./CProjectile";
 import {GameConfig} from "../../../GameConfig";
+import {BootlegCollisionMap} from "../BootlegCollisionMap";
 
 export class CProjectileLinear extends CProjectile {
     public effect: effect;
@@ -20,13 +21,14 @@ export class CProjectileLinear extends CProjectile {
         this.cliffHeight = GetTerrainCliffLevel(this.position.x, this.position.y);
     }
 
+    private collisionMap = BootlegCollisionMap.getInstance();
     execute(): void {
         while (this.durability > 0) {
             this.travelTime -= this.timerDelay;
             if (this.travelTime <= 0) {
                 this.onDestroy();
             }
-            if (PointWalkableChecker.getInstance().checkTerrainIsWalkableXY(this.position.x, this.position.y)) {
+            if (this.collisionMap.getCollisionAtCoordinate(this.position.x, this.position.y)) {
                 this.position.polarProject(this.speed * GameConfig.getInstance().timeScale,
                     this.targetOffset.getAngleDegrees()
                 );

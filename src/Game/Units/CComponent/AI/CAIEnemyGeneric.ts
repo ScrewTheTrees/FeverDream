@@ -8,6 +8,7 @@ import {PathfindResult} from "wc3-treelib/src/TreeLib/Pathfinder/PathfindResult"
 import {RectangleNode} from "wc3-treelib/src/TreeLib/Pathfinder/Node";
 import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 import {Models} from "../../../Models";
+import {BootlegCollisionMap} from "../../BootlegCollisionMap";
 
 export abstract class CAIEnemyGeneric extends CCoroutineComponent {
     removeOnDeath = false;
@@ -26,6 +27,7 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
 
 
     public pathfinder: BootlegPathfinding = BootlegPathfinding.getInstance();
+    public collisionMap: BootlegCollisionMap = BootlegCollisionMap.getInstance();
     public pathFindDistance: number = 900;
     public pathFindFrequentDistance: number = 500;
     public pathFindSlowDistance: number = 1400;
@@ -53,16 +55,18 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
             this.updatePathfinderData(this.primaryTarget);
         }
 
-        TreeThread.RunUntilDone(() => {
-            let gfx = AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, 0, 0);
-            while (!this.owner.isDead) {
-                BlzSetSpecialEffectX(gfx, this.target.x);
-                BlzSetSpecialEffectY(gfx, this.target.y);
-                BlzSetSpecialEffectZ(gfx, this.target.getZ());
-                coroutine.yield();
-            }
-            DestroyEffect(gfx);
-        })
+        if (false) {
+            TreeThread.RunUntilDone(() => {
+                let gfx = AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, 0, 0);
+                while (!this.owner.isDead) {
+                    BlzSetSpecialEffectX(gfx, this.target.x);
+                    BlzSetSpecialEffectY(gfx, this.target.y);
+                    BlzSetSpecialEffectZ(gfx, this.target.getZ());
+                    coroutine.yield();
+                }
+                DestroyEffect(gfx);
+            });
+        }
     }
 
     public calculateTargetPoint(hero: CUnit, ignoreDelay: boolean = false) {
@@ -75,7 +79,7 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
         this.pathFindUpdateDelayTime += this.lastYieldDuration;
         if (ignoreDelay || this.pathFindPromise.isFinished) {
             if (ignoreDelay || this.pathFindUpdateDelayTime >= delay) {
-                if (dist > this.pathFindDistance || this.pathfinder.terrainRayCastIsHit(this.owner.position, hero.position)) {
+                if (dist > this.pathFindDistance || this.collisionMap.terrainRayCastIsHit(this.owner.position, hero.position)) {
                     this.updatePathfinderData(hero);
                 } else {
                     this.pathFindFollowing = false;
@@ -119,13 +123,13 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
         let node = this.pathFindCurrent.getNode(index);
         if (node == null) return hero.position.copy();
         if (!offsetTowardsNextNode) {
-            return node.getClosestPointWithBoundary(this.owner.position, this.owner.thiccness);
+            return node.getClosestPointWithBoundary(this.owner.position, this.owner.thiccness * 0.2);
         }
         let nextNode = this.pathFindCurrent.getNode(index + 1);
         if (nextNode == null) return hero.position.copy();
 
-        let nextNodePos = nextNode.getClosestPointWithBoundary(this.owner.position, this.owner.thiccness);
-        let currNodePos = node.getClosestPointWithBoundary(nextNodePos, this.owner.thiccness);
+        let nextNodePos = nextNode.getClosestPointWithBoundary(this.owner.position, this.owner.thiccness * 0.2);
+        let currNodePos = node.getClosestPointWithBoundary(nextNodePos, this.owner.thiccness * 0.2);
         nextNodePos.recycle();
         return currNodePos;
     }
@@ -140,7 +144,7 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
             this.pathFindCurrent = result;
             this.pathFindCurrentId = 0;
             this.pathFindOffsetTowardsNextNode = false;
-            this.curving = this.getPathfindCurving();
+            this.curving = this.getNewCurving();
             this.pathFindFollowing = true;
             this.pathFindUpdateDelayTime = 0;
             this.pathFindCheckDist = from.distanceTo(to) - 256;
@@ -155,7 +159,7 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
         ) {
             if (this.attackDelay <= 0 && !this.owner.isDisabledMovement()) {
                 if (!this.owner.isDominated()
-                    && !this.pathfinder.terrainRayCastIsHit(this.owner.position, hero.position)) {
+                    && !this.collisionMap.terrainRayCastIsHit(this.owner.position, hero.position)) {
                     this.onAttack(hero);
                     this.attackDelay = this.getNewAttackDelay();
                     this.curving = this.getNewCurving();
@@ -186,6 +190,7 @@ export abstract class CAIEnemyGeneric extends CCoroutineComponent {
         return GetRandomReal(0.2, 0.8);
     }
     public getNewCurving() {
+        if (this.pathFindFollowing) return this.getPathfindCurving();
         return GetRandomReal(-20, 20);
     }
 

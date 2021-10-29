@@ -9,6 +9,7 @@ import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {Models} from "../../Models";
 import {CProjectile} from "../Projectiles/CProjectile";
 import {GameConfig} from "../../../GameConfig";
+import {BootlegCollisionMap} from "../BootlegCollisionMap";
 
 export abstract class CUnit extends Entity {
     public static unitPool: CUnitPool = new CUnitPool();
@@ -44,15 +45,15 @@ export abstract class CUnit extends Entity {
     public poise: number = 1;
 
     public moveOffset: Vector2 = Vector2.new(0, 0);
-    public moveSpeed = 3;
+    public moveSpeed = 6;
     public moveSpeedBonus = 0;
 
     public subComponents: IComponent[] = [];
 
-    private checker = PointWalkableChecker.getInstance();
+    private collision = BootlegCollisionMap.getInstance();
 
     public constructor(owner: player, model: string, position: Vector2) {
-        super(0.01);
+        super(0.02);
         CUnit.unitPool.addUnit(this);
         this.owner = owner;
         this.effect = AddSpecialEffect(model, position.x, position.y);
@@ -88,7 +89,7 @@ export abstract class CUnit extends Entity {
     private crowdingOffset = Vector2.new(0, 0);
     private handleCrowding() {
         this.crowdingOffsetUpdate++;
-        if (this.crowdingOffsetUpdate >= 25) {
+        if (this.crowdingOffsetUpdate >= 10) {
             let other = CUnit.unitPool.getClosestAliveNotSelf(this);
             if (other) {
                 this.crowdingOffset.updateTo(0, 0);
@@ -97,7 +98,7 @@ export abstract class CUnit extends Entity {
                 let distance = this.position.distanceTo(other.position);
                 if (distance < intersectingThicc) {
                     this.crowdingOffset.polarProject(1 - (distance / intersectingThicc), this.position.directionFrom(other.position));
-                    this.crowdingOffset.divideOffsetNum(0.5);
+                    this.crowdingOffset.divideOffsetNum(0.25);
                     this.crowdingOffset.divideOffsetNum(this.poise);
                 }
             }
@@ -166,10 +167,10 @@ export abstract class CUnit extends Entity {
         return (this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale;
     }
     public moveRaw(offset: Vector2) {
-        if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x + offset.x, this.position.y, this.thiccness)) {
+        if (this.collision.getCollisionCircle(this.position.x + offset.x, this.position.y, this.thiccness)) {
             this.position.x += offset.x;
         }
-        if (this.checker.checkTerrainIsWalkableCircleXY(this.position.x, this.position.y + offset.y, this.thiccness)) {
+        if (this.collision.getCollisionCircle(this.position.x, this.position.y + offset.y, this.thiccness)) {
             this.position.y += offset.y;
         }
     }

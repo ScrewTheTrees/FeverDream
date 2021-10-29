@@ -9,7 +9,8 @@ import {CProjectile} from "../../Projectiles/CProjectile";
 
 export class CUnitTypeEnemyMeleeMyrmidion extends CUnit {
     public poise = 2;
-    public moveSpeed = 1.5;
+    public thiccness = 22;
+    public moveSpeed = 3;
     public modelScale = 0.6;
     public projectileCollisionSize = 32;
 

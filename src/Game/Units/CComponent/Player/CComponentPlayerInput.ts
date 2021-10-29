@@ -145,11 +145,6 @@ export class CComponentPlayerInput extends CStepComponent {
                 SceneService.getInstance().finishScene();
             }
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD9, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
-                BootlegPathfinding.getInstance().pathfinder.hardDebug = !BootlegPathfinding.getInstance().pathfinder.hardDebug;
-            }
-        });
         this.keyboard.addKeyboardPressCallback(OSKEY_N, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
                 GameConfig.getInstance().timeScale -= 0.1;
@@ -158,39 +153,41 @@ export class CComponentPlayerInput extends CStepComponent {
             }
         });
 
-        TreeThread.RunUntilDone(() => {
-            let top = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
-            let bottom = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
-            let left = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
-            let right = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
-            let center = AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, 0, 0);
-            let toNeighbors: effect[] = [];
+        if (this.owner.owner == Player(0)) {
+            TreeThread.RunUntilDone(() => {
+                let top = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
+                let bottom = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
+                let left = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
+                let right = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
+                let center = AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, 0, 0);
+                let toNeighbors: effect[] = [];
 
-            while (true) {
-                let mouse = this.mouse.getLastMouseCoordinate(Player(0));
-                let node = BootlegPathfinding.getInstance().pathfinder.getGridElementByCoordinate(mouse.x, mouse.y);
-                if (node != null) {
-                    MoveLightning(top, false, node.boundary.xMin, node.boundary.yMax, node.boundary.xMax, node.boundary.yMax);
-                    MoveLightning(bottom, false, node.boundary.xMin, node.boundary.yMin, node.boundary.xMax, node.boundary.yMin);
-                    MoveLightning(left, false, node.boundary.xMin, node.boundary.yMin, node.boundary.xMin, node.boundary.yMax);
-                    MoveLightning(right, false, node.boundary.xMax, node.boundary.yMin, node.boundary.xMax, node.boundary.yMax);
-                    BlzSetSpecialEffectPosition(center, node.point.x, node.point.y, node.point.getZ());
-                    for (let f of toNeighbors) {
-                        BlzSetSpecialEffectPosition(f, 0, 0, 0);
-                    }
-                    for (let i = 0; i < node.neighbors.length; i++) {
-                        let neighbor = node.neighbors[i];
-                        let gfx = toNeighbors[i];
-                        if (gfx == null) {
-                            gfx = AddSpecialEffect(Models.PROJECTILE_PLAYER_FIRE, 0, 0);
-                            toNeighbors[i] = gfx;
+                while (true) {
+                    let mouse = this.mouse.getLastMouseCoordinate(Player(0));
+                    let node = BootlegPathfinding.getInstance().pathfinder.getGridElementByCoordinate(mouse.x, mouse.y);
+                    if (node != null) {
+                        MoveLightning(top, false, node.boundary.xMin, node.boundary.yMax, node.boundary.xMax, node.boundary.yMax);
+                        MoveLightning(bottom, false, node.boundary.xMin, node.boundary.yMin, node.boundary.xMax, node.boundary.yMin);
+                        MoveLightning(left, false, node.boundary.xMin, node.boundary.yMin, node.boundary.xMin, node.boundary.yMax);
+                        MoveLightning(right, false, node.boundary.xMax, node.boundary.yMin, node.boundary.xMax, node.boundary.yMax);
+                        BlzSetSpecialEffectPosition(center, node.point.x, node.point.y, node.point.getZ());
+                        for (let f of toNeighbors) {
+                            BlzSetSpecialEffectPosition(f, 0, 0, 0);
                         }
-                        BlzSetSpecialEffectPosition(gfx, neighbor.point.x, neighbor.point.y, neighbor.point.getZ());
+                        for (let i = 0; i < node.neighbors.length; i++) {
+                            let neighbor = node.neighbors[i];
+                            let gfx = toNeighbors[i];
+                            if (gfx == null) {
+                                gfx = AddSpecialEffect(Models.PROJECTILE_PLAYER_FIRE, 0, 0);
+                                toNeighbors[i] = gfx;
+                            }
+                            BlzSetSpecialEffectPosition(gfx, neighbor.point.x, neighbor.point.y, neighbor.point.getZ());
+                        }
                     }
+                    coroutine.yield();
                 }
-                coroutine.yield();
-            }
-        });
+            });
+        }
     }
     cleanup() {
         this.mouse.removeMouseCallback(this.mcb);

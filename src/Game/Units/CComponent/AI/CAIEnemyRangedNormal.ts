@@ -63,7 +63,7 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
             this.curving = this.getNewCurving();
         }
         if (this.moveUpdateConst <= 0) {
-            this.move = (this.pathfinder.terrainRayCastIsHit(this.owner.position, hero.position, undefined, this.attackRange + 32)
+            this.move = (this.collisionMap.terrainRayCastIsHit(this.owner.position, hero.position, undefined, this.attackRange + 32)
                 || this.owner.position.distanceTo(hero.position) < this.minRange
                 || this.owner.position.distanceTo(hero.position) > this.maxRange);
             this.moveUpdateConst = 2;

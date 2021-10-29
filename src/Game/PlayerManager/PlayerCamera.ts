@@ -21,7 +21,7 @@ export class PlayerCamera extends Entity {
         return this._instance;
     }
     private constructor() {
-        super(0.01);
+        super(0.02);
     }
 
     public cameraMode: CameraMode = CameraMode.HERO;

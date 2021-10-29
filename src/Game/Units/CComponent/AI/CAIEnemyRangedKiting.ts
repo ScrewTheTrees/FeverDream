@@ -70,6 +70,7 @@ export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
         return GetRandomReal(2, 4);
     }
     public getNewCurving() {
+        if (this.pathFindFollowing) return this.getPathfindCurving();
         return ChooseOne(
             GetRandomReal(-70, -40),
             GetRandomReal(40, 70),
