@@ -1,5 +1,5 @@
 import {CUnit} from "../../CUnit/CUnit";
-import {CComponentEnemyRangedMagic} from "../Attacks/CComponentEnemyRangedMagic";
+import {CComponentEnemyRangedMagic} from "../Actions/Enemy/CComponentEnemyRangedMagic";
 import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {CAIEnemyRangedNormal} from "./CAIEnemyRangedNormal";
 

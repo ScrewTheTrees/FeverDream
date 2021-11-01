@@ -1,5 +1,5 @@
 import {CUnit} from "../../CUnit/CUnit";
-import {CComponentEnemyMeleeNormal} from "../Attacks/CComponentEnemyMeleeNormal";
+import {CComponentEnemyMeleeNormal} from "../Actions/Enemy/CComponentEnemyMeleeNormal";
 import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
 
 export class CAIEnemyMelee extends CAIEnemyGeneric {

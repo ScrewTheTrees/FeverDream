@@ -1,7 +1,7 @@
 import {InputManager} from "wc3-treelib/src/TreeLib/InputManager/InputManager";
 import {MouseCallback} from "wc3-treelib/src/TreeLib/InputManager/MouseCallback";
 import {CUnit} from "../../CUnit/CUnit";
-import {CComponentPlayerFire} from "../Attacks/CComponentPlayerFire";
+import {CComponentPlayerFire} from "../Actions/Player/CComponentPlayerFire";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {GameConfig} from "../../../../GameConfig";
 import {CUnitTypeEnemyMeleeFodderSkeleton} from "../../CUnit/Types/CUnitTypeEnemyMeleeFodderSkeleton";
@@ -17,7 +17,7 @@ import {CStepComponent} from "../CStepComponent";
 import {SceneService} from "../../../Scenes/SceneService";
 import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 import {LightningEffects} from "wc3-treelib/src/TreeLib/Structs/LightningEffects";
-import {CComponentPlayerDodge} from "../Attacks/CComponentPlayerDodge";
+import {CComponentPlayerDodge} from "../Actions/Player/CComponentPlayerDodge";
 import {KeyCallback} from "wc3-treelib/src/TreeLib/InputManager/KeyCallback";
 import {PlayerHeroes} from "../../../PlayerManager/PlayerHeroes";
 

@@ -1,7 +1,7 @@
-import {CCoroutineComponent} from "../CCoroutineComponent";
+import {CCoroutineComponent} from "../../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {CUnit} from "../../CUnit/CUnit";
-import {CProjectile} from "../../Projectiles/CProjectile";
+import {CUnit} from "../../../CUnit/CUnit";
+import {CProjectile} from "../../../Projectiles/CProjectile";
 
 export abstract class CComponentGenericEnemyAttack extends CCoroutineComponent {
     public targetOffset: Vector2;

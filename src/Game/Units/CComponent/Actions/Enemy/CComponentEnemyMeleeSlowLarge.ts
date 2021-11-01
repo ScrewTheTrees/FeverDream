@@ -1,4 +1,4 @@
-import {CProjectileEnemyMeleeLarge} from "../../Projectiles/Enemy/CProjectileEnemyMeleeLarge";
+import {CProjectileEnemyMeleeLarge} from "../../../Projectiles/Enemy/CProjectileEnemyMeleeLarge";
 import {CComponentGenericEnemyAttack} from "./CComponentGenericEnemyAttack";
 
 export class CComponentEnemyMeleeSlowLarge extends CComponentGenericEnemyAttack {

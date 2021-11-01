@@ -1,8 +1,8 @@
-import {CCoroutineComponent} from "../CCoroutineComponent";
+import {CCoroutineComponent} from "../../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {CUnit} from "../../CUnit/CUnit";
-import {PlayerStats} from "../../../PlayerManager/PlayerStats";
-import {Models} from "../../../Models";
+import {CUnit} from "../../../CUnit/CUnit";
+import {PlayerStats} from "../../../../PlayerManager/PlayerStats";
+import {Models} from "../../../../Models";
 
 export class CComponentPlayerDodge extends CCoroutineComponent {
     removeOnDeath = true;

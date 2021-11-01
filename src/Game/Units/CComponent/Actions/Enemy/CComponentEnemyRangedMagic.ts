@@ -1,4 +1,4 @@
-import {CProjectileEnemyRangedAttackMagic} from "../../Projectiles/Enemy/CProjectileEnemyRangedAttackMagic";
+import {CProjectileEnemyRangedAttackMagic} from "../../../Projectiles/Enemy/CProjectileEnemyRangedAttackMagic";
 import {CComponentEnemyRangedArrow} from "./CComponentEnemyRangedArrow";
 
 export class CComponentEnemyRangedMagic extends CComponentEnemyRangedArrow {

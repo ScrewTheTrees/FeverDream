@@ -1,8 +1,8 @@
-import {CCoroutineComponent} from "../CCoroutineComponent";
+import {CCoroutineComponent} from "../../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {CUnit} from "../../CUnit/CUnit";
-import {CProjectilePlayerShoot} from "../../Projectiles/Player/CProjectilePlayerShoot";
-import {PlayerStats} from "../../../PlayerManager/PlayerStats";
+import {CUnit} from "../../../CUnit/CUnit";
+import {CProjectilePlayerShoot} from "../../../Projectiles/Player/CProjectilePlayerShoot";
+import {PlayerStats} from "../../../../PlayerManager/PlayerStats";
 
 export class CComponentPlayerFire extends CCoroutineComponent {
     removeOnDeath = true;

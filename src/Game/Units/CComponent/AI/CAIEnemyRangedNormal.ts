@@ -1,6 +1,6 @@
 import {CUnit} from "../../CUnit/CUnit";
 import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
-import {CComponentEnemyRangedArrow} from "../Attacks/CComponentEnemyRangedArrow";
+import {CComponentEnemyRangedArrow} from "../Actions/Enemy/CComponentEnemyRangedArrow";
 
 export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
     public minRange: number = 350;
