@@ -34,8 +34,9 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     public get timeStep(): number {
         return this._timerDelay * this.globalTimeScale;
     }
-    protected yieldTimed(totalSeconds: number, ...args: any[]) {
+    protected yieldTimed(totalSeconds: number, inYield?: () => any) {
         for (let i = 0; i < totalSeconds; i += this.timeStep) {
+            if (inYield) inYield();
             this.yield();
         }
         this.lastYieldDuration = totalSeconds;

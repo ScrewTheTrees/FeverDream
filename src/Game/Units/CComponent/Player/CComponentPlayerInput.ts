@@ -19,6 +19,7 @@ import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 import {LightningEffects} from "wc3-treelib/src/TreeLib/Structs/LightningEffects";
 import {CComponentPlayerDodge} from "../Attacks/CComponentPlayerDodge";
 import {KeyCallback} from "wc3-treelib/src/TreeLib/InputManager/KeyCallback";
+import {PlayerHeroes} from "../../../PlayerManager/PlayerHeroes";
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
@@ -35,50 +36,57 @@ export class CComponentPlayerInput extends CStepComponent {
 
     public constructor(owner: CUnit) {
         super(owner);
-        this.mcb = this.mouse.addMousePressCallback(MOUSE_BUTTON_TYPE_RIGHT, (callback) => this.onFire(callback));
 
+        this.mcb = this.mouse.addMousePressCallback(MOUSE_BUTTON_TYPE_RIGHT, (callback) => {
+            this.onFire(callback)
+        });
         this.keyboard.addKeyboardPressCallback(OSKEY_LSHIFT, (callback) => {
             this.onDodge(callback);
         });
 
 
         //DEBUG
-        this.keyboard.addKeyboardPressCallback(OSKEY_T, () => {
-            this.owner.killUnit();
+        this.keyboard.addKeyboardPressCallback(OSKEY_T, (call) => {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
+                for (let h of PlayerHeroes.getInstance().getAliveHeroes()) {
+                    h.killUnit();
+                }
+            }
         });
-
         this.keyboard.addKeyboardPressCallback(OSKEY_1, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeEnemyMeleeFodderSkeleton(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_2, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeEnemyRangedFodderSkeleton(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_3, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeEnemyMeleeMyrmidion(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_4, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeEnemyRangedSiren(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_P, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 PlayerStats.getInstance().fireRate *= 2;
+                print(PlayerStats.getInstance().fireRate);
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_O, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 PlayerStats.getInstance().fireRate /= 2;
+                print(PlayerStats.getInstance().fireRate);
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_J, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 let path = BootlegPathfinding.getInstance().find(this.owner.position, this.mouse.getLastMouseCoordinate(this.owner.owner)).path
                 let things: effect[] = [];
                 for (let p of path) {
@@ -92,7 +100,7 @@ export class CComponentPlayerInput extends CStepComponent {
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_H, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 BootlegPathfinding.getInstance().findAsync(
                     this.owner.position,
                     this.mouse.getLastMouseCoordinate(this.owner.owner)).then(
@@ -143,19 +151,19 @@ export class CComponentPlayerInput extends CStepComponent {
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD0, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 SceneService.getInstance().finishScene();
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_M, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 GameConfig.getInstance().timeScale += 0.1;
                 GameConfig.getInstance().timeScale = Math.round(GameConfig.getInstance().timeScale * 100) / 100;
                 print(GameConfig.getInstance().timeScale);
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_N, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 GameConfig.getInstance().timeScale -= 0.1;
                 if (GameConfig.getInstance().timeScale < 0) GameConfig.getInstance().timeScale = 0;
                 GameConfig.getInstance().timeScale = Math.round(GameConfig.getInstance().timeScale * 100) / 100;
@@ -163,8 +171,13 @@ export class CComponentPlayerInput extends CStepComponent {
             }
         });
 
-        if (this.owner.owner == Player(0)) {
-            TreeThread.RunUntilDone(() => {
+        let ref: undefined | TreeThread;
+        this.keyboard.addKeyboardPressCallback(OSKEY_DELETE, (call) => {
+            if (ref != undefined) {
+                ref.stop();
+            }
+
+            ref = TreeThread.RunUntilDone(() => {
                 let top = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
                 let bottom = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
                 let left = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
@@ -201,7 +214,7 @@ export class CComponentPlayerInput extends CStepComponent {
                     coroutine.yield();
                 }
             });
-        }
+        });
     }
     cleanup() {
         this.mouse.removeMouseCallback(this.mcb);

@@ -39,6 +39,7 @@ export class CComponentPlayerFire extends CCoroutineComponent {
         this.resetVisualTimescale();
         this.neutralizeAnimation();
         this.resetFlagChanges();
+        this.owner.setAutoMoveData(this.targetOffset, 0);
     }
     cleanup(): void {
         this.targetOffset.recycle();

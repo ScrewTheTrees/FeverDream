@@ -32,6 +32,11 @@ export class GameConfig {
 
 
     //
+    public countPlayingPlayers() {
+        return this.playingPlayers.length;
+    }
+
+    //
     public music: string = "";
     public setMusic(track: string) {
         if (track != this.music) {

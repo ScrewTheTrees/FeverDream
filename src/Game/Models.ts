@@ -23,6 +23,7 @@ export enum Models {
     EFFECT_WATER_SPLASH = "Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdx",
 
     EFFECT_SPIN_AIR = "Abilities\\Spells\\Other\\Tornado\\Tornado_Target.mdl",
+    EFFECT_DIZZYNESS = "Abilities\\Spells\\Orc\\StasisTrap\\StasisTotemTarget.mdl",
 
 
     EFFECT_START_LOCATION = "Objects\\StartLocation\\StartLocation.mdl",

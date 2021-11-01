@@ -27,9 +27,8 @@ export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
             this.updateOffset();
             this.angleUpdateConst = 10;
         }
+        this.move = true;
         this.angleUpdateConst -= this.lastStepSize;
-
-        super.doAngleReadjusting(hero, ang);
     }
 
     public getNewAttackDelay() {

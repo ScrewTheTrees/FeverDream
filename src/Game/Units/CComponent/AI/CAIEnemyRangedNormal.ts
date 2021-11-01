@@ -45,8 +45,6 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
             this.moveUpdateConst = 2;
         }
         this.moveUpdateConst -= this.lastStepSize;
-
-        super.doAngleReadjusting(hero, ang);
     }
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyRangedArrow(this.owner,

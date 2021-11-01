@@ -38,7 +38,7 @@ export class PlayerHeroes {
     }
 
     public getAliveHeroes() {
-        let heroes = [];
+        let heroes: CUnit[] = [];
         for (let u of this.heroes.values()) {
             if (!u.isDead) {
                 heroes.push(u);

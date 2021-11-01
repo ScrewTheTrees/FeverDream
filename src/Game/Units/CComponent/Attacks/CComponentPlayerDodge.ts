@@ -2,7 +2,6 @@ import {CCoroutineComponent} from "../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
 import {PlayerStats} from "../../../PlayerManager/PlayerStats";
-import {GameConfig} from "../../../../GameConfig";
 import {Models} from "../../../Models";
 
 export class CComponentPlayerDodge extends CCoroutineComponent {
@@ -62,25 +61,26 @@ export class CComponentPlayerDodge extends CCoroutineComponent {
         this.resetDisplayHeight();
         this.cleanupAllTempEffects();
 
+        this.addTempEffect(AddSpecialEffect(Models.EFFECT_DIZZYNESS, this.owner.position.x, this.owner.position.y));
         this.setAnimation(ANIM_TYPE_SPELL);
         this.setVisualTimescale(2 / actionRate);
         this.owner.forceFacingWithVisual(this.targetOffset.getAngleDegrees());
 
-        this.yieldTimed(0.5 / actionRate);
+        this.yieldTimed(0.5 / actionRate, () => this.setTempEffectsPositionToOwner());
 
         //Slowdown at end
         this.resetFlagChanges();
         this.neutralizeAnimation();
         this.addDominated();
 
-        this.adjustBonusMoveSpeed(-this.owner.moveSpeed * 0.5);
+        this.adjustBonusMoveSpeed(-this.owner.moveSpeed * 0.7);
         this.setVisualTimescale(0.5);
-        this.yieldTimed(0.5 / actionRate);
+        this.yieldTimed(0.5 / actionRate, () => this.setTempEffectsPositionToOwner());
 
         this.resetBonusMoveSpeed();
-        this.adjustBonusMoveSpeed(-this.owner.moveSpeed * 0.2);
+        this.adjustBonusMoveSpeed(-this.owner.moveSpeed * 0.3);
         this.setVisualTimescale(0.75);
-        this.yieldTimed(0.2 / actionRate);
+        this.yieldTimed(0.2 / actionRate, () => this.setTempEffectsPositionToOwner());
         //Done
     }
     protected onEnd() {
