@@ -1,53 +1,17 @@
 import {CUnit} from "../../CUnit/CUnit";
 import {CComponentEnemyRangedMagic} from "../Attacks/CComponentEnemyRangedMagic";
 import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
-import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
+import {CAIEnemyRangedNormal} from "./CAIEnemyRangedNormal";
 
-export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
-    public minRange: number = 400;
-    public maxRange: number = 800;
-
-    public towards = true;
+export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
 
     public constructor(owner: CUnit, primaryTarget?: CUnit) {
         super(owner);
         this.primaryTarget = primaryTarget;
+        this.minRange = 400;
+        this.maxRange = 800;
         this.attackRange = 1000;
         this.approachRange = 50;
-    }
-
-    execute(): void {
-
-        this.yieldTimed(2);
-        while (!this.owner.queueForRemoval) {
-            let hero = CUnit.unitPool.getRandomAliveEnemy(this.owner);
-            if (this.primaryTarget && !this.primaryTarget.isDead) {
-                hero = this.primaryTarget;
-            }
-            this.updateOffset();
-            this.attackDelay = 1;
-            this.curving = this.getNewCurving();
-            this.towards = true;
-
-            while (hero != null && !hero.isDead && !this.owner.isDead) {
-                this.calculateTargetPoint(hero);
-
-                this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
-
-                let ang = this.angle.getAngleDegrees() + this.curving;
-                this.doAngleReadjusting(hero, ang);
-
-                if (!this.towards) ang += 180;
-                this.angle.updateTo(0, 0).polarProject(1, ang);
-
-                if (this.owner.position.distanceTo(this.target) > 10) {
-                    this.owner.setAutoMoveData(this.angle);
-                }
-                this.evaluateToAttack(hero);
-                this.aiYield();
-            } //while
-            this.aiYield();
-        } //while
     }
 
     public doAngleReadjusting(hero: CUnit, ang: number) {
@@ -63,7 +27,9 @@ export class CAIEnemyRangedKiting extends CAIEnemyGeneric {
             this.updateOffset();
             this.angleUpdateConst = 10;
         }
-        this.angleUpdateConst -= this.lastYieldDuration;
+        this.angleUpdateConst -= this.lastStepSize;
+
+        super.doAngleReadjusting(hero, ang);
     }
 
     public getNewAttackDelay() {

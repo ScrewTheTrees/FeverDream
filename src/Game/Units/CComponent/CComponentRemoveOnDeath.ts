@@ -1,17 +1,21 @@
-import {CCoroutineComponent} from "./CCoroutineComponent";
 import {CUnit} from "../CUnit/CUnit";
+import {CStepComponent} from "./CStepComponent";
 
-export class CComponentRemoveOnDeath extends CCoroutineComponent {
+export class CComponentRemoveOnDeath extends CStepComponent {
     removeOnDeath = false;
+    dead = false;
     public constructor(owner: CUnit) {
-        super(owner);
+        super(owner, 1);
     }
-    execute() {
-        while (!this.owner.isDead) {
-            this.yield();
+    step() {
+        if (this.dead) {
+            this.owner.queueForRemoval = true;
         }
-        this.yieldTimed(5);
-        this.owner.queueForRemoval = true;
+        if (this.owner.isDead) {
+            this.dead = true;
+            this.timerYield(5);
+            return;
+        }
     }
     cleanup(): void {
     }

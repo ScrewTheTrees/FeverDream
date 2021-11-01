@@ -17,6 +17,8 @@ import {CStepComponent} from "../CStepComponent";
 import {SceneService} from "../../../Scenes/SceneService";
 import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 import {LightningEffects} from "wc3-treelib/src/TreeLib/Structs/LightningEffects";
+import {CComponentPlayerDodge} from "../Attacks/CComponentPlayerDodge";
+import {KeyCallback} from "wc3-treelib/src/TreeLib/InputManager/KeyCallback";
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
@@ -35,6 +37,12 @@ export class CComponentPlayerInput extends CStepComponent {
         super(owner);
         this.mcb = this.mouse.addMousePressCallback(MOUSE_BUTTON_TYPE_RIGHT, (callback) => this.onFire(callback));
 
+        this.keyboard.addKeyboardPressCallback(OSKEY_LSHIFT, (callback) => {
+            this.onDodge(callback);
+        });
+
+
+        //DEBUG
         this.keyboard.addKeyboardPressCallback(OSKEY_T, () => {
             this.owner.killUnit();
         });
@@ -134,21 +142,23 @@ export class CComponentPlayerInput extends CStepComponent {
                     })
             }
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_M, (call) => {
-            if (call.triggeringPlayer == this.owner.owner) {
-                GameConfig.getInstance().timeScale += 0.1;
-                print(GameConfig.getInstance().timeScale);
-            }
-        });
         this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD0, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
                 SceneService.getInstance().finishScene();
+            }
+        });
+        this.keyboard.addKeyboardPressCallback(OSKEY_M, (call) => {
+            if (call.triggeringPlayer == this.owner.owner) {
+                GameConfig.getInstance().timeScale += 0.1;
+                GameConfig.getInstance().timeScale = Math.round(GameConfig.getInstance().timeScale * 100) / 100;
+                print(GameConfig.getInstance().timeScale);
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_N, (call) => {
             if (call.triggeringPlayer == this.owner.owner) {
                 GameConfig.getInstance().timeScale -= 0.1;
                 if (GameConfig.getInstance().timeScale < 0) GameConfig.getInstance().timeScale = 0;
+                GameConfig.getInstance().timeScale = Math.round(GameConfig.getInstance().timeScale * 100) / 100;
                 print(GameConfig.getInstance().timeScale);
             }
         });
@@ -159,7 +169,9 @@ export class CComponentPlayerInput extends CStepComponent {
                 let bottom = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
                 let left = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
                 let right = AddLightning(LightningEffects.DRAIN_LIFE, false, 0, 0, 0, 0);
-                let center = AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, 0, 0);
+                let center = AddSpecialEffect(Models.EFFECT_START_LOCATION, 0, 0);
+                BlzSetSpecialEffectColorByPlayer(center, Player(0));
+                BlzSetSpecialEffectScale(center, 0.25);
                 let toNeighbors: effect[] = [];
 
                 while (true) {
@@ -178,7 +190,9 @@ export class CComponentPlayerInput extends CStepComponent {
                             let neighbor = node.neighbors[i];
                             let gfx = toNeighbors[i];
                             if (gfx == null) {
-                                gfx = AddSpecialEffect(Models.PROJECTILE_PLAYER_FIRE, 0, 0);
+                                gfx = AddSpecialEffect(Models.EFFECT_START_LOCATION, 0, 0);
+                                BlzSetSpecialEffectScale(gfx, 0.25);
+                                BlzSetSpecialEffectColorByPlayer(gfx, Player(12));
                                 toNeighbors[i] = gfx;
                             }
                             BlzSetSpecialEffectPosition(gfx, neighbor.point.x, neighbor.point.y, neighbor.point.getZ());
@@ -201,8 +215,15 @@ export class CComponentPlayerInput extends CStepComponent {
             }
         }
     }
+    private onDodge(callback: KeyCallback) {
+        if (!this.owner.isDominated()) {
+            let facing = Vector2.new(0, 0).polarProject(1, this.owner.logicAngle);
+            this.owner.addComponent(new CComponentPlayerDodge(this.owner, facing));
+            facing.recycle();
+        }
+    }
     private move = Vector2.new(0, 0);
-    execute(): void {
+    step(): void {
         if (!this.pauseInput && !this.owner.isDead) {
             this.move.updateTo(0, 0);
 
@@ -210,9 +231,6 @@ export class CComponentPlayerInput extends CStepComponent {
             if (this.keyboard.isKeyButtonHeld(this.keyRight, this.owner.owner)) this.move.x += 1;
             if (this.keyboard.isKeyButtonHeld(this.keyDown, this.owner.owner)) this.move.y -= 1;
             if (this.keyboard.isKeyButtonHeld(this.keyUp, this.owner.owner)) this.move.y += 1;
-            if (this.keyboard.isKeyButtonHeld(OSKEY_LSHIFT, this.owner.owner)) {
-                this.owner.moveSpeedBonus = 10;
-            } else this.owner.moveSpeedBonus = 0;
 
             this.owner.setAutoMoveData(this.move);
         }

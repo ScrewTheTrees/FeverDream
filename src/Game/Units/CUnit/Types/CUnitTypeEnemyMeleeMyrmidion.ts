@@ -21,8 +21,7 @@ export class CUnitTypeEnemyMeleeMyrmidion extends CUnit {
         this.addComponent(new CComponentRemoveOnDeath(this));
 
         BlzSetSpecialEffectColorByPlayer(this.effect, Players.NEUTRAL_HOSTILE);
-        this.facingAngle = TreeMath.RandAngle();
-        this.wantedAngle = this.facingAngle;
+        this.forceFacingWithVisual(TreeMath.RandAngle());
 
         this.createSpawnEffect(Models.EFFECT_WATER_SPLASH, 2);
         this.setAnimation(ANIM_TYPE_WALK, SUBANIM_TYPE_SWIM);

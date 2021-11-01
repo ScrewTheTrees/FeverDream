@@ -7,7 +7,6 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
     public maxRange: number = 700;
 
     public towards = true;
-    public move: boolean = true;
     public moveUpdateConst: number = 2;
 
     public constructor(owner: CUnit, primaryTarget?: CUnit) {
@@ -16,42 +15,19 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
         this.attackRange = 800;
     }
 
-    execute(): void {
-
-        this.yieldTimed(2);
-        while (!this.owner.queueForRemoval) {
-            let hero = CUnit.unitPool.getRandomAliveEnemy(this.owner);
-            if (this.primaryTarget && !this.primaryTarget.isDead) {
-                hero = this.primaryTarget;
-            }
-            this.updateOffset();
-            this.attackDelay = 1;
-            this.curving = this.getNewCurving();
-            this.towards = true;
-
-            while (hero != null && !hero.isDead && !this.owner.isDead) {
-                this.calculateTargetPoint(hero);
-
-                this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
-
-                let ang = this.angle.getAngleDegrees() + this.curving;
-                this.doAngleReadjusting(hero, ang);
-
-                if (!this.towards) ang += 180;
-                this.angle.updateTo(0, 0).polarProject(1, ang);
-
-                if (this.move && this.owner.position.distanceTo(this.target) > 10) {
-                    this.owner.setAutoMoveData(this.angle);
-                }
-                this.evaluateToAttack(hero);
-                this.aiYield();
-            } //while
-            this.aiYield();
-        } //while
-    }
     public getNewAttackDelay() {
-        return GetRandomReal(1, 4);
+        return GetRandomReal(1, 3);
     }
+
+    calculateAngleData(target: CUnit) {
+        if (this.towards) this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
+        else this.angle.updateToPoint(this.target).offsetTo(this.owner.position);
+
+        let ang = this.angle.getAngleDegrees() + this.curving;
+        this.doAngleReadjusting(target, ang);
+        this.angle.updateTo(0, 0).polarProject(1, ang);
+    }
+
     public doAngleReadjusting(hero: CUnit, ang: number) {
         if (!this.towards && this.owner.position.distanceTo(hero.position) > this.maxRange) {
             this.towards = true;
@@ -68,7 +44,7 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
                 || this.owner.position.distanceTo(hero.position) > this.maxRange);
             this.moveUpdateConst = 2;
         }
-        this.moveUpdateConst -= this.lastYieldDuration;
+        this.moveUpdateConst -= this.lastStepSize;
 
         super.doAngleReadjusting(hero, ang);
     }

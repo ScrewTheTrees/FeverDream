@@ -26,10 +26,12 @@ export abstract class CProjectile extends TreeThread {
             && !Quick.Contains(this.targetsHit, target)
             && this.durability > 0
         ) {
-            target.onHit(this);
-            target.dealDamage(this.damage, this.owner);
-            this.durability -= target.poise;
-            this.targetsHit.push(target);
+            if (target.canBeHit()) {
+                target.onHit(this);
+                target.dealDamage(this.damage, this.owner);
+                this.durability -= target.poise;
+                this.targetsHit.push(target);
+            }
         }
         if (this.durability <= 0) {
             this.destroy();

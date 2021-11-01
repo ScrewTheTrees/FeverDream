@@ -18,8 +18,7 @@ export class CUnitTypeEnemyRangedSiren extends CUnit {
         this.addComponent(new CComponentRemoveOnDeath(this));
 
         BlzSetSpecialEffectColorByPlayer(this.effect, Players.NEUTRAL_HOSTILE);
-        this.facingAngle = TreeMath.RandAngle();
-        this.wantedAngle = this.facingAngle;
+        this.forceFacingWithVisual(TreeMath.RandAngle());
 
         this.createSpawnEffect(Models.EFFECT_WATER_SPLASH, 2);
         this.setAnimation(ANIM_TYPE_MORPH, SUBANIM_TYPE_ALTERNATE_EX);

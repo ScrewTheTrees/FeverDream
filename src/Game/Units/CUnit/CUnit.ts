@@ -1,15 +1,14 @@
 import {Entity} from "wc3-treelib/src/TreeLib/Entity";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
 import {Interpolation} from "wc3-treelib/src/TreeLib/Utility/Interpolation";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
-import {IComponent} from "../CComponent/CCoroutineComponent";
 import {CUnitPool} from "./CUnitPool";
 import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {Models} from "../../Models";
 import {CProjectile} from "../Projectiles/CProjectile";
 import {GameConfig} from "../../../GameConfig";
 import {BootlegCollisionMap} from "../BootlegCollisionMap";
+import {IComponent} from "../CComponent/IComponent";
 
 export abstract class CUnit extends Entity {
     public static unitPool: CUnitPool = new CUnitPool();
@@ -22,18 +21,20 @@ export abstract class CUnit extends Entity {
     public visualTimeScale: number = 1;
 
     public position: Vector2;
-    public facingAngle: number = 0;
-    public wantedAngle: number = 0;
+    public displayHeight: number = 0;
+    public facingYaw: number = 0;
+    public facingPitch: number = 0;
+    public facingRoll: number = 0;
+    public logicAngle: number = 0;
     public isMoving: boolean = false;
     public wasMoving: boolean = false;
     protected moveTime: number = 0;
-    protected maxMoveTime: number = 25;
 
-    public disableMovement: number = 0;
-    public disableRotation: number = 0;
-    public disableFaceCommand: number = 0;
-    public disableCommandUpdate: number = 0;
-    public dominated: number = 0;
+    public disableMovement: number = 0;     //CUnit wont move at all unless you use rawMove()
+    public disableRotation: number = 0;     //CUnit wont do visual rotations anymore
+    public disableFaceCommand: number = 0;  //CUnit wont react to you trying to give it a new "logical" facing direction.
+    public disableHitbox: number = 0;       //CUnit wont allow to get hit.
+    public dominated: number = 0;           //CUnit is tagged as being busy doing something, like an attack or other actions.
 
     public health: number = 100;
     public maxHealth: number = 100;
@@ -62,19 +63,17 @@ export abstract class CUnit extends Entity {
 
     }
     step() {
-        if (this.disableCommandUpdate <= 0) {
-            this.updateCommands();
-        }
+        this.updateCommands();
         if (!this.isDead) {
             if (this.isMoving) {
                 this.move(this.moveOffset);
             }
-            if (this.disableRotation <= 0) {
-                this.facingAngle = Interpolation.RotDivisionSpring(this.facingAngle, this.wantedAngle, 15 / GameConfig.getInstance().timeScale);
+            if (!this.isDisabledRotation()) {
+                this.facingYaw = Interpolation.RotDivisionSpring(this.facingYaw, this.logicAngle, 15 / GameConfig.getInstance().timeScale);
             }
-            if (this.disableMovement <= 0) {
+            if (!this.isDisabledMovement()) {
                 if (this.moveTime <= 0) this.isMoving = false;
-                else this.moveTime -= 1;
+                else this.moveTime -= this.lastStepSize;
                 if (this.isMoving != this.wasMoving) this.moveStateChanged();
                 this.wasMoving = this.isMoving;
             }
@@ -103,7 +102,7 @@ export abstract class CUnit extends Entity {
                 }
             }
             if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
-                this.moveRaw(this.crowdingOffset)
+                this.forceMove(this.crowdingOffset);
             }
         }
     }
@@ -119,20 +118,18 @@ export abstract class CUnit extends Entity {
     public isDisabledFaceCommand() {
         return this.disableFaceCommand > 0;
     }
-    public isDisabledCommandUpdate() {
-        return this.disableCommandUpdate > 0;
+    public isDisabledHitbox() {
+        return this.disableHitbox > 0;
     }
 
     public addComponent(command: IComponent) {
         if (!Quick.Contains(this.subComponents, command)) {
-            this.subComponents.push(command)
-            command.timerDelay = this.timerDelay;
-            command.resume();
+            this.subComponents.push(command);
         }
     }
     public removeComponent(command: IComponent) {
         Quick.Remove(this.subComponents, command);
-        command.stop();
+        command.destroy();
     }
     public revive() {
         this.health = this.maxHealth;
@@ -143,16 +140,17 @@ export abstract class CUnit extends Entity {
         this.position.x = to.x;
         this.position.y = to.y;
     }
-    public setAutoMoveData(offset: Vector2) {
-        if (this.disableMovement > 0) return;
-        if (offset.x == 0 && offset.y == 0) return;
+    public setAutoMoveData(offset: Vector2, seconds: number = 0.1): boolean {
+        if (this.disableMovement > 0) return false;
+        if (offset.x == 0 && offset.y == 0) return false;
 
-        this.moveTime = this.maxMoveTime;
+        this.moveTime = seconds;
         this.isMoving = true;
         this.moveOffset.updateToPoint(offset);
+        return true;
     }
     public move(offset: Vector2) {
-        if (this.disableMovement > 0) return;
+        if (this.isDisabledMovement()) return;
         if (offset.x == 0 && offset.y == 0) return;
 
         let next = Vector2.new(0, 0).polarProject(
@@ -161,12 +159,12 @@ export abstract class CUnit extends Entity {
         );
 
         this.setFacing(next.getAngleDegrees());
-        this.moveRaw(next);
+        this.forceMove(next);
     }
     getActualMoveSpeed() {
-        return (this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale;
+        return math.max(0, this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale;
     }
-    public moveRaw(offset: Vector2) {
+    public forceMove(offset: Vector2) {
         if (this.collision.getCollisionCircle(this.position.x + offset.x, this.position.y, this.thiccness)) {
             this.position.x += offset.x;
         }
@@ -175,11 +173,15 @@ export abstract class CUnit extends Entity {
         }
     }
     public setFacing(angle: number) {
-        if (this.disableFaceCommand > 0) return;
-        this.wantedAngle = angle % 360;
+        if (this.isDisabledFaceCommand()) return;
+        this.forceFacing(angle);
     }
     public forceFacing(angle: number) {
-        this.wantedAngle = angle % 360;
+        this.logicAngle = angle % 360;
+    }
+    public forceFacingWithVisual(angle: number) {
+        this.logicAngle = angle % 360;
+        this.facingYaw = angle % 360;
     }
     public setAnimation(type: animtype, ...subanims: subanimtype[]) {
         BlzSpecialEffectClearSubAnimations(this.effect);
@@ -191,6 +193,10 @@ export abstract class CUnit extends Entity {
     }
     public setVisualTimeScale(scale: number) {
         this.visualTimeScale = scale;
+        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
+    }
+    public canBeHit() {
+        return !this.isDisabledHitbox();
     }
     public dealDamage(damage: number, attacker: CUnit) {
         this.health -= damage;
@@ -228,6 +234,14 @@ export abstract class CUnit extends Entity {
         this.setVisualTimeScale(1);
         CUnit.unitPool.update();
     }
+    public getZValue() {
+        let zExtra = this.displayHeight;
+        if (IsTerrainPathable(this.position.x, this.position.y, PATHING_TYPE_AMPHIBIOUSPATHING)) {
+            zExtra -= 32;
+        }
+
+        return this.position.getZ() + zExtra;
+    }
 
     private clampHealth(dealer?: CUnit) {
         if (this.health >= this.maxHealth) {
@@ -243,8 +257,6 @@ export abstract class CUnit extends Entity {
             let command = this.subComponents[i];
             if (command.isFinished || this.queueForRemoval) {
                 this.removeComponent(command);
-            } else {
-                command.resume();
             }
         }
     }
@@ -256,21 +268,24 @@ export abstract class CUnit extends Entity {
         }
     }
     private draw() {
-        let zExtra = 0;
-        if (IsTerrainPathable(this.position.x, this.position.y, PATHING_TYPE_AMPHIBIOUSPATHING)) {
-            zExtra -= 32;
-        }
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
-        BlzSetSpecialEffectZ(this.effect, this.position.getZ() + zExtra);
+        BlzSetSpecialEffectZ(this.effect, this.getZValue());
         BlzSetSpecialEffectScale(this.effect, this.modelScale);
         BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
-        BlzSetSpecialEffectYaw(this.effect,
-            this.facingAngle * bj_DEGTORAD
+        BlzSetSpecialEffectOrientation(this.effect,
+            this.facingYaw * bj_DEGTORAD,
+            this.facingPitch * bj_DEGTORAD,
+            this.facingRoll * bj_DEGTORAD
         );
     }
 
     public onDelete() {
+        for (let i = this.subComponents.length - 1; i >= 0; i--) {
+            let comp = this.subComponents[i];
+            this.removeComponent(comp);
+        }
+
         this.position.updateTo(30000, 30000);
         BlzSetSpecialEffectPosition(this.effect, 30000, 30000, -6000);
         this.modelScale = 0;
@@ -279,10 +294,6 @@ export abstract class CUnit extends Entity {
             BlzSetSpecialEffectScale(this.effect, 0);
             DestroyEffect(this.effect);
         });
-        for (let i = this.subComponents.length - 1; i >= 0; i--) {
-            let comp = this.subComponents[i];
-            this.removeComponent(comp);
-        }
         this.remove();
     }
     public onHit(other: CProjectile) {

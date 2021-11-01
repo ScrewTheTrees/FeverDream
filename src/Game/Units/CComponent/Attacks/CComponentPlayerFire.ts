@@ -14,31 +14,31 @@ export class CComponentPlayerFire extends CCoroutineComponent {
     }
 
     protected onStart() {
-        this.owner.disableMovement += 1;
-        this.owner.disableFaceCommand += 1;
-        this.owner.dominated += 1;
+        this.addDisableMovement();
+        this.addDisableFaceCommand();
+        this.addDominated();
     }
     execute(): void {
         let fireRate = PlayerStats.getInstance().fireRate;
-        let resetAnim = this.owner.lastAnimationType;
+        let damage = PlayerStats.getInstance().damage;
+
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
-        this.owner.setAnimation(ANIM_TYPE_ATTACK);
-        this.owner.setVisualTimeScale(0.125 / fireRate);
+        this.setAnimation(ANIM_TYPE_ATTACK);
+        this.setVisualTimescale(0.125 / fireRate);
 
         this.yieldTimed(0.6 / fireRate);
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
-        this.owner.setVisualTimeScale(fireRate);
+        this.setVisualTimescale(fireRate);
         let proj = new CProjectilePlayerShoot(this.owner, this.targetOffset);
-        proj.damage = PlayerStats.getInstance().damage;
+        proj.damage = damage;
+
         this.yieldTimed(0.5 / fireRate);
         //Done
-        this.owner.setVisualTimeScale(1);
-        this.owner.setAnimation(resetAnim);
     }
     protected onEnd() {
-        this.owner.dominated -= 1;
-        this.owner.disableMovement -= 1;
-        this.owner.disableFaceCommand -= 1;
+        this.resetVisualTimescale();
+        this.neutralizeAnimation();
+        this.resetFlagChanges();
     }
     cleanup(): void {
         this.targetOffset.recycle();

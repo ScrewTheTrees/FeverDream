@@ -1,32 +1,24 @@
 import {CUnit} from "../CUnit/CUnit";
 import {GameConfig} from "../../../GameConfig";
-import {IComponent} from "./CCoroutineComponent";
+import {Entity} from "wc3-treelib/src/TreeLib/Entity";
+import {IComponent} from "./IComponent";
 
-export abstract class CStepComponent implements IComponent {
+export abstract class CStepComponent extends Entity implements IComponent {
     public isFinished: boolean = false;
     public owner: CUnit;
     public abstract removeOnDeath: boolean;
-    public constructor(owner: CUnit, timerDelay: number = 0.01) {
-        this.timerDelay = timerDelay;
+    public constructor(owner: CUnit, timerDelay: number = 0.02) {
+        super(timerDelay);
         this.owner = owner;
     }
-    abstract execute(): void;
+    abstract step(): void;
     abstract cleanup(): void;
 
-    resume(...args: any[]): any {
-        this.execute();
-    }
-    stop() {
+    destroy() {
+        this.remove();
         this.cleanup();
     }
     public get timeScale(): number {
         return this.timerDelay * GameConfig.getInstance().timeScale;
-    }
-    private _timerDelay: number = 0.01;
-    public get timerDelay(): number {
-        return this._timerDelay * GameConfig.getInstance().timeScale;
-    }
-    public set timerDelay(delay: number) {
-        this._timerDelay = delay;
     }
 }

@@ -21,8 +21,7 @@ export class CUnitTypeEnemyRangedFodderSkeleton extends CUnit {
 
         this.createSpawnEffect(Models.EFFECT_DARK_RITUAL_SPAWN);
         BlzSetSpecialEffectColorByPlayer(this.effect, Players.NEUTRAL_HOSTILE);
-        this.facingAngle = TreeMath.RandAngle();
-        this.wantedAngle = this.facingAngle;
+        this.forceFacingWithVisual(TreeMath.RandAngle());
     }
 
     public onHit(other: CProjectile) {
