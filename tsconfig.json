@@ -3,12 +3,12 @@
     "allowJs": true,
     "strict": true,
     "sourceMap": false,
-    "target": "es6",
+    "target": "ESNext",
 
     "outDir": "./target",
     "baseUrl": "./src",
     "lib": [
-      "es6"
+      "ESNext"
     ],
 
     "moduleResolution": "classic",

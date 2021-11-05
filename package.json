@@ -14,7 +14,6 @@
     "compileMap": "ts-node bin/operations build",
     "compileMapRelease": "ts-node bin/operations buildRelease",
     "launchWarcraft": "ts-node bin/operations run",
-    "postinstall": "tsc --outDir null -p node_modules/mdx-m3-viewer/tsconfig.json",
     "customDefs": "ts-node bin/operations customDefs"
   },
   "directories": {
@@ -25,15 +24,15 @@
     "dependency-cruiser": "^9.26.0",
     "fs-extra": "^8.1.0",
     "lua-types": "2.10.1",
-    "mdx-m3-viewer": "5.8.2",
+    "mdx-m3-viewer": "5.12.0",
     "ncp": "^2.0.0",
     "rimraf": "^3.0.2",
     "ts-node": "^8.8.1",
     "tstl-doender-plugin": "^1.0.13",
     "tsutils": "^3.17.1",
-    "typescript": "^4.3.5",
-    "typescript-to-lua": "^0.40.1",
-    "war3-transformer": "^2.0.0",
+    "typescript": "4.4.4",
+    "typescript-to-lua": "1.1.1",
+    "war3-transformer": "^2.1.3",
     "wc3-treelib": "file:../../TreeLib-WC3",
     "winston": "^3.3.3"
   },
