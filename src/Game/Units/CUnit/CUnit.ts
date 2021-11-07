@@ -20,7 +20,7 @@ export abstract class CUnit extends Entity {
     public modelScale: number = 1;
     public visualTimeScale: number = 1;
 
-    public position: Vector2;
+    private position: Vector2;
     public displayHeight: number = 0;
     public facingYaw: number = 0;
     public facingPitch: number = 0;
@@ -34,7 +34,9 @@ export abstract class CUnit extends Entity {
     public disableRotation: number = 0;     //CUnit wont do visual rotations anymore
     public disableFaceCommand: number = 0;  //CUnit wont react to you trying to give it a new "logical" facing direction.
     public disableHitbox: number = 0;       //CUnit wont allow to get hit.
+
     public dominated: number = 0;           //CUnit is tagged as being busy doing something, like an attack or other actions.
+    public grounded: number = 0;            //CUnit is tagged as being grounded, it cannot use movement abilities.
 
     public health: number = 100;
     public maxHealth: number = 100;
@@ -43,7 +45,7 @@ export abstract class CUnit extends Entity {
     public projectileCollisionSize: number = 32;
     public thiccness: number = 16;
 
-    public poise: number = 1;
+    public poise: number = 1; //Dictates how much this unit is pushed around by other units and how resistant it is to piercing.
 
     public moveOffset: Vector2 = Vector2.new(0, 0);
     public moveSpeed = 6;
@@ -53,15 +55,16 @@ export abstract class CUnit extends Entity {
 
     private collision = BootlegCollisionMap.getInstance();
 
-    public constructor(owner: player, model: string, position: Vector2) {
+    protected constructor(owner: player, model: string, position: Vector2) {
         super(0.02);
-        CUnit.unitPool.addUnit(this);
         this.owner = owner;
         this.effect = AddSpecialEffect(model, position.x, position.y);
         this.position = position.copy();
+        CUnit.unitPool.addUnit(this);
+        CUnit.unitPool.gridUpdatePosition(this, this.position);
         BlzSetSpecialEffectColorByPlayer(this.effect, this.owner);
-
     }
+
     step() {
         this.updateCommands();
         if (!this.isDead) {
@@ -87,28 +90,41 @@ export abstract class CUnit extends Entity {
     private crowdingOffsetUpdate = 0;
     private crowdingOffset = Vector2.new(0, 0);
     private handleCrowding() {
-        this.crowdingOffsetUpdate++;
-        if (this.crowdingOffsetUpdate >= 10) {
-            let other = CUnit.unitPool.getClosestAliveNotSelf(this);
-            if (other) {
-                this.crowdingOffset.updateTo(0, 0);
+        this.crowdingOffsetUpdate -= this.lastStepSize;
+        if (this.crowdingOffsetUpdate <= 0) {
+            this.crowdingOffset.updateTo(0, 0);
 
+            let other = CUnit.unitPool.getClosestAliveNotSelf(this, undefined, 64 + (this.thiccness * 4));
+            if (other) {
                 let intersectingThicc = (this.thiccness + other.thiccness) * 2;
-                let distance = this.position.distanceTo(other.position);
+                let distance = this.position.distanceTo(other.getPosition());
                 if (distance < intersectingThicc) {
-                    this.crowdingOffset.polarProject(1 - (distance / intersectingThicc), this.position.directionFrom(other.position));
+                    this.crowdingOffset.polarProject(1 - (distance / intersectingThicc), this.position.directionFrom(other.getPosition()));
                     this.crowdingOffset.divideOffsetNum(0.25);
-                    this.crowdingOffset.divideOffsetNum(this.poise);
+                    this.crowdingOffset.divideOffsetNum(this.poise); //Lower our poise, the more we get pushed around.
+                    this.crowdingOffset.multiplyOffsetNum(other.poise); //Higher enemy poise the more we get pusehd around.
                 }
-            }
-            if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
-                this.forceMove(this.crowdingOffset);
+                this.crowdingOffsetUpdate = math.min(2, math.max(0.2, (distance * this.timerDelay) / (this.getActualMoveSpeed() * 2)));
+            } else {
+                this.crowdingOffsetUpdate = 0.5; //Remotly low number when waiting for literally anything.
             }
         }
+        if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
+            this.forceMove(this.crowdingOffset);
+        }
     }
-    public isDominated() {
-        return this.dominated > 0;
+    public getPosition(): Vector2 {
+        return this.position;
     }
+    public setPosition(v: Vector2) {
+        this.positionXY(v.x, v.y);
+    }
+    public positionXY(x: number, y: number) {
+        CUnit.unitPool.gridUpdatePositionXY(this, this.position.x, this.position.y, x, y);
+        this.position.x = x;
+        this.position.y = y;
+    }
+
     public isDisabledMovement() {
         return this.disableMovement > 0;
     }
@@ -121,31 +137,32 @@ export abstract class CUnit extends Entity {
     public isDisabledHitbox() {
         return this.disableHitbox > 0;
     }
+    public isDominated() {
+        return this.dominated > 0;
+    }
+    public isGrounded() {
+        return this.grounded > 0;
+    }
 
     public addComponent(command: IComponent) {
         if (!Quick.Contains(this.subComponents, command)) {
             this.subComponents.push(command);
+            command.step();
         }
     }
     public removeComponent(command: IComponent) {
         Quick.Remove(this.subComponents, command);
         command.destroy();
     }
-    public revive() {
-        this.health = this.maxHealth;
-        this.isDead = false;
-        CUnit.unitPool.update();
-    }
     public teleport(to: Vector2) {
-        this.position.x = to.x;
-        this.position.y = to.y;
+        this.positionXY(to.x, to.y);
     }
     public setAutoMoveData(offset: Vector2, seconds: number = 0.1): boolean {
         if (this.disableMovement > 0) return false;
         if (offset.x == 0 && offset.y == 0) return false;
 
         this.moveTime = seconds;
-        this.isMoving = true;
+        if (this.moveTime > 0) this.isMoving = true;
         this.moveOffset.updateToPoint(offset);
         return true;
     }
@@ -165,12 +182,15 @@ export abstract class CUnit extends Entity {
         return math.max(0, this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale;
     }
     public forceMove(offset: Vector2) {
-        if (this.collision.getCollisionCircle(this.position.x + offset.x, this.position.y, this.thiccness)) {
-            this.position.x += offset.x;
+        let nextCandidate = this.getPosition().copy();
+        if (this.collision.getCollisionCircle(nextCandidate.x + offset.x, nextCandidate.y, this.thiccness)) {
+            nextCandidate.x += offset.x;
         }
-        if (this.collision.getCollisionCircle(this.position.x, this.position.y + offset.y, this.thiccness)) {
-            this.position.y += offset.y;
+        if (this.collision.getCollisionCircle(nextCandidate.x, nextCandidate.y + offset.y, this.thiccness)) {
+            nextCandidate.y += offset.y;
         }
+        this.setPosition(nextCandidate);
+        nextCandidate.recycle();
     }
     public setFacing(angle: number) {
         if (this.isDisabledFaceCommand()) return;
@@ -185,6 +205,10 @@ export abstract class CUnit extends Entity {
     }
     public setAnimation(type: animtype, ...subanims: subanimtype[]) {
         BlzSpecialEffectClearSubAnimations(this.effect);
+
+        if (this.isDead) {
+            type = ANIM_TYPE_DEATH;
+        }
         this.lastAnimationType = type;
         for (let subAnim of subanims) {
             BlzSpecialEffectAddSubAnimation(this.effect, subAnim);
@@ -195,6 +219,12 @@ export abstract class CUnit extends Entity {
         this.visualTimeScale = scale;
         BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
     }
+    public addVisualTimeScale(scale: number) {
+        this.setVisualTimeScale(this.visualTimeScale * scale);
+    }
+    public removeVisualTimeScale(scale: number) {
+        this.setVisualTimeScale(this.visualTimeScale / scale);
+    }
     public canBeHit() {
         return !this.isDisabledHitbox();
     }
@@ -202,8 +232,9 @@ export abstract class CUnit extends Entity {
         this.health -= damage;
         this.clampHealth(attacker);
     }
-    public setMaxHealth(mh: number) {
+    public setMaxHealth(mh: number, healFully: boolean = false) {
         this.maxHealth = mh;
+        if (healFully) this.health = this.maxHealth;
         this.clampHealth();
     }
     public dealHealing(damage: number, healer: CUnit) {
@@ -211,7 +242,7 @@ export abstract class CUnit extends Entity {
         this.clampHealth(healer);
     }
     public createSpawnEffect(effectPath: string, scale: number = 1, duration: number = 2) {
-        let eff = AddSpecialEffect(effectPath, this.position.x, this.position.y);
+        let eff = AddSpecialEffect(effectPath, this.getPosition().x, this.getPosition().y);
         BlzSetSpecialEffectScale(eff, scale);
         Delay.addDelay(() => {
             DestroyEffect(eff);
@@ -225,6 +256,7 @@ export abstract class CUnit extends Entity {
                 this.removeComponent(comp);
             }
         }
+        CUnit.unitPool.gridUpdateIsDead(this, this.isDead, true);
         this.health = 0;
         this.moveTime = 0;
         this.isDead = true;
@@ -234,9 +266,15 @@ export abstract class CUnit extends Entity {
         this.setVisualTimeScale(1);
         CUnit.unitPool.update();
     }
+    public revive() {
+        CUnit.unitPool.gridUpdateIsDead(this, this.isDead, false);
+        this.health = this.maxHealth;
+        this.isDead = false;
+        CUnit.unitPool.update();
+    }
     public getZValue() {
         let zExtra = this.displayHeight;
-        if (IsTerrainPathable(this.position.x, this.position.y, PATHING_TYPE_AMPHIBIOUSPATHING)) {
+        if (IsTerrainPathable(this.getPosition().x, this.getPosition().y, PATHING_TYPE_AMPHIBIOUSPATHING)) {
             zExtra -= 32;
         }
 
@@ -248,7 +286,6 @@ export abstract class CUnit extends Entity {
             this.health = this.maxHealth;
         }
         if (this.health <= 0) {
-            this.isDead = true;
             this.killUnit();
         }
     }
@@ -268,9 +305,8 @@ export abstract class CUnit extends Entity {
         }
     }
     private draw() {
-        BlzSetSpecialEffectX(this.effect, this.position.x);
-        BlzSetSpecialEffectY(this.effect, this.position.y);
-        BlzSetSpecialEffectZ(this.effect, this.getZValue());
+        BlzSetSpecialEffectColorByPlayer(this.effect, this.owner);
+        BlzSetSpecialEffectPosition(this.effect, this.position.x, this.position.y, this.getZValue())
         BlzSetSpecialEffectScale(this.effect, this.modelScale);
         BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
         BlzSetSpecialEffectOrientation(this.effect,
@@ -281,12 +317,12 @@ export abstract class CUnit extends Entity {
     }
 
     public onDelete() {
+        CUnit.unitPool.gridRemove(this);
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             this.removeComponent(comp);
         }
-
-        this.position.updateTo(30000, 30000);
+        this.positionXY(30000, 30000);
         BlzSetSpecialEffectPosition(this.effect, 30000, 30000, -6000);
         this.modelScale = 0;
         Delay.addDelay(() => {

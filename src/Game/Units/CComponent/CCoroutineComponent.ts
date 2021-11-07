@@ -34,7 +34,7 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     public get timeStep(): number {
         return this._timerDelay * this.globalTimeScale;
     }
-    protected yieldTimed(totalSeconds: number, inYield?: () => any) {
+    public yieldTimed(totalSeconds: number, inYield?: () => any) {
         for (let i = 0; i < totalSeconds; i += this.timeStep) {
             if (inYield) inYield();
             this.yield();
@@ -79,7 +79,7 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
         }
     }
     public setTempEffectsPositionToOwner() {
-        this.setTempEffectsPosition(this.owner.position.x, this.owner.position.y, this.owner.getZValue());
+        this.setTempEffectsPosition(this.owner.getPosition().x, this.owner.getPosition().y, this.owner.getZValue());
     }
 
     protected displayHeightAdjust: number = 0;
@@ -116,24 +116,34 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
         this.animationTypeReset = undefined;
     }
     public neutralizeAnimation() {
-        if (this.owner.isMoving && this.owner.lastAnimationType != ANIM_TYPE_WALK) {
-            this.owner.setAnimation(ANIM_TYPE_WALK);
-            this.owner.wasMoving = true;
-        } else if (!this.owner.isMoving && this.owner.lastAnimationType != ANIM_TYPE_STAND) {
-            this.owner.setAnimation(ANIM_TYPE_STAND);
-            this.owner.isMoving = false;
-            this.owner.wasMoving = false;
+        if (!this.owner.isDominated()) {
+            if (this.owner.isMoving && this.owner.lastAnimationType != ANIM_TYPE_WALK) {
+                this.owner.setAnimation(ANIM_TYPE_WALK);
+                this.owner.wasMoving = true;
+            } else if (!this.owner.isMoving && !this.owner.isDominated()) {
+                this.owner.setAnimation(ANIM_TYPE_STAND);
+                this.owner.isMoving = false;
+                this.owner.wasMoving = false;
+            }
         }
     }
 
     protected timeScaleAdjust: number = 0;
     public setVisualTimescale(value: number) {
-        if (this.timeScaleAdjust <= 0) this.timeScaleAdjust = this.owner.visualTimeScale;
-        this.owner.setVisualTimeScale(value);
+        this.resetVisualTimescale();
+        this.timeScaleAdjust = this.owner.visualTimeScale - (this.owner.visualTimeScale - value);
+        this.owner.addVisualTimeScale(this.timeScaleAdjust);
+    }
+    public adjustVisualTimescale(value: number) {
+        this.resetVisualTimescale();
+        this.timeScaleAdjust = value;
+        this.owner.addVisualTimeScale(value);
     }
     public resetVisualTimescale() {
-        this.owner.setVisualTimeScale(this.timeScaleAdjust);
-        this.timeScaleAdjust = 0;
+        if (this.timeScaleAdjust > 0) {
+            this.owner.removeVisualTimeScale(this.timeScaleAdjust);
+            this.timeScaleAdjust = 0;
+        }
     }
 
     protected facingPitchAdjust: number = 0;
@@ -167,6 +177,7 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     protected disableFaceCommandChange: number = 0;
     protected disableHitboxChange: number = 0;
     protected dominatedChange: number = 0;
+    protected groundedChange: number = 0;
 
     public resetFlagChanges() {
         this.owner.disableMovement -= this.disableMovementChange;
@@ -174,12 +185,14 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
         this.owner.disableFaceCommand -= this.disableFaceCommandChange;
         this.owner.disableHitbox -= this.disableHitboxChange;
         this.owner.dominated -= this.dominatedChange;
+        this.owner.grounded -= this.groundedChange;
 
         this.disableMovementChange = 0;
         this.disableRotationChange = 0;
         this.disableFaceCommandChange = 0;
         this.disableHitboxChange = 0;
         this.dominatedChange = 0;
+        this.groundedChange = 0;
     }
 
     public addDisableMovement(change: number = 1) {
@@ -201,6 +214,10 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     public addDominated(change: number = 1) {
         this.dominatedChange += change;
         this.owner.dominated += change;
+    }
+    public addGrounded(change: number = 1) {
+        this.groundedChange += change;
+        this.owner.grounded += change;
     }
 }
 

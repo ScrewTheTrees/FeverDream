@@ -1,0 +1,12 @@
+[CustomSkin]
+CinematicBorder=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleBackground=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleInventoryCoverTexture=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleInventoryNoCapacity=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleTexture01=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleTexture02=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleTexture03=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleTexture04=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleTexture05=UI\Widgets\EscMenu\Human\blank-background.blp
+ConsoleTexture06=UI\Widgets\EscMenu\Human\blank-background.blp
+

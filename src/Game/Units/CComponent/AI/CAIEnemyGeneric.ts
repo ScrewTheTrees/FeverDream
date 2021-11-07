@@ -2,13 +2,11 @@ import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
 import {BootlegPathfinding} from "../../BootlegPathfinding";
 import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
-import {TreePromise} from "wc3-treelib/src/TreeLib/Utility/TreePromise";
 import {PathfindResult} from "wc3-treelib/src/TreeLib/Pathfinder/PathfindResult";
 import {RectangleNode} from "wc3-treelib/src/TreeLib/Pathfinder/Node";
-import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 import {BootlegCollisionMap} from "../../BootlegCollisionMap";
 import {CStepComponent} from "../CStepComponent";
-import {AIState} from "./AIState";
+import {AIState, AIStateToString} from "./AIState";
 
 export abstract class CAIEnemyGeneric extends CStepComponent {
     removeOnDeath = false;
@@ -38,18 +36,16 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     public pathFindLudicrous: number = 4000;
     public pathFindUpdateDelay: number = GetRandomReal(2, 2.5);
     public pathFindUpdateDelayTime: number = GetRandomReal(0, 1);
-    public pathFindQuitDelay: number = GetRandomReal(9, 10);
     public pathFindCurrent?: PathfindResult<RectangleNode>;
     public pathFindCurrentId: number = 0;
     public pathFindFollowing: boolean = false;
     public pathFindCheckDist: number = math.maxinteger;
     public pathFindOffsetTowardsNextNode: boolean = true;
-    public pathFindPromise: TreePromise<PathfindResult<RectangleNode>, TreeThread> = new TreePromise<PathfindResult<RectangleNode>, TreeThread>().fail("Init");
 
     protected constructor(owner: CUnit, primaryTarget?: CUnit, timerDelay?: number) {
         super(owner, timerDelay);
         this.primaryTarget = primaryTarget;
-        this.target.updateToPoint(this.owner.position);
+        this.target.updateToPoint(this.owner.getPosition());
 
         if (!this.primaryTarget) {
             this.primaryTarget = CUnit.unitPool.getRandomAliveEnemy(this.owner);
@@ -103,10 +99,10 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     }
     handleLookingForTargetState() {
         this.currentTarget = this.primaryTarget;
-        if (this.currentTarget == null) {
+        if (this.currentTarget == null || this.currentTarget.isDead) {
             this.currentTarget = CUnit.unitPool.getRandomAliveEnemy(this.owner);
         }
-        if (this.currentTarget != null) {
+        if (this.currentTarget != null && !this.currentTarget.isDead) {
             this.attackDelay = this.getNewAttackDelay();
             this.updateOffset();
             this.aiState = AIState.CHASING;
@@ -121,25 +117,27 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         }
         if (this.owner.isDominated()) return; //Do nothing if dominated.
 
-        let target = this.calculateCurrentTarget(this.currentTarget);
+        this.currentTarget = this.calculateCurrentTarget(this.currentTarget);
 
-        this.calculateTargetPoint(target);
-        this.calculateAngleData(target);
+        this.calculateTargetPoint(this.currentTarget);
+        this.calculateAngleData(this.currentTarget);
 
         if (this.move) {
             this.owner.setAutoMoveData(this.angle, 1);
         }
-        this.evaluateToAttack(target);
+        this.evaluateToAttack(this.currentTarget);
     }
 
     calculateCurrentTarget(target: CUnit) {
         this.closestEnemyTargetCheckDelay -= this.lastStepSize;
         if (this.closestEnemyTargetCheckDelay <= 0) {
-            let closest = CUnit.unitPool.getClosestAliveEnemy(this.owner.position, this.owner);
+            if (this.primaryTarget != null && !this.primaryTarget.isDead) target = this.primaryTarget;
+
+            let closest = CUnit.unitPool.getClosestAliveEnemy(this.owner.getPosition(), this.owner, this.closestEnemyDistanceCheck);
             if (closest) {
-                let dist = this.owner.position.distanceTo(closest!.position);
+                let dist = this.owner.getPosition().distanceTo(closest!.getPosition());
                 if (dist <= this.closestEnemyDistanceCheck) {
-                    if (!this.collisionMap.terrainRayCastIsHit(this.owner.position, target.position, 32)) {
+                    if (!this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), target.getPosition(), 32, dist)) {
                         this.pathFindFollowing = false;
                         target = closest;
                     }
@@ -150,7 +148,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         return target;
     }
     calculateAngleData(target: CUnit) {
-        this.angle.updateToPoint(this.owner.position).offsetTo(this.target);
+        this.angle.updateToPoint(this.owner.getPosition()).offsetTo(this.target);
 
         let ang = this.angle.getAngleDegrees() + this.curving;
         this.doAngleReadjusting(target, ang);
@@ -158,39 +156,34 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     }
 
     calculateTargetPoint(hero: CUnit, ignoreDelay: boolean = false) {
-        let dist = this.owner.position.distanceTo(hero.position);
+        let dist = this.owner.getPosition().distanceTo(hero.getPosition());
         let delay = this.pathFindUpdateDelay;
         if (dist < this.pathFindFrequentDistance) delay /= 2;
-        else if (dist > this.pathFindSlowDistance) delay *= 4;
-        else if (dist > this.pathFindLudicrous || dist > this.pathFindCheckDist) delay *= 4;
+        if (dist > this.pathFindSlowDistance) delay *= 4;
+        if (dist > this.pathFindLudicrous || dist > this.pathFindCheckDist) delay *= 4;
 
         this.pathFindUpdateDelayTime += this.lastStepSize;
-        if (ignoreDelay || this.pathFindPromise.isFinished) {
-            if (ignoreDelay || this.pathFindUpdateDelayTime >= delay) {
-                if (dist > this.pathFindDistance || this.collisionMap.terrainRayCastIsHit(this.owner.position, hero.position)) {
-                    this.updatePathfinderData(hero);
-                } else {
-                    this.pathFindFollowing = false;
-                    this.pathFindUpdateDelayTime = 0;
-                    this.curving = this.getNewCurving();
-                }
-            }
-        } else if (!this.pathFindPromise.isFinished) {
-            if (this.pathFindUpdateDelayTime >= this.pathFindQuitDelay) {
+        if (ignoreDelay || this.pathFindUpdateDelayTime >= delay) {
+            if (dist > this.pathFindDistance || this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), hero.getPosition())) {
+                this.updatePathfinderData(hero);
+            } else {
                 this.pathFindFollowing = false;
-                this.pathFindUpdateDelayTime = 0;
                 this.curving = this.getNewCurving();
-                if (this.pathFindPromise.handler) this.pathFindPromise.handler.stop();
-                this.pathFindPromise.fail("Searching Path for too long.");
             }
         }
-        if (this.pathFindFollowing) {
+        if (this.pathFindFollowing && this.pathFindCurrent) {
+            let previousNode = this.pathFindCurrent.getNode(this.pathFindCurrentId - 1);
+            if (previousNode) {
+                if (previousNode.isInsideNode(this.owner.getPosition())) {
+                    this.pathFindCurrentId -= 1; //We are in the previous node, means we got pushed there, reset stuff.
+                }
+            }
             let point = this.getPathfindingPoint(hero, this.pathFindCurrentId, this.pathFindOffsetTowardsNextNode);
-            let dist = this.owner.position.distanceTo(point);
-            let ownerDistToNextNode = this.distanceToNextNode(this.owner.position);
+            let dist = this.owner.getPosition().distanceTo(point);
+            let ownerDistToNextNode = this.distanceToNextNode(this.owner.getPosition());
             let nodeDistToNextNode = this.distanceToNextNode(point);// + this.owner.moveSpeed;
 
-            if (!this.pathFindOffsetTowardsNextNode && dist <= 5) { //Enters a rectangle
+            if (!this.pathFindOffsetTowardsNextNode && dist <= 10) { //Enters a rectangle
                 this.pathFindOffsetTowardsNextNode = true;
             } else if (this.pathFindOffsetTowardsNextNode) { //Enters exit of rectangle
                 if (ownerDistToNextNode <= nodeDistToNextNode) { //If unit is closer to the next node than current target is.
@@ -203,30 +196,31 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
             this.target.updateToPoint(point);
             point.recycle();
         } else {
-            this.target.updateToPoint(hero.position).addOffset(this.offset);
+            this.target.updateToPoint(hero.getPosition()).addOffset(this.offset);
         }
     }
     getPathfindingPoint(hero: CUnit, index: number, offsetTowardsNextNode: boolean) {
-        if (!this.pathFindCurrent) return hero.position.copy();
+        if (!this.pathFindCurrent) return hero.getPosition().copy();
         let node = this.pathFindCurrent.getNode(index);
-        if (node == null) return hero.position.copy();
+        if (node == null) {
+            this.pathFindFollowing = false;
+            return hero.getPosition().copy();
+        }
         if (!offsetTowardsNextNode) {
-            return node.getClosestPointWithBoundary(this.owner.position, this.owner.thiccness * 1.2);
+            return node.getClosestPointWithBoundary(this.owner.getPosition(), this.owner.thiccness * 1.2);
         }
         let nextNode = this.pathFindCurrent.getNode(index + 1);
-        if (nextNode == null) return hero.position.copy();
+        if (nextNode == null) return hero.getPosition().copy();
 
-        let nextNodePos = nextNode.getClosestPointWithBoundary(this.owner.position, this.owner.thiccness * 1.2);
+        let nextNodePos = nextNode.getClosestPointWithBoundary(this.owner.getPosition(), this.owner.thiccness * 1.2);
         let currNodePos = node.getClosestPointWithBoundary(nextNodePos, this.owner.thiccness * 1.2);
         nextNodePos.recycle();
         return currNodePos;
     }
 
     updatePathfinderData(hero: CUnit) {
-        if (!this.pathFindPromise.isFinished) return;
-
-        let from = this.owner.position.copy();
-        let to = hero.position.copy();
+        let from = this.owner.getPosition().copy();
+        let to = hero.getPosition().copy();
 
         this.pathFindCurrent = this.pathfinder.find(from, to);
         this.pathFindCurrentId = 0;
@@ -240,13 +234,13 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         to.recycle();
     }
     evaluateToAttack(hero: CUnit) {
-        let distanceToTarget = this.owner.position.distanceTo(hero.position);
+        let distanceToTarget = this.owner.getPosition().distanceTo(hero.getPosition());
 
         if (distanceToTarget <= this.attackRange) {
             this.attackDelay -= this.lastStepSize;
 
             if (this.attackDelay <= 0 && !this.owner.isDisabledRotation()
-                && !this.collisionMap.terrainRayCastIsHit(this.owner.position, hero.position)
+                && !this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), hero.getPosition())
             ) {
                 this.onAttack(hero);
                 this.attackDelay = this.getNewAttackDelay();
@@ -286,7 +280,6 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         this.offset.recycle();
         this.target.recycle();
         this.angle.recycle();
-        if (this.pathFindPromise.handler) this.pathFindPromise.handler.stop();
     }
     private distanceToNextNode(initial: Vector2) {
         if (this.pathFindCurrent) {

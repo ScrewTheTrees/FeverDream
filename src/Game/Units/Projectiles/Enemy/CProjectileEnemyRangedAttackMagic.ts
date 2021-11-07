@@ -5,7 +5,7 @@ import {Models} from "../../../Models";
 
 export class CProjectileEnemyRangedAttackMagic extends CProjectileLinear {
     constructor(owner: CUnit, targetOffset: Vector2) {
-        super(owner, targetOffset, Models.PROJECTILE_ENEMY_RANGED_MAGIC, owner.position);
+        super(owner, targetOffset, Models.PROJECTILE_ENEMY_RANGED_MAGIC, owner.getPosition());
         this.visualHeight = 64;
         this.speed = 7;
     }

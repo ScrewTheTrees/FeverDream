@@ -10,7 +10,7 @@ export class CAIEnemyMelee extends CAIEnemyGeneric {
 
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyMeleeNormal(this.owner,
-            this.target.updateToPoint(this.owner.position).offsetTo(hero.position)
+            this.target.updateToPoint(this.owner.getPosition()).offsetTo(hero.getPosition())
         ));
     }
 }

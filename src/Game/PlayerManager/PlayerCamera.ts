@@ -58,7 +58,7 @@ export class PlayerCamera extends Entity {
                 if (hero == null) continue;
                 if (!this.lastMousePos[id].equals(InputManager.getLastMouseCoordinate(play))) {
                     this.lastMousePos[id].updateToPoint(InputManager.getLastMouseCoordinate(play));
-                    this.mouseOffset[id].updateToPoint(hero.position)
+                    this.mouseOffset[id].updateToPoint(hero.getPosition())
                         .offsetTo(this.lastMousePos[id])
                         .divideOffsetNum(8);
                     this.mouseOffset[id].x = math.max(
@@ -70,7 +70,7 @@ export class PlayerCamera extends Entity {
                         math.min(this.maxMouseOffset, this.mouseOffset[id].y)
                     );
                 }
-                let pos = hero.position.copy();
+                let pos = hero.getPosition().copy();
 
                 pos.y += 128;
                 //pos.addOffset(this.mouseOffset[id]);

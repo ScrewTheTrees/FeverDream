@@ -33,11 +33,18 @@ export class Game {
                 this.playerMaster.playerHeroes.addHero(p, h);
             }
         }
-
+        for (let p of this.gameConfig.allPlayerSlots) {
+            for (let t of this.gameConfig.allPlayerSlots) {
+                SetPlayerAlliance(p, t, ALLIANCE_PASSIVE, true);
+                SetPlayerAlliance(p, t, ALLIANCE_SHARED_XP, true);
+                SetPlayerAlliance(p, t, ALLIANCE_SHARED_SPELLS, true);
+                SetPlayerAlliance(p, t, ALLIANCE_SHARED_VISION, true);
+            }
+        }
 
         FogEnable(false);
         FogMaskEnable(false);
-        BlzHideOriginFrames(true);
+        //BlzHideOriginFrames(true);
         let frame = BlzGetFrameByName("ConsoleUIBackdrop", 0);
         BlzFrameSetVisible(frame, false);
     }

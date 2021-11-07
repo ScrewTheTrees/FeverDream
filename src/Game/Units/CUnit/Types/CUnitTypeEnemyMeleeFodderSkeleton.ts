@@ -8,7 +8,7 @@ import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
 import {CProjectile} from "../../Projectiles/CProjectile";
 
 export class CUnitTypeEnemyMeleeFodderSkeleton extends CUnit {
-    public poise = 0.5;
+    public poise = 1;
     public moveSpeed = 4;
     public modelScale = 0.8;
     public projectileCollisionSize = 22;

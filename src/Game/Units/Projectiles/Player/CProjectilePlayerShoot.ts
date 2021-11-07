@@ -5,7 +5,7 @@ import {Models} from "../../../Models";
 
 export class CProjectilePlayerShoot extends CProjectileLinear {
     constructor(owner: CUnit, targetOffset: Vector2) {
-        super(owner, targetOffset, Models.PROJECTILE_PLAYER_FIRE, owner.position);
+        super(owner, targetOffset, Models.PROJECTILE_PLAYER_FIRE, owner.getPosition());
         this.visualHeight = 64;
     }
 }

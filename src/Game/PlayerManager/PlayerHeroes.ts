@@ -74,7 +74,7 @@ export class PlayerHeroes {
         for (let u of this.heroes.values()) {
             if (u.isDead) continue;
             for (let r of to) {
-                if (RectContainsCoords(r, u.position.x, u.position.y)) {
+                if (RectContainsCoords(r, u.getPosition().x, u.getPosition().y)) {
                     return true;
                 }
             }
@@ -85,7 +85,7 @@ export class PlayerHeroes {
         let found: CUnit[] = [];
         for (let u of this.heroes.values()) {
             for (let r of to) {
-                if (RectContainsCoords(r, u.position.x, u.position.y)) {
+                if (RectContainsCoords(r, u.getPosition().x, u.getPosition().y)) {
                     found.push(u);
                 }
             }

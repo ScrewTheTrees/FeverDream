@@ -5,7 +5,7 @@ import {Models} from "../../../Models";
 
 export class CProjectileEnemyRangedAttackArrow extends CProjectileLinear {
     constructor(owner: CUnit, targetOffset: Vector2) {
-        super(owner, targetOffset, Models.PROJECTILE_ENEMY_RANGED_ARROW, owner.position);
+        super(owner, targetOffset, Models.PROJECTILE_ENEMY_RANGED_ARROW, owner.getPosition());
         this.visualHeight = 48;
         this.speed = 9;
     }

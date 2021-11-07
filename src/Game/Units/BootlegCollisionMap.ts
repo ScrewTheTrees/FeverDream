@@ -12,23 +12,26 @@ export class BootlegCollisionMap {
         return this._instance;
     }
 
+    private gridNegative: number = 32_768;
     private grid: boolean[][] = [];
     private readonly gridSize;
 
     private checker: PointWalkableChecker = PointWalkableChecker.getInstance();
 
-    public constructor(gridSize: number = 32) {
+    public constructor(gridNegative: number = 32_768, gridSize: number = 32) {
+        this.gridNegative = gridNegative;
         this.gridSize = gridSize;
 
         Hooks.hookArguments(ModifyGateBJ, (operation, gate) => {
             Delay.addDelay(() => {
                 let pp = Vector2.fromWidget(gate);
-                this.parseAreaByCoordinates(pp.x - 600, pp.y - 600, pp.x + 600, pp.y + 600);
+                this.clearByCoordinates(pp.x - 600, pp.y - 600, pp.x + 600, pp.y + 600);
                 pp.recycle();
             }, 0.25);
         });
     }
 
+    //Coordinate
     public getCollisionCircle(x: number, y: number, radius: number, precision: number = 8): boolean {
         const p = Vector2.new(x, y);
         let result = this.getCollisionAtCoordinate(p.x, p.y);
@@ -49,6 +52,8 @@ export class BootlegCollisionMap {
         return result;
     }
     public getCollisionAtCoordinate(x: number, y: number) {
+        x += this.gridNegative;
+        y += this.gridNegative;
         x = math.floor(x / this.gridSize);
         y = math.floor(y / this.gridSize);
         if (this.grid[x] == null) {
@@ -57,11 +62,23 @@ export class BootlegCollisionMap {
         let value = this.grid[x][y];
         if (value == null) {
             value = this.updateCollisionAtIndices(x, y);
-            this.grid[x][y] = value;
         }
         return value;
     }
+    public clearByCoordinates(x1: number, y1: number, x2: number, y2: number) {
+        x1 += this.gridNegative;
+        y1 += this.gridNegative;
+        x2 += this.gridNegative;
+        y2 += this.gridNegative;
+        let minX = math.floor(math.min(x1, x2) / this.gridSize);
+        let maxX = math.floor(math.max(x1, x2) / this.gridSize);
+        let minY = math.floor(math.min(y1, y2) / this.gridSize);
+        let maxY = math.floor(math.max(y1, y2) / this.gridSize);
 
+        this.clearByIndices(minX, minY, maxX, maxY)
+    }
+
+    //Special
     public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 30, maxLength: number = 960) {
         let start = from.copy();
         let finalDist = math.min(from.distanceTo(to), maxLength);
@@ -83,25 +100,17 @@ export class BootlegCollisionMap {
     }
 
 
-//Parse data
+    //Indices
     public updateCollisionAtIndices(x: number, y: number) {
         if (this.grid[x] == null) {
             this.grid[x] = [];
         }
         let half = this.gridSize / 2;
-        let value = this.checker.checkTerrainIsWalkableXY((x * this.gridSize) + half, y * (this.gridSize) + half);
+        let value = this.checker.checkTerrainIsWalkableXY((x * this.gridSize) + half - this.gridNegative, (y * this.gridSize) + half - this.gridNegative);
         this.grid[x][y] = value;
         return value;
     }
-    public parseAreaByCoordinates(x1: number, y1: number, x2: number, y2: number) {
-        let minX = math.floor(math.min(x1, x2) / this.gridSize);
-        let maxX = math.floor(math.max(x1, x2) / this.gridSize);
-        let minY = math.floor(math.min(y1, y2) / this.gridSize);
-        let maxY = math.floor(math.max(y1, y2) / this.gridSize);
-
-        this.parseAreaByIndices(minX, minY, maxX, maxY)
-    }
-    public parseAreaByIndices(x1: number, y1: number, x2: number, y2: number) {
+    public clearByIndices(x1: number, y1: number, x2: number, y2: number) {
         let minX = math.min(x1, x2) / this.gridSize;
         let maxX = math.max(x1, x2) / this.gridSize;
         let minY = math.min(y1, y2) / this.gridSize;
@@ -109,7 +118,10 @@ export class BootlegCollisionMap {
 
         for (let x = minX; x <= maxX; x++) {
             for (let y = minY; y <= maxY; y++) {
-                this.updateCollisionAtIndices(x, y);
+                if (this.grid[x] == null) {
+                    this.grid[x] = [];
+                }
+                delete this.grid[x][y];
             }
         }
     }

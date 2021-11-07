@@ -8,4 +8,5 @@ export interface IComponent {
     set timerDelay(delay: number);
     destroy(): void;
     cleanup(): void;
+    step(): void;
 }

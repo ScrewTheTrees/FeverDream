@@ -15,10 +15,10 @@ export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
     }
 
     public doAngleReadjusting(hero: CUnit, ang: number) {
-        if (!this.towards && this.owner.position.distanceTo(hero.position) > this.maxRange) {
+        if (!this.towards && this.owner.getPosition().distanceTo(hero.getPosition()) > this.maxRange) {
             this.towards = true;
             this.curving = this.getNewCurving();
-        } else if (this.towards && this.owner.position.distanceTo(hero.position) < this.minRange) {
+        } else if (this.towards && this.owner.getPosition().distanceTo(hero.getPosition()) < this.minRange) {
             this.towards = false;
             this.curving = this.getNewCurving();
         }
@@ -43,7 +43,7 @@ export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
     }
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyRangedMagic(this.owner,
-            this.target.updateToPoint(this.owner.position).offsetTo(hero.position)
+            this.target.updateToPoint(this.owner.getPosition()).offsetTo(hero.getPosition())
         ));
     }
 }

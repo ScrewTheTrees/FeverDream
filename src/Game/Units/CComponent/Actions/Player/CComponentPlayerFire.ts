@@ -19,6 +19,8 @@ export class CComponentPlayerFire extends CCoroutineComponent {
         this.addDominated();
     }
     execute(): void {
+        if (this.owner.isDead) return;
+
         let fireRate = PlayerStats.getInstance().fireRate;
         let damage = PlayerStats.getInstance().damage;
 
@@ -26,20 +28,23 @@ export class CComponentPlayerFire extends CCoroutineComponent {
         this.setAnimation(ANIM_TYPE_ATTACK);
         this.setVisualTimescale(0.125 / fireRate);
 
-        this.yieldTimed(0.6 / fireRate);
+        this.yieldTimed(0.6 / fireRate, () => this.setVisualTimescale(0.125 / fireRate));
+
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
-        this.setVisualTimescale(fireRate);
+        this.setVisualTimescale(1 / fireRate);
         let proj = new CProjectilePlayerShoot(this.owner, this.targetOffset);
         proj.damage = damage;
 
-        this.yieldTimed(0.5 / fireRate);
+        this.yieldTimed(0.5 / fireRate, () => this.setVisualTimescale(fireRate));
         //Done
     }
     protected onEnd() {
         this.resetVisualTimescale();
-        this.neutralizeAnimation();
         this.resetFlagChanges();
-        this.owner.setAutoMoveData(this.targetOffset, 0);
+
+        this.neutralizeAnimation();
+        this.owner.wasMoving = false;
+        this.owner.isMoving = false;
     }
     cleanup(): void {
         this.targetOffset.recycle();

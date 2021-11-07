@@ -21,15 +21,17 @@ export abstract class CComponentGenericEnemyAttack extends CCoroutineComponent {
     }
 
     execute(): void {
+        if (this.owner.isDead) return;
+
         this.setAnimation(ANIM_TYPE_ATTACK);
-        this.setVisualTimescale(1);
+        this.adjustVisualTimescale(1);
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
         this.yieldTimed(0.25);
 
-        this.setVisualTimescale(0.2);
+        this.adjustVisualTimescale(0.2);
         this.yieldTimed(0.25);
 
-        this.setVisualTimescale(1);
+        this.adjustVisualTimescale(1);
         this.yieldTimed(0.25);
         this.createProjectile();
         this.yieldTimed(1);
@@ -42,6 +44,7 @@ export abstract class CComponentGenericEnemyAttack extends CCoroutineComponent {
         this.resetDisplayHeight();
         this.resetBonusMoveSpeed();
         this.resetFacing();
+        this.cleanupAllTempEffects();
         this.neutralizeAnimation();
     }
     cleanup(): void {

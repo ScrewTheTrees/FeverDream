@@ -5,7 +5,7 @@ import {Models} from "../../../Models";
 
 export class CProjectileEnemyMelee extends CProjectileMeleeCircle {
     constructor(owner: CUnit, targetOffset: Vector2, scale: number = 0.3) {
-        super(owner, targetOffset, Models.PROJECTILE_ENEMY_MELEE, owner.position);
+        super(owner, targetOffset, Models.PROJECTILE_ENEMY_MELEE, owner.getPosition());
         this.visualHeight = 32;
         this.speed = 50;
         BlzSetSpecialEffectScale(this.effect, scale);
