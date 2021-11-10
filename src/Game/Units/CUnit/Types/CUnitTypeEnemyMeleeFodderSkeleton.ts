@@ -16,7 +16,7 @@ export class CUnitTypeEnemyMeleeFodderSkeleton extends CUnit {
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_SKELETON, position);
         this.setMaxHealth(1);
-        this.addComponent(new CAIEnemyMelee(this, focus));
+        //this.addComponent(new CAIEnemyMelee(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));
 
         this.createSpawnEffect(Models.EFFECT_DARK_RITUAL_SPAWN);
@@ -25,6 +25,6 @@ export class CUnitTypeEnemyMeleeFodderSkeleton extends CUnit {
     }
 
     public onHit(other: CProjectile) {
-        this.createSpawnEffect(Models.EFFECT_BALLISTA_IMPACT, 1, 5);
+        this.createSpawnEffect(Models.EFFECT_BALLISTA_IMPACT, 0.75, 5);
     }
 }

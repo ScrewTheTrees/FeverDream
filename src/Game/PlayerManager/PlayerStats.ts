@@ -14,4 +14,5 @@ export class PlayerStats {
     public fireRate: number = 1;
     public actionRate: number = 1;
     public rollSpeed: number = 1;
+    public cooldownReduction: number = 1;
 }

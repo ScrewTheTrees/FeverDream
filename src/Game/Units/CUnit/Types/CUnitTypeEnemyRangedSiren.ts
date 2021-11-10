@@ -10,6 +10,9 @@ import {CProjectile} from "../../Projectiles/CProjectile";
 export class CUnitTypeEnemyRangedSiren extends CUnit {
     public moveSpeed = 3;
     public modelScale = 0.6;
+    public projectileCollisionSize = 20;
+    public terrainCollisionSize = 20;
+    public crowdingCollisionSize = 38;
 
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_NAGA_SIREN, position);

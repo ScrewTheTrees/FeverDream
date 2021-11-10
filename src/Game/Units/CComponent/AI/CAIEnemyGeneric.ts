@@ -6,7 +6,9 @@ import {PathfindResult} from "wc3-treelib/src/TreeLib/Pathfinder/PathfindResult"
 import {RectangleNode} from "wc3-treelib/src/TreeLib/Pathfinder/Node";
 import {BootlegCollisionMap} from "../../BootlegCollisionMap";
 import {CStepComponent} from "../CStepComponent";
-import {AIState, AIStateToString} from "./AIState";
+import {AIState} from "./AIState";
+import {Models} from "../../../Models";
+import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 
 export abstract class CAIEnemyGeneric extends CStepComponent {
     removeOnDeath = false;
@@ -17,7 +19,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
 
     public primaryTarget: CUnit | undefined;
     public currentTarget: CUnit | undefined;
-    public closestEnemyTargetCheckDelay: number = this.getNewEnemyTargetDelay();
+    public closestEnemyTargetCheckDelay: number = 0.25;
     public closestEnemyDistanceCheck: number = 600;
 
     public attackRange: number = 100;
@@ -42,7 +44,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     public pathFindCheckDist: number = math.maxinteger;
     public pathFindOffsetTowardsNextNode: boolean = true;
 
-    protected constructor(owner: CUnit, primaryTarget?: CUnit, timerDelay?: number) {
+    protected constructor(owner: CUnit, primaryTarget?: CUnit, timerDelay: number = 0.1) {
         super(owner, timerDelay);
         this.primaryTarget = primaryTarget;
         this.target.updateToPoint(this.owner.getPosition());
@@ -53,7 +55,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         if (this.primaryTarget) {
             this.updatePathfinderData(this.primaryTarget);
         }
-        /*TreeThread.RunUntilDone(() => {
+        TreeThread.RunUntilDone(() => {
             let gfx = AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, 0, 0);
             while (!this.owner.isDead) {
                 BlzSetSpecialEffectX(gfx, this.target.x);
@@ -62,7 +64,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
                 coroutine.yield();
             }
             DestroyEffect(gfx);
-        });*/
+        });
     }
 
     public abstract onAttack(hero: CUnit): void;
@@ -106,9 +108,10 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
             this.attackDelay = this.getNewAttackDelay();
             this.updateOffset();
             this.aiState = AIState.CHASING;
+            this.closestEnemyTargetCheckDelay = 0.25;
             return;
         }
-        this.timerYield(1);
+        this.timerYield(0.5);
     }
     handleChasingState() {
         if (this.currentTarget == null || this.currentTarget.isDead) {
@@ -135,7 +138,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
 
             let closest = CUnit.unitPool.getClosestAliveEnemy(this.owner.getPosition(), this.owner, this.closestEnemyDistanceCheck);
             if (closest) {
-                let dist = this.owner.getPosition().distanceTo(closest!.getPosition());
+                let dist = this.owner.getPosition().distanceTo(closest.getPosition());
                 if (dist <= this.closestEnemyDistanceCheck) {
                     if (!this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), target.getPosition(), 32, dist)) {
                         this.pathFindFollowing = false;
@@ -172,31 +175,31 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
             }
         }
         if (this.pathFindFollowing && this.pathFindCurrent) {
-            let previousNode = this.pathFindCurrent.getNode(this.pathFindCurrentId - 1);
-            if (previousNode) {
-                if (previousNode.isInsideNode(this.owner.getPosition())) {
-                    this.pathFindCurrentId -= 1; //We are in the previous node, means we got pushed there, reset stuff.
-                }
-            }
             let point = this.getPathfindingPoint(hero, this.pathFindCurrentId, this.pathFindOffsetTowardsNextNode);
             let dist = this.owner.getPosition().distanceTo(point);
             let ownerDistToNextNode = this.distanceToNextNode(this.owner.getPosition());
-            let nodeDistToNextNode = this.distanceToNextNode(point);// + this.owner.moveSpeed;
+            let nodeDistToNextNode = this.nodeDistanceToNextNode();// + this.owner.moveSpeed;
 
             if (!this.pathFindOffsetTowardsNextNode && dist <= 10) { //Enters a rectangle
                 this.pathFindOffsetTowardsNextNode = true;
             } else if (this.pathFindOffsetTowardsNextNode) { //Enters exit of rectangle
-                if (ownerDistToNextNode <= nodeDistToNextNode) { //If unit is closer to the next node than current target is.
+                let previousNode = this.pathFindCurrent.getNode(this.pathFindCurrentId - 1);
+                if (previousNode) {
+                    if (previousNode.isInsideNode(this.owner.getPosition())) {
+                        this.pathFindCurrentId -= 1; //We are far too far back, which means we got pushed there, reset stuff so we can reevaluate
+                    }
+                }
+                if (ownerDistToNextNode <= nodeDistToNextNode + 10) { //If unit is closer to the next node than current target is.
                     this.pathFindOffsetTowardsNextNode = false;
                     this.pathFindCurrentId += 1;
                 }
             }
-            point.recycle();
-            point = this.getPathfindingPoint(hero, this.pathFindCurrentId, this.pathFindOffsetTowardsNextNode);
+            point.updateToPoint(this.getPathfindingPoint(hero, this.pathFindCurrentId, this.pathFindOffsetTowardsNextNode).recycle());
             this.target.updateToPoint(point);
             point.recycle();
         } else {
-            this.target.updateToPoint(hero.getPosition()).addOffset(this.offset);
+            this.target.updateToPoint(hero.getPosition());
+            this.target.addOffset(this.offset);
         }
     }
     getPathfindingPoint(hero: CUnit, index: number, offsetTowardsNextNode: boolean) {
@@ -207,13 +210,13 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
             return hero.getPosition().copy();
         }
         if (!offsetTowardsNextNode) {
-            return node.getClosestPointWithBoundary(this.owner.getPosition(), this.owner.thiccness * 1.2);
+            return node.getClosestPointWithBoundary(this.owner.getPosition(), this.owner.terrainCollisionSize * 1.2);
         }
         let nextNode = this.pathFindCurrent.getNode(index + 1);
         if (nextNode == null) return hero.getPosition().copy();
 
-        let nextNodePos = nextNode.getClosestPointWithBoundary(this.owner.getPosition(), this.owner.thiccness * 1.2);
-        let currNodePos = node.getClosestPointWithBoundary(nextNodePos, this.owner.thiccness * 1.2);
+        let nextNodePos = nextNode.getClosestPointWithBoundary(this.owner.getPosition(), this.owner.terrainCollisionSize * 1.2);
+        let currNodePos = node.getClosestPointWithBoundary(nextNodePos, this.owner.terrainCollisionSize * 1.2);
         nextNodePos.recycle();
         return currNodePos;
     }
@@ -277,19 +280,36 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     }
 
     public cleanup(): void {
-        this.offset.recycle();
-        this.target.recycle();
-        this.angle.recycle();
+        //this.offset.recycle();
+        //this.target.recycle();
+        //this.angle.recycle();
     }
-    private distanceToNextNode(initial: Vector2) {
+    protected distanceToNextNode(initial: Vector2) {
+        let ret = 0;
         if (this.pathFindCurrent) {
             let node = this.pathFindCurrent.getNode(this.pathFindCurrentId + 1);
             if (node != null) {
-                let pp = node.getClosestPointWithBoundary(initial, this.owner.thiccness);
-                initial.distanceTo(pp);
+                let pp = node.getClosestPointWithBoundary(initial, this.owner.terrainCollisionSize);
+                ret = initial.distanceTo(pp);
+                pp.recycle();
             }
         }
-        return initial.distanceTo(initial);
+        return ret;
+    }
+    protected nodeDistanceToNextNode() {
+        let ret = 0;
+        if (this.pathFindCurrent) {
+            let lastNode = this.pathFindCurrent.getNode(this.pathFindCurrentId);
+            let node = this.pathFindCurrent.getNode(this.pathFindCurrentId + 1);
+            if (lastNode != null && node != null) {
+                let pp = node.getClosestPointWithBoundary(lastNode.point, this.owner.terrainCollisionSize * 1.1);
+                let pp2 = lastNode.getClosestPointWithBoundary(node.point, this.owner.terrainCollisionSize * 1.1);
+                ret = pp.distanceTo(pp2);
+                pp.recycle();
+                pp2.recycle();
+            }
+        }
+        return ret;
     }
 
 }

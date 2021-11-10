@@ -48,7 +48,7 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
     }
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyRangedArrow(this.owner,
-            this.target.updateToPoint(this.owner.getPosition()).offsetTo(hero.getPosition())
+            hero.getPosition()
         ));
     }
 }

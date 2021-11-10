@@ -42,10 +42,14 @@ export abstract class CUnit extends Entity {
     public maxHealth: number = 100;
     private wasDead: boolean = false;
     public isDead: boolean = false;
+
     public projectileCollisionSize: number = 32;
-    public thiccness: number = 16;
+    public terrainCollisionSize: number = 16;
+    public crowdingCollisionSize: number = 32;
 
     public poise: number = 1; //Dictates how much this unit is pushed around by other units and how resistant it is to piercing.
+    public canBePushed: boolean = true; //Will be pushed around
+    public maxPush: number = 5; //How hard this thing can be pushed in one direction at max.
 
     public moveOffset: Vector2 = Vector2.new(0, 0);
     public moveSpeed = 6;
@@ -61,8 +65,10 @@ export abstract class CUnit extends Entity {
         this.effect = AddSpecialEffect(model, position.x, position.y);
         this.position = position.copy();
         CUnit.unitPool.addUnit(this);
-        CUnit.unitPool.gridUpdatePosition(this, this.position);
+        CUnit.unitPool.gridAddUnit(this);
         BlzSetSpecialEffectColorByPlayer(this.effect, this.owner);
+
+        this.unstuck();
     }
 
     step() {
@@ -89,25 +95,30 @@ export abstract class CUnit extends Entity {
 
     private crowdingOffsetUpdate = 0;
     private crowdingOffset = Vector2.new(0, 0);
+    private crowdingArray: CUnit[] = [];
     private handleCrowding() {
+        if (!this.canBePushed) return this.crowdingOffset.updateTo(0, 0);
+
         this.crowdingOffsetUpdate -= this.lastStepSize;
         if (this.crowdingOffsetUpdate <= 0) {
             this.crowdingOffset.updateTo(0, 0);
 
-            let other = CUnit.unitPool.getClosestAliveNotSelf(this, undefined, 64 + (this.thiccness * 4));
-            if (other) {
-                let intersectingThicc = (this.thiccness + other.thiccness) * 2;
+            this.crowdingOffsetUpdate = 0.5; //Remotly low number when waiting for literally anything.
+
+            Quick.Clear(this.crowdingArray);
+            this.crowdingArray = CUnit.unitPool.getAliveUnitsInRangeNotSelf(this, 64 + (this.crowdingCollisionSize * 4), undefined, this.crowdingArray);
+            for (let other of this.crowdingArray) {
+                let intersectingThicc = (this.crowdingCollisionSize + other.crowdingCollisionSize);
                 let distance = this.position.distanceTo(other.getPosition());
-                if (distance < intersectingThicc) {
-                    this.crowdingOffset.polarProject(1 - (distance / intersectingThicc), this.position.directionFrom(other.getPosition()));
-                    this.crowdingOffset.divideOffsetNum(0.25);
-                    this.crowdingOffset.divideOffsetNum(this.poise); //Lower our poise, the more we get pushed around.
-                    this.crowdingOffset.multiplyOffsetNum(other.poise); //Higher enemy poise the more we get pusehd around.
+                if (distance <= intersectingThicc) {
+                    let power = (((1 - (distance / intersectingThicc)) / 0.25) / this.poise) * other.poise
+                    this.crowdingOffset.polarProject(power, this.position.directionFrom(other.getPosition()));
                 }
-                this.crowdingOffsetUpdate = math.min(2, math.max(0.2, (distance * this.timerDelay) / (this.getActualMoveSpeed() * 2)));
-            } else {
-                this.crowdingOffsetUpdate = 0.5; //Remotly low number when waiting for literally anything.
+                let diff = (distance * this.timerDelay) / (this.getActualMoveSpeed() * 2);
+                this.crowdingOffsetUpdate = math.max(0.2, math.min(this.crowdingOffsetUpdate, diff));
             }
+            this.crowdingOffset.x = math.min(math.max(this.crowdingOffset.x, -this.maxPush), this.maxPush)
+            this.crowdingOffset.y = math.min(math.max(this.crowdingOffset.y, -this.maxPush), this.maxPush)
         }
         if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
             this.forceMove(this.crowdingOffset);
@@ -117,9 +128,9 @@ export abstract class CUnit extends Entity {
         return this.position;
     }
     public setPosition(v: Vector2) {
-        this.positionXY(v.x, v.y);
+        this.setPositionXY(v.x, v.y);
     }
-    public positionXY(x: number, y: number) {
+    public setPositionXY(x: number, y: number) {
         CUnit.unitPool.gridUpdatePositionXY(this, this.position.x, this.position.y, x, y);
         this.position.x = x;
         this.position.y = y;
@@ -144,18 +155,19 @@ export abstract class CUnit extends Entity {
         return this.grounded > 0;
     }
 
-    public addComponent(command: IComponent) {
+    public addComponent<T extends IComponent>(command: T) {
         if (!Quick.Contains(this.subComponents, command)) {
             this.subComponents.push(command);
             command.step();
         }
+        return command;
     }
     public removeComponent(command: IComponent) {
         Quick.Remove(this.subComponents, command);
-        command.destroy();
+        command.stop();
     }
     public teleport(to: Vector2) {
-        this.positionXY(to.x, to.y);
+        this.setPositionXY(to.x, to.y);
     }
     public setAutoMoveData(offset: Vector2, seconds: number = 0.1): boolean {
         if (this.disableMovement > 0) return false;
@@ -181,16 +193,43 @@ export abstract class CUnit extends Entity {
     getActualMoveSpeed() {
         return math.max(0, this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale;
     }
+    private forceMoveVector = Vector2.new(0, 0);
     public forceMove(offset: Vector2) {
-        let nextCandidate = this.getPosition().copy();
-        if (this.collision.getCollisionCircle(nextCandidate.x + offset.x, nextCandidate.y, this.thiccness)) {
+        let nextCandidate = this.forceMoveVector.updateToPoint(this.getPosition());
+        if (this.collision.getCollisionCircleEmpty(nextCandidate.x + offset.x, nextCandidate.y, this.terrainCollisionSize)) {
             nextCandidate.x += offset.x;
         }
-        if (this.collision.getCollisionCircle(nextCandidate.x, nextCandidate.y + offset.y, this.thiccness)) {
+        if (this.collision.getCollisionCircleEmpty(nextCandidate.x, nextCandidate.y + offset.y, this.terrainCollisionSize)) {
             nextCandidate.y += offset.y;
         }
         this.setPosition(nextCandidate);
-        nextCandidate.recycle();
+    }
+    public unstuck() {
+        let xs = this.position.x;
+        let ys = this.position.y;
+
+        if (this.collision.getCollisionCircleEmpty(xs, ys, this.terrainCollisionSize)) return; //No change needed.
+
+        for (let d = 1; d <= 32; d++) {
+            for (let i = 0; i < d + 1; i++) {
+                let x1 = xs - d + (i * 32);
+                let y1 = ys - (i * 32);
+                if (this.collision.getCollisionCircleEmpty(x1, y1, this.terrainCollisionSize)) return this.setPositionXY(x1, y1);
+
+                let x2 = xs + d - (i * 32);
+                let y2 = ys + (i * 32);
+                if (this.collision.getCollisionCircleEmpty(x2, y2, this.terrainCollisionSize)) return this.setPositionXY(x2, y2);
+            }
+            for (let i = 1; i < d; i++) {
+                let x1 = xs - (i * 32);
+                let y1 = ys + d - (i * 32);
+                if (this.collision.getCollisionCircleEmpty(x1, y1, this.terrainCollisionSize)) return this.setPositionXY(x1, y1);
+
+                let x2 = xs + (i * 32);
+                let y2 = ys - d + (i * 32);
+                if (this.collision.getCollisionCircleEmpty(x2, y2, this.terrainCollisionSize)) return this.setPositionXY(x2, y2);
+            }
+        }
     }
     public setFacing(angle: number) {
         if (this.isDisabledFaceCommand()) return;
@@ -232,9 +271,9 @@ export abstract class CUnit extends Entity {
         this.health -= damage;
         this.clampHealth(attacker);
     }
-    public setMaxHealth(mh: number, healFully: boolean = false) {
+    public setMaxHealth(mh: number, setCurrentHealth: boolean = false) {
         this.maxHealth = mh;
-        if (healFully) this.health = this.maxHealth;
+        if (setCurrentHealth) this.health = this.maxHealth;
         this.clampHealth();
     }
     public dealHealing(damage: number, healer: CUnit) {
@@ -322,7 +361,7 @@ export abstract class CUnit extends Entity {
             let comp = this.subComponents[i];
             this.removeComponent(comp);
         }
-        this.positionXY(30000, 30000);
+        this.setPositionXY(30000, 30000);
         BlzSetSpecialEffectPosition(this.effect, 30000, 30000, -6000);
         this.modelScale = 0;
         Delay.addDelay(() => {

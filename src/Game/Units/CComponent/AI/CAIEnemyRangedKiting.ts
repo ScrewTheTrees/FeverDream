@@ -43,7 +43,7 @@ export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
     }
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyRangedMagic(this.owner,
-            this.target.updateToPoint(this.owner.getPosition()).offsetTo(hero.getPosition())
+            hero.getPosition()
         ));
     }
 }

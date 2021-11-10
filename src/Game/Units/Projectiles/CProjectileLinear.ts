@@ -1,6 +1,5 @@
 import {CUnit} from "../CUnit/CUnit";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {CProjectile} from "./CProjectile";
 import {GameConfig} from "../../../GameConfig";
@@ -26,13 +25,13 @@ export class CProjectileLinear extends CProjectile {
         while (this.durability > 0) {
             this.travelTime -= this.timerDelay;
             if (this.travelTime <= 0) {
-                this.onDestroy();
+                this.destroy();
             }
-            if (this.collisionMap.getCollisionAtCoordinate(this.position.x, this.position.y)) {
+            if (this.collisionMap.getCollisionAtCoordinateEmpty(this.position.x, this.position.y)) {
                 this.position.polarProject(this.speed * GameConfig.getInstance().timeScale,
                     this.targetOffset.getAngleDegrees()
                 );
-                this.targets = CUnit.unitPool.getAliveUnitsInRange(this.position, this.collisionSize + 128);
+                this.targets = CUnit.unitPool.getAliveUnitsInRange(this.position, this.collisionSize + 128, undefined, this.targets);
                 for (let targ of this.targets) {
                     if (targ != this.owner) {
                         if (this.position.distanceTo(targ.getPosition()) < this.collisionSize + targ.projectileCollisionSize) {
@@ -43,7 +42,7 @@ export class CProjectileLinear extends CProjectile {
                 Quick.Clear(this.targets);
                 this.draw();
             } else {
-                this.onDestroy();
+                this.destroy();
             }
             this.yield();
         }
@@ -60,10 +59,8 @@ export class CProjectileLinear extends CProjectile {
         );
     }
 
-    onDestroy() {
-        this.remove();
+    destroy() {
+        super.destroy();
         DestroyEffect(this.effect);
-        this.targetOffset.recycle();
-        this.position.recycle();
     }
 }

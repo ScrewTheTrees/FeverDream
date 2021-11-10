@@ -18,7 +18,6 @@ export abstract class CProjectile extends TreeThread {
         this.position = position.copy();
     }
     abstract execute(): void;
-    abstract onDestroy(): void;
 
     public targetsHit: CUnit[] = [];
     public onHit(target: CUnit) {
@@ -38,7 +37,8 @@ export abstract class CProjectile extends TreeThread {
         }
     }
     public destroy() {
-        this.onDestroy();
+        this.targetOffset.recycle();
+        this.position.recycle();
         this.remove();
     }
 }

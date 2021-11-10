@@ -3,8 +3,9 @@ import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../../CUnit/CUnit";
 import {CProjectilePlayerShoot} from "../../../Projectiles/Player/CProjectilePlayerShoot";
 import {PlayerStats} from "../../../../PlayerManager/PlayerStats";
+import {CUnitTypeBarricade} from "../../../CUnit/Types/CUnitTypeBarricade";
 
-export class CComponentPlayerFire extends CCoroutineComponent {
+export class CComponentPlayerPlaceBarricade extends CCoroutineComponent {
     removeOnDeath = true;
     public targetOffset: Vector2;
 
@@ -18,26 +19,37 @@ export class CComponentPlayerFire extends CCoroutineComponent {
         this.addDisableFaceCommand();
         this.addDominated();
     }
+
     execute(): void {
         if (this.owner.isDead) return;
 
-        let fireRate = PlayerStats.getInstance().fireRate;
-        let damage = PlayerStats.getInstance().damage;
+        this.owner.forceFacing(this.targetOffset.getAngleDegrees());
+        let actionRate = PlayerStats.getInstance().actionRate;
+
+        let pos = this.owner.getPosition().copy().polarProject(128, this.targetOffset.getAngleDegrees());
+        let barricade = new CUnitTypeBarricade(this.owner.owner, pos);
+        pos.recycle();
 
         this.owner.forceFacing(this.targetOffset.getAngleDegrees());
-        this.setAnimation(ANIM_TYPE_ATTACK);
-        this.setVisualTimescale(0.125 / fireRate);
-
-        this.yieldTimed(0.6 / fireRate, () => this.setVisualTimescale(0.125 / fireRate));
-
-        this.owner.forceFacing(this.targetOffset.getAngleDegrees());
-        this.setVisualTimescale(1 / fireRate);
-        let proj = new CProjectilePlayerShoot(this.owner, this.targetOffset);
-        proj.damage = damage;
-
-        this.yieldTimed(0.5 / fireRate, () => this.setVisualTimescale(fireRate));
-        //Done
+        this.setAnimation(ANIM_TYPE_SPELL);
+        this.setVisualTimescale(1.5 / actionRate);
+        this.yieldTimed(0.8 / actionRate, () => {
+            if (barricade.isDead) this.stop()
+        });
+        this.setAnimation(ANIM_TYPE_STAND);
+        this.setAnimation(ANIM_TYPE_SPELL);
+        this.setVisualTimescale(1.5 / actionRate);
+        this.yieldTimed(0.8 / actionRate, () => {
+            if (barricade.isDead) this.stop()
+        });
+        this.setAnimation(ANIM_TYPE_STAND);
+        this.setAnimation(ANIM_TYPE_SPELL);
+        this.setVisualTimescale(1.5 / actionRate);
+        this.yieldTimed(0.8 / actionRate, () => {
+            if (barricade.isDead) this.stop()
+        });
     }
+
     protected onEnd() {
         this.resetVisualTimescale();
         this.resetFlagChanges();

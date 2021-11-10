@@ -14,11 +14,14 @@ export abstract class CStepComponent extends Entity implements IComponent {
     abstract step(): void;
     abstract cleanup(): void;
 
-    destroy() {
+    stop() {
         this.remove();
         this.cleanup();
     }
+    public get globalTimeScale(): number {
+        return GameConfig.getInstance().timeScale;
+    }
     public get timeScale(): number {
-        return this.timerDelay * GameConfig.getInstance().timeScale;
+        return this.timerDelay * this.globalTimeScale;
     }
 }

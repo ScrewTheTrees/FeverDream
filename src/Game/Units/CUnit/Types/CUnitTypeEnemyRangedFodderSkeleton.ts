@@ -25,6 +25,6 @@ export class CUnitTypeEnemyRangedFodderSkeleton extends CUnit {
     }
 
     public onHit(other: CProjectile) {
-        this.createSpawnEffect(Models.EFFECT_BALLISTA_IMPACT, 1, 5);
+        this.createSpawnEffect(Models.EFFECT_BALLISTA_IMPACT, 0.75, 5);
     }
 }

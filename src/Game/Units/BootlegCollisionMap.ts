@@ -24,34 +24,32 @@ export class BootlegCollisionMap {
 
         Hooks.hookArguments(ModifyGateBJ, (operation, gate) => {
             Delay.addDelay(() => {
-                let pp = Vector2.fromWidget(gate);
-                this.clearByCoordinates(pp.x - 600, pp.y - 600, pp.x + 600, pp.y + 600);
-                pp.recycle();
+                let xx = GetWidgetX(gate);
+                let yy = GetWidgetY(gate);
+                this.clearByCoordinates(xx - 600, yy - 600, xx + 600, yy + 600);
             }, 0.25);
         });
     }
 
     //Coordinate
-    public getCollisionCircle(x: number, y: number, radius: number, precision: number = 8): boolean {
-        const p = Vector2.new(x, y);
-        let result = this.getCollisionAtCoordinate(p.x, p.y);
+    private _terrainCheckCircle = Vector2.new(0, 0);
+    public getCollisionCircleEmpty(x: number, y: number, radius: number, precision: number = 8): boolean {
+        const p = this._terrainCheckCircle.updateTo(x, y);
+        let result = this.getCollisionAtCoordinateEmpty(p.x, p.y);
         if (!result) {
-            let checkPoint = p.copy();
             let angle = 0;
             let anglePerStep = 360 / precision;
             for (let i = 0; i < precision; i++) {
-                checkPoint.updateToPoint(p);
-                checkPoint.polarProject(radius, angle)
-                result = this.getCollisionAtCoordinate(checkPoint.x, checkPoint.y);
+                p.updateToPoint(p);
+                p.polarProject(radius, angle)
+                result = this.getCollisionAtCoordinateEmpty(p.x, p.y);
                 if (!result) break;
                 angle += anglePerStep;
             }
-            checkPoint.recycle();
         }
-        p.recycle();
         return result;
     }
-    public getCollisionAtCoordinate(x: number, y: number) {
+    public getCollisionAtCoordinateEmpty(x: number, y: number) {
         x += this.gridNegative;
         y += this.gridNegative;
         x = math.floor(x / this.gridSize);
@@ -86,7 +84,7 @@ export class BootlegCollisionMap {
         let currentDist = 0;
         while (currentDist < finalDist) {
             start.polarProject(accuracy, finalAngle);
-            if (!this.getCollisionAtCoordinate(start.x, start.y)) {
+            if (!this.getCollisionAtCoordinateEmpty(start.x, start.y)) {
                 start.recycle();
                 return currentDist;
             }

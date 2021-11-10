@@ -8,9 +8,9 @@ export class CComponentPlayerDodge extends CCoroutineComponent {
     removeOnDeath = true;
     public targetOffset: Vector2;
 
-    public constructor(owner: CUnit, targetOffset: Vector2) {
+    public constructor(owner: CUnit, targetPosition: Vector2) {
         super(owner);
-        this.targetOffset = targetOffset.copy();
+        this.targetOffset = this.owner.getPosition().createOffsetTo(targetPosition);
     }
 
     protected onStart() {
@@ -32,7 +32,7 @@ export class CComponentPlayerDodge extends CCoroutineComponent {
         this.addTempEffect(AddSpecialEffect(Models.EFFECT_SPIN_AIR, this.owner.getPosition().x, this.owner.getPosition().y));
 
         let target = this.targetOffset.copy();
-        let endTime = 0.4 / actionRate;
+        let endTime = 0.6 / actionRate;
         let midTime = endTime / 2;
         let pitchChange = 0;
         let heightChange = 0;
@@ -49,13 +49,13 @@ export class CComponentPlayerDodge extends CCoroutineComponent {
 
             this.setTempEffectsPositionToOwner();
 
-            target.multiplyOffsetNum(this.owner.getActualMoveSpeed() * 2.2);
+            target.multiplyOffsetNum(this.owner.getActualMoveSpeed() * 1.8 * actionRate);
             this.owner.forceMove(target);
             target.updateToPoint(this.targetOffset);
 
             if (time >= endTime * 0.65) {
                 this.setAnimation(ANIM_TYPE_SPELL);
-                this.adjustVisualTimescale(2 / actionRate);
+                this.adjustVisualTimescale(2 * actionRate);
             }
             this.yield();
         }
@@ -69,23 +69,23 @@ export class CComponentPlayerDodge extends CCoroutineComponent {
 
         this.addTempEffect(AddSpecialEffect(Models.EFFECT_DIZZYNESS, this.owner.getPosition().x, this.owner.getPosition().y));
         this.setAnimation(ANIM_TYPE_SPELL);
-        this.adjustVisualTimescale(2 / actionRate);
+        this.adjustVisualTimescale(2 * actionRate);
         this.owner.forceFacingWithVisual(this.targetOffset.getAngleDegrees());
 
-        this.yieldTimed(0.5 / actionRate, () => this.setTempEffectsPositionToOwner());
+        this.yieldTimed(0.4 / actionRate, () => this.setTempEffectsPositionToOwner());
 
         //Slowdown at end
         this.resetFlagChanges();
         this.neutralizeAnimation();
         this.addGrounded();
 
-        this.adjustVisualTimescale(0.5);
-        this.adjustBonusMoveSpeed(-this.owner.moveSpeed * 0.7);
+        this.adjustVisualTimescale(0.6);
+        this.adjustBonusMoveSpeed(-this.owner.moveSpeed * 0.4);
         this.yieldTimed(0.5 / actionRate, () => this.setTempEffectsPositionToOwner());
 
-        this.adjustVisualTimescale(0.75);
+        this.adjustVisualTimescale(0.9);
         this.resetBonusMoveSpeed();
-        this.adjustBonusMoveSpeed(-this.owner.moveSpeed * 0.25);
+        this.adjustBonusMoveSpeed(-this.owner.moveSpeed * 0.1);
         this.yieldTimed(1.5 / actionRate, () => this.setTempEffectsPositionToOwner());
         //Done
     }

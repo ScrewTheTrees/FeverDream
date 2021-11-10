@@ -8,9 +8,9 @@ export abstract class CComponentGenericEnemyAttack extends CCoroutineComponent {
     removeOnDeath = true;
     public scale?: number;
 
-    public constructor(owner: CUnit, targetOffset: Vector2, scale?: number) {
+    public constructor(owner: CUnit, targetPosition: Vector2, scale?: number) {
         super(owner);
-        this.targetOffset = targetOffset.copy();
+        this.targetOffset = this.owner.getPosition().createOffsetTo(targetPosition);
         this.scale = scale;
     }
 

@@ -20,7 +20,7 @@ export class CProjectileMeleeCircle extends CProjectile {
         this.position.polarProject(this.speed, this.targetOffset.getAngleDegrees());
 
         while (this.durability > 0) {
-            this.targets = CUnit.unitPool.getAliveUnitsInRange(this.position, this.collisionSize + 128);
+            this.targets = CUnit.unitPool.getAliveUnitsInRange(this.position, this.collisionSize + 128, undefined, this.targets);
             for (let targ of this.targets) {
                 if (targ != this.owner) {
                     if (this.position.distanceTo(targ.getPosition()) < this.collisionSize + targ.projectileCollisionSize) {
@@ -34,7 +34,7 @@ export class CProjectileMeleeCircle extends CProjectile {
             this.yield();
         }
         this.yieldTimed(2);
-        this.onDestroy();
+        this.destroy();
     }
     private draw() {
         BlzSetSpecialEffectX(this.effect, this.position.x);
@@ -45,10 +45,8 @@ export class CProjectileMeleeCircle extends CProjectile {
             this.targetOffset.getAngle()
         );
     }
-    onDestroy(): void {
-        this.remove();
+    destroy(): void {
+        super.destroy();
         DestroyEffect(this.effect);
-        this.targetOffset.recycle();
-        this.position.recycle();
     }
 }

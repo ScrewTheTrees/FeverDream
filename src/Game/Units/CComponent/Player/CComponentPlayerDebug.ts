@@ -33,37 +33,37 @@ export class CComponentPlayerDebug extends CStepComponent {
         //DEBUG
         this.keyboard.addKeyboardPressCallback(OSKEY_T, (call) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
-                for (let h of PlayerHeroes.getInstance().getAliveHeroes()) {
+                for (let h of CUnit.unitPool.alivePool) {
                     h.killUnit();
                 }
             }
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_1, (call) => {
+        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD1, (call) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeEnemyMeleeFodderSkeleton(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer), this.owner);
             }
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_2, (call) => {
+        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD2, (call) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeEnemyRangedFodderSkeleton(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer), this.owner);
             }
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_3, (call) => {
+        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD3, (call) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeEnemyMeleeMyrmidion(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer), this.owner);
             }
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_4, (call) => {
+        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD4, (call) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeEnemyRangedSiren(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer), this.owner);
             }
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_8, (call) => {
+        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD7, (call) => {
             Delay.addDelay(() => {
                 new CUnitTypeEnemyMeleeFodderSkeleton(Players.NEUTRAL_HOSTILE, this.mouse.getLastMouseCoordinate(call.triggeringPlayer), this.owner);
             }, 0.02, 100);
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_9, (call) => {
+        this.keyboard.addKeyboardPressCallback(OSKEY_NUMPAD8, (call) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 new CUnitTypeDummy(call.triggeringPlayer, this.mouse.getLastMouseCoordinate(call.triggeringPlayer));
             }
@@ -71,12 +71,16 @@ export class CComponentPlayerDebug extends CStepComponent {
         this.keyboard.addKeyboardPressCallback(OSKEY_P, (call) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 PlayerStats.getInstance().fireRate *= 2;
+                PlayerStats.getInstance().cooldownReduction *= 2;
+                PlayerStats.getInstance().actionRate *= 2;
                 print(PlayerStats.getInstance().fireRate);
             }
         });
         this.keyboard.addKeyboardPressCallback(OSKEY_O, (call) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 PlayerStats.getInstance().fireRate /= 2;
+                PlayerStats.getInstance().cooldownReduction /= 2;
+                PlayerStats.getInstance().actionRate /= 2;
                 print(PlayerStats.getInstance().fireRate);
             }
         });

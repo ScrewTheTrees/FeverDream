@@ -107,17 +107,18 @@ export class PlayerCamera extends Entity {
     }
 
     private lastPoint: Vector2 = Vector2.new(0, 0);
+    private wantedPoint: Vector2 = Vector2.new(0, 0);
     private lastZoom: number = 0;
     private lastAngleOfAttack: number = 0;
     private lastRotation: number = 0;
     public moveTo(position: Vector2, p: player) {
-        let wanted = Vector2.new(0, 0);
+        this.wantedPoint.updateTo(0, 0);
         if (GetLocalPlayer() == p) {
-            wanted.x = Interpolation.DivisionSpring(this.lastPoint.x, position.x, this.divider);
-            wanted.y = Interpolation.DivisionSpring(this.lastPoint.y, position.y, this.divider);
-            SetCameraPosition(wanted.x, wanted.y);
-            this.lastPoint.x = wanted.x;
-            this.lastPoint.y = wanted.y;
+            this.wantedPoint.x = Interpolation.DivisionSpring(this.lastPoint.x, position.x, this.divider);
+            this.wantedPoint.y = Interpolation.DivisionSpring(this.lastPoint.y, position.y, this.divider);
+            SetCameraPosition(this.wantedPoint.x, this.wantedPoint.y);
+            this.lastPoint.x = this.wantedPoint.x;
+            this.lastPoint.y = this.wantedPoint.y;
 
             SetCameraField(CAMERA_FIELD_ZOFFSET, 0, 0.0);
             SetCameraField(CAMERA_FIELD_FARZ, 20000, 0.0);
@@ -129,6 +130,5 @@ export class PlayerCamera extends Entity {
             this.lastRotation = Interpolation.RotDivisionSpring(this.lastRotation, this.rotation, this.divider);
             SetCameraField(CAMERA_FIELD_ROTATION, this.lastRotation, 0.0);
         }
-        wanted.recycle();
     }
 }

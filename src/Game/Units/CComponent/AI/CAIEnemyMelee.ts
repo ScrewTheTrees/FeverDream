@@ -4,13 +4,13 @@ import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
 
 export class CAIEnemyMelee extends CAIEnemyGeneric {
 
-    public constructor(owner: CUnit, primaryTarget?: CUnit, timerDelay: number = 0.1) {
-        super(owner, primaryTarget, timerDelay);
+    public constructor(owner: CUnit, primaryTarget?: CUnit) {
+        super(owner, primaryTarget);
     }
 
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyMeleeNormal(this.owner,
-            this.target.updateToPoint(this.owner.getPosition()).offsetTo(hero.getPosition())
+            hero.getPosition()
         ));
     }
 }

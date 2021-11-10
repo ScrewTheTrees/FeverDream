@@ -6,7 +6,7 @@ export interface IComponent {
     removeOnDeath: boolean;
     get timerDelay(): number;
     set timerDelay(delay: number);
-    destroy(): void;
+    stop(): void;
     cleanup(): void;
     step(): void;
 }

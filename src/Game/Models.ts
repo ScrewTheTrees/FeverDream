@@ -6,6 +6,7 @@ export enum Models {
     UNIT_NAGA_MYRMIDION = "units\\naga\\NagaMyrmidon\\NagaMyrmidon.mdx",
 
     UNIT_PEON = "units\\orc\\Peon\\Peon.mdx",
+    UNIT_BUILDING_BARRICADE = "Doodads\\LordaeronSummer\\Terrain\\Crates\\Crates1.mdl",
 
 
     PROJECTILE_PLAYER_FIRE = "Abilities\\Weapons\\DemonHunterMissile\\DemonHunterMissile.mdx",

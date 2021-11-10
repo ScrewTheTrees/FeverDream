@@ -16,17 +16,18 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     abstract cleanup(): void;
 
     protected onUpdateStep() {
-        if ((this.removeOnDeath && this.owner.isDead)
+        /*if ((this.removeOnDeath && this.owner.isDead)
             || this.owner.queueForRemoval
         ) {
-            this.destroy();
-        }
+            this.stop();
+        }*/
     }
 
-    public destroy() {
-        this.stop();
-        this.cleanup();
-        this.isFinished = true;
+    public stop() {
+        if (!this.isFinished) {
+            super.stop();
+            this.cleanup();
+        }
     }
     public get globalTimeScale(): number {
         return GameConfig.getInstance().timeScale;

@@ -4,13 +4,13 @@ import {CAIEnemyMelee} from "./CAIEnemyMelee";
 
 export class CAIEnemyMeleeSlowLarge extends CAIEnemyMelee {
 
-    public constructor(owner: CUnit, primaryTarget?: CUnit, scale?: number) {
-        super(owner, primaryTarget, scale);
+    public constructor(owner: CUnit, primaryTarget?: CUnit) {
+        super(owner, primaryTarget);
         this.attackRange = 150;
     }
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyMeleeSlowLarge(this.owner,
-            this.target.updateToPoint(this.owner.getPosition()).offsetTo(hero.getPosition())
+            hero.getPosition()
         ));
     }
 }

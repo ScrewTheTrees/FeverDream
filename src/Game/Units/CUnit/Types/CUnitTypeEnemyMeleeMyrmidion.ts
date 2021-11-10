@@ -9,10 +9,12 @@ import {CProjectile} from "../../Projectiles/CProjectile";
 
 export class CUnitTypeEnemyMeleeMyrmidion extends CUnit {
     public poise = 2;
-    public thiccness = 22;
+    public projectileCollisionSize = 32;
+    public terrainCollisionSize = 24;
+    public crowdingCollisionSize = 48;
     public moveSpeed = 3;
     public modelScale = 0.6;
-    public projectileCollisionSize = 32;
+
 
     public constructor(owner: player, position: Vector2, focus?: CUnit) {
         super(owner, Models.UNIT_NAGA_MYRMIDION, position);

@@ -5,9 +5,12 @@ import {GridTree} from "wc3-treelib/src/TreeLib/Utility/Data/GridTree";
 import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {CUnit} from "./CUnit";
 
+function positionEval(val: CUnit) {
+    return val.getPosition();
+}
 export class CUnitPool extends Entity {
-    public aliveGrid: GridTree<CUnit> = new GridTree<CUnit>((val) => val.getPosition());
-    public deadGrid: GridTree<CUnit> = new GridTree<CUnit>((val) => val.getPosition());
+    public aliveGrid: GridTree<CUnit> = new GridTree<CUnit>(positionEval);
+    public deadGrid: GridTree<CUnit> = new GridTree<CUnit>(positionEval);
 
     public alivePool: CUnit[] = [];
     public deadPool: CUnit[] = [];
@@ -61,6 +64,13 @@ export class CUnitPool extends Entity {
             this.aliveGrid.removeAtCoordinate(u.getPosition().x, u.getPosition().y, u);
         }
         if (isDead) {
+            this.deadGrid.addToCoordinate(u.getPosition().x, u.getPosition().y, u);
+        } else {
+            this.aliveGrid.addToCoordinate(u.getPosition().x, u.getPosition().y, u);
+        }
+    }
+    public gridAddUnit(u: CUnit) {
+        if (u.isDead) {
             this.deadGrid.addToCoordinate(u.getPosition().x, u.getPosition().y, u);
         } else {
             this.aliveGrid.addToCoordinate(u.getPosition().x, u.getPosition().y, u);
@@ -131,7 +141,7 @@ export class CUnitPool extends Entity {
 
     public getAliveUnitsInRange(pos: Vector2, range: number, filter?: (filterUnit: CUnit) => boolean, checkArr?: CUnit[]) {
         let units = checkArr || [];
-        if (range <= this.gridDist)  {
+        if (range <= this.gridDist) {
             return this.aliveGrid.fetchInCircleR(pos, range, filter, checkArr);
         }
 
@@ -143,6 +153,14 @@ export class CUnitPool extends Entity {
             }
         }
         return units;
+    }
+    public getAliveUnitsInRangeNotSelf(dude: CUnit, range: number, filter?: (filterUnit: CUnit) => boolean, checkArr?: CUnit[]) {
+        let aliveUnitsInRange = this.getAliveUnitsInRange(dude.getPosition(), range, undefined, checkArr);
+        for (let i = aliveUnitsInRange.length - 1; i >= 0; i--) {
+            let value = aliveUnitsInRange[i];
+            if (dude == value) Quick.Slice(aliveUnitsInRange, i);
+        }
+        return aliveUnitsInRange
     }
 
     public getRandomAlive(filter?: (filterUnit: CUnit) => boolean) {
@@ -157,8 +175,16 @@ export class CUnitPool extends Entity {
     }
 
 
-    public getHostileAliveUnitsInRange(dude: CUnit, range: number) {
-        return this.getAliveUnitsInRange(dude.getPosition(), range, (u) => IsPlayerEnemy(u.owner, dude.owner))
+
+
+
+    public getHostileAliveUnitsInRange(dude: CUnit, range: number, filter?: (filterUnit: CUnit) => boolean, checkArr?: CUnit[]) {
+        let aliveUnitsInRange = this.getAliveUnitsInRange(dude.getPosition(), range, undefined, checkArr);
+        for (let i = aliveUnitsInRange.length - 1; i >= 0; i--) {
+            let value = aliveUnitsInRange[i];
+            if (IsPlayerEnemy(value.owner, dude.owner)) Quick.Slice(aliveUnitsInRange, i);
+        }
+        return aliveUnitsInRange
     }
     public getClosestAliveEnemy(pos: Vector2, unit: CUnit, maxRange?: number) {
         return this.getClosestAliveToPosition(pos, (u) => IsPlayerEnemy(unit.owner, u.owner), maxRange);
@@ -167,8 +193,13 @@ export class CUnitPool extends Entity {
         return this.getRandomAlive((u) => IsPlayerEnemy(unit.owner, u.owner));
     }
 
-    public getAliveAlliedUnitsInRange(dude: CUnit, range: number) {
-        return this.getAliveUnitsInRange(dude.getPosition(), range, (u) => IsPlayerAlly(u.owner, dude.owner))
+    public getAliveAlliedUnitsInRange(dude: CUnit, range: number,filter?: (filterUnit: CUnit) => boolean,  checkArr?: CUnit[]) {
+        let aliveUnitsInRange = this.getAliveUnitsInRange(dude.getPosition(), range, undefined, checkArr);
+        for (let i = aliveUnitsInRange.length - 1; i >= 0; i--) {
+            let value = aliveUnitsInRange[i];
+            if (IsPlayerAlly(value.owner, dude.owner)) Quick.Slice(aliveUnitsInRange, i);
+        }
+        return aliveUnitsInRange
     }
     public getClosestAliveAlly(pos: Vector2, unit: CUnit, maxRange?: number) {
         return this.getClosestAliveToPosition(pos, (u) => IsPlayerAlly(unit.owner, u.owner), maxRange);
