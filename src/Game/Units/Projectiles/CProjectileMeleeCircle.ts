@@ -9,7 +9,6 @@ export class CProjectileMeleeCircle extends CProjectile {
     public speed: number = 16;
     public visualHeight: number = 0;
     public collisionSize: number = 40;
-    public targets: CUnit[] = [];
 
     public constructor(owner: CUnit, targetOffset: Vector2, model: string, position: Vector2) {
         super(owner, targetOffset, position);

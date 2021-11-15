@@ -12,7 +12,6 @@ export class CProjectileLinear extends CProjectile {
     public visualHeight: number = 0;
     public collisionSize: number = 16;
     public travelTime: number = 10;
-    public targets: CUnit[] = [];
 
     public constructor(owner: CUnit, targetOffset: Vector2, model: string, position: Vector2) {
         super(owner, targetOffset, position);

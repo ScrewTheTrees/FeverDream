@@ -14,9 +14,14 @@ export abstract class CStepComponent extends DynamicEntity implements IComponent
     abstract step(): void;
     abstract cleanup(): void;
 
-    stop() {
-        this.remove();
-        this.cleanup();
+    destroy() {
+        if (!this.isFinished) {
+            this.remove();
+            this.cleanup();
+            // @ts-ignore
+            this.owner = null;
+        }
+        this.isFinished = true;
     }
     public get globalTimeScale(): number {
         return GameConfig.getInstance().timeScale;

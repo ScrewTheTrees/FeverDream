@@ -7,8 +7,7 @@ import {RectangleNode} from "wc3-treelib/src/TreeLib/Pathfinder/Node";
 import {BootlegCollisionMap} from "../../BootlegCollisionMap";
 import {CStepComponent} from "../CStepComponent";
 import {AIState} from "./AIState";
-import {Models} from "../../../Models";
-import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
+import {GameConfig} from "../../../../GameConfig";
 
 export abstract class CAIEnemyGeneric extends CStepComponent {
     removeOnDeath = false;
@@ -44,6 +43,8 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     public pathFindCheckDist: number = math.maxinteger;
     public pathFindOffsetTowardsNextNode: boolean = true;
 
+    protected gameConfig = GameConfig.getInstance();
+
     protected constructor(owner: CUnit, primaryTarget?: CUnit, timerDelay: number = 0.1) {
         super(owner, timerDelay);
         this.primaryTarget = primaryTarget;
@@ -72,6 +73,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
 
     step(): void {
         if (this.owner.isDead) this.aiState = AIState.DEAD;
+        if (!this.gameConfig.aiEnabled) return;
 
         if (this.aiState == AIState.SPAWNING) {
             this.handleSpawningState();
@@ -122,10 +124,12 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
 
         this.currentTarget = this.calculateCurrentTarget(this.currentTarget);
 
-        this.calculateTargetPoint(this.currentTarget);
-        this.calculateAngleData(this.currentTarget);
+        if (this.gameConfig.aiEnableTargetPointCalculations) {
+            this.calculateTargetPoint(this.currentTarget);
+            this.calculateAngleData(this.currentTarget);
+        }
 
-        if (this.move) {
+        if (this.move && this.gameConfig.aiEnableMove) {
             this.owner.setAutoMoveData(this.angle, 1);
         }
         this.evaluateToAttack(this.currentTarget);
@@ -225,7 +229,13 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         let from = this.owner.getPosition().copy();
         let to = hero.getPosition().copy();
 
-        this.pathFindCurrent = this.pathfinder.find(from, to);
+        if (this.pathFindCurrent != null) {
+            let nodes = this.pathFindCurrent.path; // Fetch before destroy.
+            this.pathFindCurrent.destroy();
+            this.pathFindCurrent = this.pathfinder.find(from, to, nodes); //Recycle array
+        } else {
+            this.pathFindCurrent = this.pathfinder.find(from, to);
+        }
         this.pathFindCurrentId = 0;
         this.pathFindOffsetTowardsNextNode = false;
         this.curving = this.getNewCurving();
@@ -237,6 +247,8 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         to.recycle();
     }
     evaluateToAttack(hero: CUnit) {
+        if (!this.gameConfig.aiEnableAttack) return;
+
         let distanceToTarget = this.owner.getPosition().distanceTo(hero.getPosition());
 
         if (distanceToTarget <= this.attackRange) {
@@ -280,9 +292,9 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     }
 
     public cleanup(): void {
-        //this.offset.recycle();
-        //this.target.recycle();
-        //this.angle.recycle();
+        this.offset.recycle();
+        this.target.recycle();
+        this.angle.recycle();
     }
     protected distanceToNextNode(initial: Vector2) {
         let ret = 0;

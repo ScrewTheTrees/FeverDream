@@ -23,10 +23,12 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
         }*/
     }
 
-    public stop() {
+    public destroy() {
         if (!this.isFinished) {
             super.stop();
             this.cleanup();
+            // @ts-ignore
+            this.owner = null;
         }
     }
     public get globalTimeScale(): number {

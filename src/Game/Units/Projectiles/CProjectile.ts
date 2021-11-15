@@ -10,6 +10,7 @@ export abstract class CProjectile extends TreeThread {
 
     public damage: number = 25;
     public durability: number = 1;
+    public targets: CUnit[] = [];
 
     protected constructor(owner: CUnit, targetOffset: Vector2, position: Vector2) {
         super();
@@ -39,6 +40,7 @@ export abstract class CProjectile extends TreeThread {
     public destroy() {
         this.targetOffset.recycle();
         this.position.recycle();
+        Quick.Clear(this.targets);
         this.remove();
     }
 }

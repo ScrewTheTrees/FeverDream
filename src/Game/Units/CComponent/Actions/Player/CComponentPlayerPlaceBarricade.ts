@@ -34,19 +34,19 @@ export class CComponentPlayerPlaceBarricade extends CCoroutineComponent {
         this.setAnimation(ANIM_TYPE_SPELL);
         this.setVisualTimescale(1.5 / actionRate);
         this.yieldTimed(0.8 / actionRate, () => {
-            if (barricade.isDead) this.stop()
+            if (barricade.isDead) this.destroy()
         });
         this.setAnimation(ANIM_TYPE_STAND);
         this.setAnimation(ANIM_TYPE_SPELL);
         this.setVisualTimescale(1.5 / actionRate);
         this.yieldTimed(0.8 / actionRate, () => {
-            if (barricade.isDead) this.stop()
+            if (barricade.isDead) this.destroy()
         });
         this.setAnimation(ANIM_TYPE_STAND);
         this.setAnimation(ANIM_TYPE_SPELL);
         this.setVisualTimescale(1.5 / actionRate);
         this.yieldTimed(0.8 / actionRate, () => {
-            if (barricade.isDead) this.stop()
+            if (barricade.isDead) this.destroy()
         });
     }
 

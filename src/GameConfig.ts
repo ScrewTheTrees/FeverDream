@@ -31,6 +31,12 @@ export class GameConfig {
     public timeScale: number = 1;
 
 
+    //AI
+    public aiEnabled: boolean = false;
+    public aiEnableMove: boolean = false;
+    public aiEnableAttack: boolean = false;
+    public aiEnableTargetPointCalculations: boolean = false;
+
     //
     public countPlayingPlayers() {
         return this.playingPlayers.length;

@@ -165,7 +165,7 @@ export abstract class CUnit extends Entity {
     }
     public removeComponent(command: IComponent) {
         Quick.Remove(this.subComponents, command);
-        command.stop();
+        command.destroy();
     }
     public teleport(to: Vector2) {
         this.setPositionXY(to.x, to.y);
@@ -360,7 +360,6 @@ export abstract class CUnit extends Entity {
 
     public onDelete() {
         CUnit.unitPool.gridRemove(this);
-        CUnit.unitPool.removeUnit(this);
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             this.removeComponent(comp);
@@ -370,6 +369,8 @@ export abstract class CUnit extends Entity {
         BlzSetSpecialEffectTimeScale(this.effect, 1);
         BlzSetSpecialEffectScale(this.effect, 0);
         DestroyEffect(this.effect);
+
+        this.position.recycle();
         this.remove();
     }
     public onHit(other: CProjectile) {
