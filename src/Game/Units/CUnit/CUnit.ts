@@ -72,7 +72,7 @@ export abstract class CUnit extends Entity {
     }
 
     step() {
-        this.updateCommands();
+        this.updateComponents();
         if (!this.isDead) {
             if (this.isMoving) {
                 this.move(this.moveOffset);
@@ -82,7 +82,7 @@ export abstract class CUnit extends Entity {
             }
             if (!this.isDisabledMovement()) {
                 if (this.moveTime <= 0) this.isMoving = false;
-                else this.moveTime -= this.lastStepSize;
+                else this.moveTime -= this.timerDelay;
                 if (this.isMoving != this.wasMoving) this.moveStateChanged();
                 this.wasMoving = this.isMoving;
             }
@@ -99,14 +99,14 @@ export abstract class CUnit extends Entity {
     private handleCrowding() {
         if (!this.canBePushed) return this.crowdingOffset.updateTo(0, 0);
 
-        this.crowdingOffsetUpdate -= this.lastStepSize;
+        this.crowdingOffsetUpdate -= this.timerDelay;
         if (this.crowdingOffsetUpdate <= 0) {
             this.crowdingOffset.updateTo(0, 0);
 
             this.crowdingOffsetUpdate = 0.5; //Remotly low number when waiting for literally anything.
 
             Quick.Clear(this.crowdingArray);
-            this.crowdingArray = CUnit.unitPool.getAliveUnitsInRangeNotSelf(this, 64 + (this.crowdingCollisionSize * 4), undefined, this.crowdingArray);
+            this.crowdingArray = CUnit.unitPool.getAliveUnitsInRangeNotSelf(this, 60 + (this.crowdingCollisionSize * 2), this.crowdingArray);
             for (let other of this.crowdingArray) {
                 let intersectingThicc = (this.crowdingCollisionSize + other.crowdingCollisionSize);
                 let distance = this.position.distanceTo(other.getPosition());
@@ -119,7 +119,8 @@ export abstract class CUnit extends Entity {
             }
             this.crowdingOffset.x = math.min(math.max(this.crowdingOffset.x, -this.maxPush), this.maxPush)
             this.crowdingOffset.y = math.min(math.max(this.crowdingOffset.y, -this.maxPush), this.maxPush)
-        }
+        }//this.crowdingOffsetUpdate
+
         if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
             this.forceMove(this.crowdingOffset);
         }
@@ -285,6 +286,8 @@ export abstract class CUnit extends Entity {
         BlzSetSpecialEffectScale(eff, scale);
         Delay.addDelay(() => {
             DestroyEffect(eff);
+            // @ts-ignore
+            eff = null;
         }, duration);
         return eff;
     }
@@ -328,7 +331,7 @@ export abstract class CUnit extends Entity {
             this.killUnit();
         }
     }
-    private updateCommands() {
+    private updateComponents() {
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let command = this.subComponents[i];
             if (command.isFinished || this.queueForRemoval) {
@@ -357,18 +360,16 @@ export abstract class CUnit extends Entity {
 
     public onDelete() {
         CUnit.unitPool.gridRemove(this);
+        CUnit.unitPool.removeUnit(this);
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             this.removeComponent(comp);
         }
         this.setPositionXY(30000, 30000);
         BlzSetSpecialEffectPosition(this.effect, 30000, 30000, -6000);
-        this.modelScale = 0;
-        Delay.addDelay(() => {
-            BlzSetSpecialEffectTimeScale(this.effect, 1);
-            BlzSetSpecialEffectScale(this.effect, 0);
-            DestroyEffect(this.effect);
-        });
+        BlzSetSpecialEffectTimeScale(this.effect, 1);
+        BlzSetSpecialEffectScale(this.effect, 0);
+        DestroyEffect(this.effect);
         this.remove();
     }
     public onHit(other: CProjectile) {

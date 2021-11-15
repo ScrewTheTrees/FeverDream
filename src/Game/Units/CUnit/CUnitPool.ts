@@ -1,21 +1,65 @@
 import {Entity} from "wc3-treelib/src/TreeLib/Entity";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
-import {GridTree} from "wc3-treelib/src/TreeLib/Utility/Data/GridTree";
+import {GridTree} from "wc3-treelib/src/TreeLib/Utility/Data/DataTree/GridTree";
 import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {CUnit} from "./CUnit";
+import {DataTreeFilter} from "wc3-treelib/src/TreeLib/Utility/Data/DataTree/DataTreeFilter";
+import {DataTreePositionEvaluation} from "wc3-treelib/src/TreeLib/Utility/Data/DataTree/DataTreePositionEvaluation";
 
-function positionEval(val: CUnit) {
-    return val.getPosition();
+class CUnitEvaluation extends DataTreePositionEvaluation<CUnit> {
+    evaluate(value: CUnit): Vector2 {
+        return value.getPosition();
+    }
 }
+
+class NotSelfFilter extends DataTreeFilter<CUnit> {
+    public unit?: CUnit;
+    evaluate(value: CUnit): boolean {
+        return value != this.unit;
+    }
+    apply(check: CUnit): this {
+        this.unit = check;
+        return this;
+    }
+}
+
+class IsEnemyFilter extends DataTreeFilter<CUnit> {
+    public unit?: CUnit;
+    evaluate(value: CUnit): boolean {
+        if (!this.unit) return true;
+        return IsPlayerEnemy(value.owner, this.unit.owner);
+    }
+    apply(check: CUnit): this {
+        this.unit = check;
+        return this;
+    }
+}
+
+class IsAllyFilter extends DataTreeFilter<CUnit> {
+    public unit?: CUnit;
+    evaluate(value: CUnit): boolean {
+        if (!this.unit) return true;
+        return IsPlayerAlly(value.owner, this.unit.owner);
+    }
+    apply(check: CUnit) {
+        this.unit = check;
+        return this;
+    }
+}
+
 export class CUnitPool extends Entity {
-    public aliveGrid: GridTree<CUnit> = new GridTree<CUnit>(positionEval);
-    public deadGrid: GridTree<CUnit> = new GridTree<CUnit>(positionEval);
+    public aliveGrid: GridTree<CUnit> = new GridTree<CUnit>(new CUnitEvaluation());
+    public deadGrid: GridTree<CUnit> = new GridTree<CUnit>(new CUnitEvaluation());
 
     public alivePool: CUnit[] = [];
     public deadPool: CUnit[] = [];
 
     private gridDist = 1024;
+
+    private notSelfFilter = new NotSelfFilter();
+    private isEnemyFilter = new IsEnemyFilter();
+    private isAllyFilter = new IsAllyFilter();
 
     constructor() {
         super(0.1);
@@ -94,7 +138,7 @@ export class CUnitPool extends Entity {
         Quick.Remove(this.deadPool, u);
     }
 
-    public getClosestAliveToPosition(pos: Vector2, filter?: (u: CUnit) => boolean, maxRange: number = math.maxinteger) {
+    public getClosestAliveToPosition(pos: Vector2, filter?: DataTreeFilter<CUnit>, maxRange: number = math.maxinteger) {
         let newUnit = this.aliveGrid.fetchClosest(pos, math.min(maxRange, this.gridDist), filter);
         if (newUnit != undefined) {
             return newUnit;
@@ -106,7 +150,7 @@ export class CUnitPool extends Entity {
             if (candice.isDead) continue;
             let dist = candice.getPosition().distanceToSquared(pos);
             if (dist < distance) {
-                if (!filter || filter(candice)) {
+                if (!filter || filter.evaluate(candice)) {
                     candidate = candice;
                     distance = dist;
                 }
@@ -116,30 +160,11 @@ export class CUnitPool extends Entity {
     }
 
 
-    public getClosestAliveNotSelf(u: CUnit, filter?: (u: CUnit) => boolean, maxRange: number = math.maxinteger) {
-        let otherFilter: (u: CUnit) => boolean = (check) => check != u && (!filter || filter(check));
-        let newUnit = this.aliveGrid.fetchClosest(u.getPosition(), math.min(maxRange, this.gridDist), otherFilter);
-        if (newUnit != undefined) {
-            return newUnit;
-        }
-
-        let distance = maxRange;
-        let candidate = undefined;
-        for (let i = 0; i < this.alivePool.length; i++) {
-            let candice = this.alivePool[i];
-            if (candice == u || u.isDead) continue;
-            let dist = candice.getPosition().distanceToSquared(u.getPosition());
-            if (dist < distance) {
-                if (!filter || filter(candice)) {
-                    candidate = candice;
-                    distance = dist;
-                }
-            }
-        }
-        return candidate;
+    public getClosestAliveNotSelf(u: CUnit, filter?: DataTreeFilter<CUnit>, maxRange: number = math.maxinteger) {
+        return this.getClosestAliveToPosition(u.getPosition(), this.notSelfFilter.apply(u), maxRange)
     }
 
-    public getAliveUnitsInRange(pos: Vector2, range: number, filter?: (filterUnit: CUnit) => boolean, checkArr?: CUnit[]) {
+    public getAliveUnitsInRange(pos: Vector2, range: number, filter?: DataTreeFilter<CUnit>, checkArr?: CUnit[]) {
         let units = checkArr || [];
         if (range <= this.gridDist) {
             return this.aliveGrid.fetchInCircleR(pos, range, filter, checkArr);
@@ -147,27 +172,22 @@ export class CUnitPool extends Entity {
 
         for (let u of this.alivePool) {
             if (!u.isDead && u.getPosition().distanceTo(pos) <= range) {
-                if (filter == null || filter(u)) {
+                if (filter == null || filter.evaluate(u)) {
                     units.push(u);
                 }
             }
         }
         return units;
     }
-    public getAliveUnitsInRangeNotSelf(dude: CUnit, range: number, filter?: (filterUnit: CUnit) => boolean, checkArr?: CUnit[]) {
-        let aliveUnitsInRange = this.getAliveUnitsInRange(dude.getPosition(), range, undefined, checkArr);
-        for (let i = aliveUnitsInRange.length - 1; i >= 0; i--) {
-            let value = aliveUnitsInRange[i];
-            if (dude == value) Quick.Slice(aliveUnitsInRange, i);
-        }
-        return aliveUnitsInRange
+    public getAliveUnitsInRangeNotSelf(dude: CUnit, range: number, checkArr?: CUnit[]) {
+        return this.getAliveUnitsInRange(dude.getPosition(), range, this.notSelfFilter.apply(dude), checkArr);
     }
 
-    public getRandomAlive(filter?: (filterUnit: CUnit) => boolean) {
+    public getRandomAlive(filter?: DataTreeFilter<CUnit>) {
         let arr = this.checkArr;
         for (let i = 0; i < this.alivePool.length; i++) {
             let u = this.alivePool[i];
-            if (!u.isDead && (filter == null || filter(u))) {
+            if (!u.isDead && (filter == null || filter.evaluate(u))) {
                 arr.push(u);
             }
         }
@@ -175,37 +195,24 @@ export class CUnitPool extends Entity {
     }
 
 
-
-
-
-    public getHostileAliveUnitsInRange(dude: CUnit, range: number, filter?: (filterUnit: CUnit) => boolean, checkArr?: CUnit[]) {
-        let aliveUnitsInRange = this.getAliveUnitsInRange(dude.getPosition(), range, undefined, checkArr);
-        for (let i = aliveUnitsInRange.length - 1; i >= 0; i--) {
-            let value = aliveUnitsInRange[i];
-            if (IsPlayerEnemy(value.owner, dude.owner)) Quick.Slice(aliveUnitsInRange, i);
-        }
-        return aliveUnitsInRange
+    public getAliveEnemyUnitsInRange(dude: CUnit, range: number, checkArr?: CUnit[]) {
+        return this.getAliveUnitsInRange(dude.getPosition(), range, this.isEnemyFilter.apply(dude), checkArr)
     }
     public getClosestAliveEnemy(pos: Vector2, unit: CUnit, maxRange?: number) {
-        return this.getClosestAliveToPosition(pos, (u) => IsPlayerEnemy(unit.owner, u.owner), maxRange);
+        return this.getClosestAliveToPosition(pos, this.isEnemyFilter.apply(unit), maxRange);
     }
     public getRandomAliveEnemy(unit: CUnit) {
-        return this.getRandomAlive((u) => IsPlayerEnemy(unit.owner, u.owner));
+        return this.getRandomAlive(this.isEnemyFilter.apply(unit));
     }
 
-    public getAliveAlliedUnitsInRange(dude: CUnit, range: number,filter?: (filterUnit: CUnit) => boolean,  checkArr?: CUnit[]) {
-        let aliveUnitsInRange = this.getAliveUnitsInRange(dude.getPosition(), range, undefined, checkArr);
-        for (let i = aliveUnitsInRange.length - 1; i >= 0; i--) {
-            let value = aliveUnitsInRange[i];
-            if (IsPlayerAlly(value.owner, dude.owner)) Quick.Slice(aliveUnitsInRange, i);
-        }
-        return aliveUnitsInRange
+    public getAliveAlliedUnitsInRange(dude: CUnit, range: number, checkArr?: CUnit[]) {
+        return this.getAliveUnitsInRange(dude.getPosition(), range, this.isAllyFilter.apply(dude), checkArr)
     }
     public getClosestAliveAlly(pos: Vector2, unit: CUnit, maxRange?: number) {
-        return this.getClosestAliveToPosition(pos, (u) => IsPlayerAlly(unit.owner, u.owner), maxRange);
+        return this.getClosestAliveToPosition(pos, this.isAllyFilter.apply(unit), maxRange);
     }
     public getRandomAliveAlly(unit: CUnit) {
-        return this.getRandomAlive((u) => IsPlayerAlly(unit.owner, u.owner));
+        return this.getRandomAlive(this.isAllyFilter.apply(unit));
     }
 
 

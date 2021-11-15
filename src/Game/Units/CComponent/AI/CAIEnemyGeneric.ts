@@ -55,7 +55,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         if (this.primaryTarget) {
             this.updatePathfinderData(this.primaryTarget);
         }
-        TreeThread.RunUntilDone(() => {
+        /*TreeThread.RunUntilDone(() => {
             let gfx = AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, 0, 0);
             while (!this.owner.isDead) {
                 BlzSetSpecialEffectX(gfx, this.target.x);
@@ -64,7 +64,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
                 coroutine.yield();
             }
             DestroyEffect(gfx);
-        });
+        });*/
     }
 
     public abstract onAttack(hero: CUnit): void;

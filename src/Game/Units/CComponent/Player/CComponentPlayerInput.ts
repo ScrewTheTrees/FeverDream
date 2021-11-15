@@ -52,7 +52,7 @@ export class ToolNormalShoot extends Tool {
 }
 
 export class ToolPlaceBarricade extends Tool {
-    toolId: ToolId = ToolId.NORMAL_ATTACK;
+    toolId: ToolId = ToolId.BUILD_BARRICADE;
     public component?: CComponentPlayerPlaceBarricade;
 
     private cooldown = 0;
@@ -75,7 +75,7 @@ export class ToolPlaceBarricade extends Tool {
     }
     step(): void {
         if (this.component && this.component.isFinished) this.component = undefined;
-        if (this.cooldown > 0) this.cooldown -= this.lastStepSize * PlayerStats.getInstance().cooldownReduction;
+        if (this.cooldown > 0) this.cooldown -= this.timerDelay * PlayerStats.getInstance().cooldownReduction;
     }
 }
 

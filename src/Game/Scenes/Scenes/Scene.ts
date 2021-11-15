@@ -83,7 +83,7 @@ export abstract class Scene extends TreeThread {
 
     //Camera
     public cameraShowActionThenResetHeroCamera(position: Vector2,
-                                               action?: (...args: any[]) => any,
+                                               action?: () => void,
                                                zoom?: number, startYield = 1, endYield = 1) {
         PlayerCamera.getInstance().setCustomCamera(position, zoom);
         this.yieldTimed(startYield);
