@@ -3,7 +3,7 @@ import {PlayerHeroes} from "./PlayerHeroes";
 import {GameConfig} from "../../GameConfig";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Interpolation} from "wc3-treelib/src/TreeLib/Utility/Interpolation";
-import {InputManager} from "wc3-treelib/src/TreeLib/InputManager/InputManager";
+import {InputManager} from "wc3-treelib/src/TreeLib/Services/InputManager/InputManager";
 
 export const enum CameraMode {
     NONE,
@@ -52,7 +52,7 @@ export class PlayerCamera extends Entity {
     private maxMouseOffset = 200;
     step(): void {
         if (this.cameraMode == CameraMode.HERO) {
-            for (let play of GameConfig.getInstance().playingPlayers) {
+            for (let play of GameConfig.playingPlayers) {
                 let hero = PlayerHeroes.getInstance().getHero(play);
                 let id = GetPlayerId(play);
                 if (hero == null) continue;

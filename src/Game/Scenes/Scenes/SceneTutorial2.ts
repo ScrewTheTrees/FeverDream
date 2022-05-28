@@ -1,17 +1,16 @@
 import {PlayerHeroes} from "../../PlayerManager/PlayerHeroes";
 import {PlayerCamera} from "../../PlayerManager/PlayerCamera";
-import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
+import {Delay} from "wc3-treelib/src/TreeLib/Services/Delay/Delay";
 import {Scene} from "./Scene";
 import {GateOperation} from "../GateOperation";
 import {CUnitTypeEnemyMeleeMyrmidion} from "../../Units/CUnit/Types/CUnitTypeEnemyMeleeMyrmidion";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnitTypeEnemyRangedSiren} from "../../Units/CUnit/Types/CUnitTypeEnemyRangedSiren";
 import {ArenaService} from "../Arenas/ArenaService";
-import {Scene3} from "./Scene3";
-import {GameConfig} from "../../../GameConfig";
+import {SceneCave} from "./SceneCave";
 import {Music} from "../../Music";
 
-export class Scene2 extends Scene {
+export class SceneTutorial2 extends Scene {
     public checkpoint1 = gg_rct_Scene2Start;
 
     public combatArena1 = ArenaService.getInstance().combatArena1;
@@ -72,7 +71,7 @@ export class Scene2 extends Scene {
         this.combatArena2.toggleBoth(GateOperation.DESTROY);
 
         this.waitUntilPlayerTriggerRect(gg_rct_Scene2Ending);
-        this.movePlayersToRect(gg_rct_Scene3Start);
+        this.movePlayersToRect(gg_rct_SceneCaveStart);
         //Finish
     }
 
@@ -80,17 +79,16 @@ export class Scene2 extends Scene {
     public onFinish(): Scene | undefined {
         ArenaService.getInstance().clearAllEnemies();
 
-        return new Scene3();
+        return new SceneCave();
     }
     onPlayersDeath(): void {
-        this.remove();
-
-        this.playMusic(Music.NONE);
-
         Delay.addDelay(() => {
             ArenaService.getInstance().clearAllEnemies();
             this.playerHeroes.reviveHeroesIfDead(this.checkpoint1);
             this.reset();
         }, 5);
+
+        this.remove();
+        this.playMusic(Music.NONE);
     }
 }

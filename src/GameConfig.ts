@@ -2,49 +2,41 @@ import {Hooks} from "wc3-treelib/src/TreeLib/Hooks";
 import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
 import {MusicChange} from "./MusicChange";
 
+Hooks.addAfterMainHook(() => GameConfig.Init())
 export class GameConfig {
-    private static instance: GameConfig;
-
-    public static getInstance() {
-        if (this.instance == null) {
-            this.instance = new GameConfig();
-            Hooks.set(this.name, this.instance)
-        }
-        return this.instance;
-    }
-
-    private constructor() {
+    static Init() {
+        this.creepPlayer = Players.NEUTRAL_HOSTILE
     }
 
     //Players
-    public readonly playerIdFrom = 0;
-    public readonly playerIdTo = 3;
-    public readonly enemyIdFrom = 4;
-    public readonly enemyIdTo = 5;
+    public static readonly playerIdFrom = 0;
+    public static readonly playerIdTo = 3;
+    public static readonly enemyIdFrom = 4;
+    public static readonly enemyIdTo = 5;
 
-    public readonly allPlayerSlots: player[] = [];
-    public readonly playingPlayers: player[] = [];
-    public readonly creepPlayer: player = Players.NEUTRAL_HOSTILE;
+    public static readonly allPlayerSlots: player[] = [];
+    public static readonly playingPlayers: player[] = [];
+    public static creepPlayer: player;
 
 
     //asd
-    public timeScale: number = 1;
+    public static timeScale: number = 1;
 
 
     //AI
-    public aiEnabled: boolean = false;
-    public aiEnableMove: boolean = false;
-    public aiEnableAttack: boolean = false;
-    public aiEnableTargetPointCalculations: boolean = false;
+    public static aiEnabled: boolean = true;
+    public static aiEnableMove: boolean = true;
+    public static aiEnableAttack: boolean = true;
+    public static aiEnableTargetPointCalculations: boolean = true;
 
     //
-    public countPlayingPlayers() {
+    public static countPlayingPlayers() {
         return this.playingPlayers.length;
     }
 
     //
-    public music: string = "";
-    public setMusic(track: string) {
+    public static music: string = "";
+    public static setMusic(track: string) {
         if (track != this.music) {
             this.music = track;
             new MusicChange(track);

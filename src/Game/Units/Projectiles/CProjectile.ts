@@ -2,6 +2,7 @@ import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {CUnit} from "../CUnit/CUnit";
+import {GameConfig} from "../../../GameConfig";
 
 export abstract class CProjectile extends TreeThread {
     public owner: CUnit;
@@ -42,6 +43,10 @@ export abstract class CProjectile extends TreeThread {
         this.position.recycle();
         Quick.Clear(this.targets);
         this.remove();
+    }
+
+    public get timeScale() {
+        return this.timerDelay * GameConfig.timeScale;
     }
 }
 

@@ -15,10 +15,13 @@ gg_rct_Arena2Spawn1 = nil
 gg_rct_Scene1Camera1 = nil
 gg_rct_Scene2Ending = nil
 gg_rct_Arena2Camera1 = nil
-gg_rct_Scene3Start = nil
+gg_rct_SceneCaveStart = nil
 gg_rct_Scene2Start = nil
-gg_rct_Scene3EnemySpawner = nil
-gg_rct_Section2TriggerStart = nil
+gg_rct_ArenaCaveSpawn1 = nil
+gg_rct_ArenaCaveTriggerStart = nil
+gg_rct_ArenaCaveSpawn2 = nil
+gg_rct_ArenaCaveSpawn3 = nil
+gg_rct_ArenaCaveSpawn4 = nil
 gg_trg_InitScene1 = nil
 gg_dest_ATg4_0002 = nil
 gg_dest_ATg1_0003 = nil
@@ -50,10 +53,13 @@ function CreateRegions()
     gg_rct_Scene1Camera1 = Rect(-25376.0, -24032.0, -25120.0, -23744.0)
     gg_rct_Scene2Ending = Rect(-26592.0, -18784.0, -26272.0, -18528.0)
     gg_rct_Arena2Camera1 = Rect(-27296.0, -21696.0, -27040.0, -21408.0)
-    gg_rct_Scene3Start = Rect(-28096.0, -15712.0, -27712.0, -15424.0)
+    gg_rct_SceneCaveStart = Rect(-28096.0, -15712.0, -27712.0, -15424.0)
     gg_rct_Scene2Start = Rect(-25888.0, -23296.0, -25568.0, -22976.0)
-    gg_rct_Scene3EnemySpawner = Rect(-29152.0, -11616.0, -28704.0, -11232.0)
-    gg_rct_Section2TriggerStart = Rect(-28544.0, -15104.0, -27328.0, -14144.0)
+    gg_rct_ArenaCaveSpawn1 = Rect(-28960.0, -11616.0, -28576.0, -11296.0)
+    gg_rct_ArenaCaveTriggerStart = Rect(-28544.0, -15040.0, -27328.0, -14144.0)
+    gg_rct_ArenaCaveSpawn2 = Rect(-28320.0, -15584.0, -28000.0, -15264.0)
+    gg_rct_ArenaCaveSpawn3 = Rect(-24544.0, -14176.0, -24096.0, -13856.0)
+    gg_rct_ArenaCaveSpawn4 = Rect(-22176.0, -11360.0, -21728.0, -11040.0)
 end
 
 function Trig_InitScene1_Actions()

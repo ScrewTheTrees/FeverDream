@@ -32,7 +32,7 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
         }
     }
     public get globalTimeScale(): number {
-        return GameConfig.getInstance().timeScale;
+        return GameConfig.timeScale;
     }
     public get timeStep(): number {
         return this._timerDelay * this.globalTimeScale;

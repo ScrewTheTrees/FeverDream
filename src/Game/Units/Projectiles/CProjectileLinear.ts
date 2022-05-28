@@ -22,12 +22,12 @@ export class CProjectileLinear extends CProjectile {
     private collisionMap = BootlegCollisionMap.getInstance();
     execute(): void {
         while (this.durability > 0) {
-            this.travelTime -= this.timerDelay;
+            this.travelTime -= this.timeScale;
             if (this.travelTime <= 0) {
                 this.destroy();
             }
             if (this.collisionMap.getCollisionAtCoordinateEmpty(this.position.x, this.position.y)) {
-                this.position.polarProject(this.speed * GameConfig.getInstance().timeScale,
+                this.position.polarProject(this.speed * GameConfig.timeScale,
                     this.targetOffset.getAngleDegrees()
                 );
                 this.targets = CUnit.unitPool.getAliveUnitsInRange(this.position, this.collisionSize + 128, undefined, this.targets);
@@ -52,7 +52,7 @@ export class CProjectileLinear extends CProjectile {
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ() + this.visualHeight);
-        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.getInstance().timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.timeScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.targetOffset.getAngle()
         );

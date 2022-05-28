@@ -5,6 +5,7 @@ import {Rectangle} from "wc3-treelib/src/TreeLib/Utility/Data/Rectangle";
 import {PlayerHeroes} from "../../PlayerManager/PlayerHeroes";
 import {CUnit} from "../../Units/CUnit/CUnit";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
+import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 
 export abstract class Arena {
     /*** Trigger areas that starts the engagement. */
@@ -22,7 +23,7 @@ export abstract class Arena {
 
     public enemies: CUnit[] = [];
 
-    public constructor( arena: number) {
+    public constructor(arena: string) {
         this.parseRegions(SceneRectType.TRIGGER, arena, this.trigger);
         this.parseRegions(SceneRectType.MOVECHECK, arena, this.arenaCheck);
         this.parseRegions(SceneRectType.TARDY, arena, this.tardy);
@@ -31,7 +32,7 @@ export abstract class Arena {
         this.parseDestructable(SceneDestructableType.EXIT, arena, this.exit);
     }
 
-    private parseRegions(type: SceneRectType, arena: number, arr: rect[]) {
+    private parseRegions(type: SceneRectType, arena: string, arr: rect[]) {
         let globalScope: any = _G;
         let count = 1;
         let parse = globalScope[`gg_rct_Arena${arena}${type}${count}`];
@@ -41,7 +42,7 @@ export abstract class Arena {
             parse = globalScope[`gg_rct_Arena${arena}${type}${count}`];
         }
     }
-    private parseDestructable(type: SceneDestructableType, arena: number, arr: destructable[]) {
+    private parseDestructable(type: SceneDestructableType, arena: string, arr: destructable[]) {
         let globalScope: any = _G;
         let count = 1;
         let parse = globalScope[`udg_Dest_Arena${arena}${type}${count}`];
@@ -107,25 +108,80 @@ export abstract class Arena {
     public closeArena() {
         this.toggleBoth(GateOperation.CLOSE);
     }
+
+    public getClosestSpawner(to: Vector2) {
+        let check = this.enemySpawns[0];
+        let dist = math.maxinteger;
+        for (let arena of this.enemySpawns) {
+            let vec = Vector2.fromRectCenter(arena);
+            let d = vec.distanceToSquared(to);
+            if (d <= dist) {
+                dist = d;
+                check = arena;
+            }
+            vec.recycle();
+        }
+        return check;
+    }
+    public getFurthestSpawner(to: Vector2) {
+        let check = this.enemySpawns[0];
+        let dist = 0;
+        for (let arena of this.enemySpawns) {
+            let vec = Vector2.fromRectCenter(arena);
+            let d = vec.distanceToSquared(to);
+            if (d >= dist) {
+                dist = d;
+                check = arena;
+            }
+            vec.recycle();
+        }
+        return check;
+    }
+    public getFurthestSpawnerOfPlayers() {
+        let check = this.enemySpawns[0];
+        let dist = 0;
+
+        for (let p of PlayerHeroes.getInstance().getAliveHeroes()) {
+            let rc = this.getFurthestSpawner(p.getPosition());
+            let vec = Vector2.fromRectCenter(rc);
+            let d = vec.distanceToSquared(p.getPosition());
+            if (d >= dist) {
+                dist = d;
+                check = rc;
+            }
+            vec.recycle();
+        }
+        return check;
+    }
+
+    private _checkArr: any[] = [];
+    get checkArr(): any[] {
+        Quick.Clear(this._checkArr);
+        return this._checkArr;
+    }
 }
-
-
-
 
 
 export class Arena1Combat extends Arena {
     constructor() {
-        super(1);
+        super("1");
     }
 }
 
 export class Arena2Combat extends Arena {
     constructor() {
-        super( 2);
+        super("2");
     }
 }
+
 export class ArenaDummy extends Arena {
     constructor() {
-        super( 0);
+        super("0");
+    }
+}
+
+export class ArenaCave extends Arena {
+    constructor() {
+        super("Cave");
     }
 }

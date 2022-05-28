@@ -1,11 +1,11 @@
-import {InputManager} from "wc3-treelib/src/TreeLib/InputManager/InputManager";
-import {MouseCallback} from "wc3-treelib/src/TreeLib/InputManager/MouseCallback";
+import {InputManager} from "wc3-treelib/src/TreeLib/Services/InputManager/InputManager";
+import {MouseCallback} from "wc3-treelib/src/TreeLib/Services/InputManager/MouseCallback";
 import {CUnit} from "../../CUnit/CUnit";
 import {CComponentPlayerFire} from "../Actions/Player/CComponentPlayerFire";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CStepComponent} from "../CStepComponent";
 import {CComponentPlayerDodge} from "../Actions/Player/CComponentPlayerDodge";
-import {KeyCallback} from "wc3-treelib/src/TreeLib/InputManager/KeyCallback";
+import {KeyCallback} from "wc3-treelib/src/TreeLib/Services/InputManager/KeyCallback";
 import {CComponentPlayerPlaceBarricade} from "../Actions/Player/CComponentPlayerPlaceBarricade";
 import {TextUtils} from "../../../Text/TextUtils";
 import {RGB} from "wc3-treelib/src/TreeLib/Utility/Data/RGB";
@@ -81,8 +81,6 @@ export class ToolPlaceBarricade extends Tool {
 
 export class CComponentPlayerInput extends CStepComponent {
     removeOnDeath = false;
-    private keyboard = InputManager.getInstance().keyboardHandler;
-    private mouse = InputManager.getInstance().mouseHandler;
 
     public pauseInput = false;
 
@@ -111,17 +109,17 @@ export class CComponentPlayerInput extends CStepComponent {
 
         this.selectTool(this.toolList[0])
 
-        this.mouse.addMousePressCallback(MOUSE_BUTTON_TYPE_RIGHT, (callback) => {
+        InputManager.addMousePressCallback(MOUSE_BUTTON_TYPE_RIGHT, (callback: MouseCallback) => {
             this.onRightClick(callback)
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_LSHIFT, (callback) => {
+        InputManager.addKeyboardPressCallback(OSKEY_LSHIFT, (callback: KeyCallback) => {
             this.onDodge(callback);
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_1, (callback) => {
+        InputManager.addKeyboardPressCallback(OSKEY_1, (callback: KeyCallback) => {
             if (callback.triggeringPlayer != this.owner.owner) return;
             this.currentTool = this.toolList[0];
         });
-        this.keyboard.addKeyboardPressCallback(OSKEY_2, (callback) => {
+        InputManager.addKeyboardPressCallback(OSKEY_2, (callback: KeyCallback) => {
             if (callback.triggeringPlayer != this.owner.owner) return;
             this.currentTool = this.toolList[1];
         });
@@ -150,10 +148,10 @@ export class CComponentPlayerInput extends CStepComponent {
         if (!this.pauseInput && !this.owner.isDead) {
             this.move.updateTo(0, 0);
 
-            if (this.keyboard.isKeyButtonHeld(this.keyLeft, this.owner.owner)) this.move.x -= 1;
-            if (this.keyboard.isKeyButtonHeld(this.keyRight, this.owner.owner)) this.move.x += 1;
-            if (this.keyboard.isKeyButtonHeld(this.keyDown, this.owner.owner)) this.move.y -= 1;
-            if (this.keyboard.isKeyButtonHeld(this.keyUp, this.owner.owner)) this.move.y += 1;
+            if (InputManager.isKeyButtonHeld(this.keyLeft, this.owner.owner)) this.move.x -= 1;
+            if (InputManager.isKeyButtonHeld(this.keyRight, this.owner.owner)) this.move.x += 1;
+            if (InputManager.isKeyButtonHeld(this.keyDown, this.owner.owner)) this.move.y -= 1;
+            if (InputManager.isKeyButtonHeld(this.keyUp, this.owner.owner)) this.move.y += 1;
 
             this.owner.setAutoMoveData(this.move);
         }

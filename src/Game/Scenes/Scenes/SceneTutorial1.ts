@@ -2,18 +2,17 @@ import {PlayerHeroes} from "../../PlayerManager/PlayerHeroes";
 import {PlayerCamera} from "../../PlayerManager/PlayerCamera";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {GateOperation} from "../GateOperation";
-import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {
     CUnitTypeEnemyMeleeFodderSkeleton
 } from "../../Units/CUnit/Types/CUnitTypeEnemyMeleeFodderSkeleton";
 import {Scene} from "./Scene";
-import {Scene2} from "./Scene2";
+import {SceneTutorial2} from "./SceneTutorial2";
 import {ArenaService} from "../Arenas/ArenaService";
 import {Music} from "../../Music";
-import {GameConfig} from "../../../GameConfig";
 import {CUnitTypeEnemyRangedFodderSkeleton} from "../../Units/CUnit/Types/CUnitTypeEnemyRangedFodderSkeleton";
+import { Delay } from "wc3-treelib/src/TreeLib/Services/Delay/Delay";
 
-export class Scene1 extends Scene {
+export class SceneTutorial1 extends Scene {
     public checkpoint1 = gg_rct_Scene1Start;
 
     public combatArena1 = ArenaService.getInstance().combatArena1;
@@ -107,15 +106,15 @@ export class Scene1 extends Scene {
 
         ArenaService.getInstance().clearAllEnemies();
         //Return next scene.
-        return new Scene2();
+        return new SceneTutorial2();
     }
     onPlayersDeath(): void {
-        this.remove();
-        this.playMusic(Music.NONE);
-
         Delay.addDelay(() => {
             ArenaService.getInstance().clearAllEnemies();
             this.reset();
         }, 5);
+
+        this.remove();
+        this.playMusic(Music.NONE);
     }
 }

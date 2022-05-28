@@ -1,7 +1,7 @@
-import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Pathing/PointWalkableChecker";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Hooks} from "wc3-treelib/src/TreeLib/Hooks";
-import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
+import {PointWalkableChecker} from "wc3-treelib/src/TreeLib/Services/Pathing/PointWalkableChecker";
+import {Delay} from "wc3-treelib/src/TreeLib/Services/Delay/Delay";
 
 export class BootlegCollisionMap {
     private static _instance: BootlegCollisionMap;
@@ -15,8 +15,6 @@ export class BootlegCollisionMap {
     private gridNegative: number = 32_768;
     private grid: boolean[][] = [];
     private readonly gridSize;
-
-    private checker: PointWalkableChecker = PointWalkableChecker.getInstance();
 
     public constructor(gridNegative: number = 32_768, gridSize: number = 32) {
         this.gridNegative = gridNegative;
@@ -104,7 +102,7 @@ export class BootlegCollisionMap {
             this.grid[x] = [];
         }
         let half = this.gridSize / 2;
-        let value = this.checker.checkTerrainIsWalkableXY((x * this.gridSize) + half - this.gridNegative, (y * this.gridSize) + half - this.gridNegative);
+        let value = PointWalkableChecker.checkTerrainIsWalkableXY((x * this.gridSize) + half - this.gridNegative, (y * this.gridSize) + half - this.gridNegative);
         this.grid[x][y] = value;
         return value;
     }

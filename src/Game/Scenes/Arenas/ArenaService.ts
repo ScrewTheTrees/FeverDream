@@ -1,4 +1,4 @@
-import {Arena1Combat, Arena2Combat, ArenaDummy} from "./Arena";
+import {Arena1Combat, Arena2Combat, ArenaCave, ArenaDummy} from "./Arena";
 
 export class ArenaService {
     private static _instance: ArenaService;
@@ -19,10 +19,13 @@ export class ArenaService {
     public combatArena2 = new Arena2Combat();
 
     //Section 2.
+    public caveArena = new ArenaCave();
 
     public clearAllEnemies() {
         this.dummyArena.removeAllEnemies();
         this.combatArena1.removeAllEnemies();
         this.combatArena2.removeAllEnemies();
+
+        this.caveArena.removeAllEnemies();
     }
 }

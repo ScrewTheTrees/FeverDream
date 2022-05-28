@@ -29,7 +29,7 @@ export class CProjectileMeleeCircle extends CProjectile {
             }
             Quick.Clear(this.targets);
             this.draw();
-            this.durability -= this.timerDelay * GameConfig.getInstance().timeScale;
+            this.durability -= this.timeScale;
             this.yield();
         }
         this.yieldTimed(2);
@@ -39,7 +39,7 @@ export class CProjectileMeleeCircle extends CProjectile {
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ() + this.visualHeight);
-        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.getInstance().timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.timeScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.targetOffset.getAngle()
         );

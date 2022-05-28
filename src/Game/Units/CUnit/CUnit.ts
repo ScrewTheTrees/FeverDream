@@ -3,12 +3,12 @@ import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {Interpolation} from "wc3-treelib/src/TreeLib/Utility/Interpolation";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {CUnitPool} from "./CUnitPool";
-import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
 import {Models} from "../../Models";
 import {CProjectile} from "../Projectiles/CProjectile";
 import {GameConfig} from "../../../GameConfig";
 import {BootlegCollisionMap} from "../BootlegCollisionMap";
 import {IComponent} from "../CComponent/IComponent";
+import {Delay} from "wc3-treelib/src/TreeLib/Services/Delay/Delay";
 
 export abstract class CUnit extends Entity {
     public static unitPool: CUnitPool = new CUnitPool();
@@ -78,7 +78,7 @@ export abstract class CUnit extends Entity {
                 this.move(this.moveOffset);
             }
             if (!this.isDisabledRotation()) {
-                this.facingYaw = Interpolation.RotDivisionSpring(this.facingYaw, this.logicAngle, 15 / GameConfig.getInstance().timeScale);
+                this.facingYaw = Interpolation.RotDivisionSpring(this.facingYaw, this.logicAngle, 10 / GameConfig.timeScale);
             }
             if (!this.isDisabledMovement()) {
                 if (this.moveTime <= 0) this.isMoving = false;
@@ -111,14 +111,15 @@ export abstract class CUnit extends Entity {
                 let intersectingThicc = (this.crowdingCollisionSize + other.crowdingCollisionSize);
                 let distance = this.position.distanceTo(other.getPosition());
                 if (distance <= intersectingThicc) {
-                    let power = (((1 - (distance / intersectingThicc)) / 0.25) / this.poise) * other.poise
+                    let power = math.min(16, (((1 - (distance / intersectingThicc)) / 0.25) / this.poise) * other.poise)
                     this.crowdingOffset.polarProject(power, this.position.directionFrom(other.getPosition()));
                 }
                 let diff = (distance * this.timerDelay) / (this.getActualMoveSpeed() * 2);
-                this.crowdingOffsetUpdate = math.max(0.2, math.min(this.crowdingOffsetUpdate, diff));
+                this.crowdingOffsetUpdate = math.max(0.15, math.min(this.crowdingOffsetUpdate, diff));
             }
-            this.crowdingOffset.x = math.min(math.max(this.crowdingOffset.x, -this.maxPush), this.maxPush)
-            this.crowdingOffset.y = math.min(math.max(this.crowdingOffset.y, -this.maxPush), this.maxPush)
+            let gc = GameConfig;
+            this.crowdingOffset.x = math.min(math.max(this.crowdingOffset.x * gc.timeScale, -this.maxPush), this.maxPush)
+            this.crowdingOffset.y = math.min(math.max(this.crowdingOffset.y * gc.timeScale, -this.maxPush), this.maxPush)
         }//this.crowdingOffsetUpdate
 
         if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
@@ -192,7 +193,7 @@ export abstract class CUnit extends Entity {
         this.forceMove(next);
     }
     getActualMoveSpeed() {
-        return math.max(0, this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale;
+        return math.max(0, this.moveSpeed + this.moveSpeedBonus) * GameConfig.timeScale;
     }
     private forceMoveVector = Vector2.new(0, 0);
     public forceMove(offset: Vector2) {
@@ -257,7 +258,7 @@ export abstract class CUnit extends Entity {
     }
     public setVisualTimeScale(scale: number) {
         this.visualTimeScale = scale;
-        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.timeScale);
     }
     public addVisualTimeScale(scale: number) {
         this.setVisualTimeScale(this.visualTimeScale * scale);
@@ -291,7 +292,7 @@ export abstract class CUnit extends Entity {
         }, duration);
         return eff;
     }
-    public killUnit() {
+    public killUnit(dealer?: CUnit) {
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             if (comp.removeOnDeath) {
@@ -328,7 +329,7 @@ export abstract class CUnit extends Entity {
             this.health = this.maxHealth;
         }
         if (this.health <= 0) {
-            this.killUnit();
+            this.killUnit(dealer);
         }
     }
     private updateComponents() {
@@ -350,7 +351,7 @@ export abstract class CUnit extends Entity {
         BlzSetSpecialEffectColorByPlayer(this.effect, this.owner);
         BlzSetSpecialEffectPosition(this.effect, this.position.x, this.position.y, this.getZValue())
         BlzSetSpecialEffectScale(this.effect, this.modelScale);
-        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.timeScale);
         BlzSetSpecialEffectOrientation(this.effect,
             this.facingYaw * bj_DEGTORAD,
             this.facingPitch * bj_DEGTORAD,
@@ -360,6 +361,7 @@ export abstract class CUnit extends Entity {
 
     public onDelete() {
         CUnit.unitPool.gridRemove(this);
+        CUnit.unitPool.update();
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             this.removeComponent(comp);

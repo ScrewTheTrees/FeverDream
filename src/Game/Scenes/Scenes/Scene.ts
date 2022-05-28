@@ -5,7 +5,7 @@ import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {PlayerHeroes} from "../../PlayerManager/PlayerHeroes";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../Units/CUnit/CUnit";
-import {Delay} from "wc3-treelib/src/TreeLib/Utility/Delay";
+import {Delay} from "wc3-treelib/src/TreeLib/Services/Delay/Delay";
 import {PlayerCamera} from "../../PlayerManager/PlayerCamera";
 
 export abstract class Scene extends TreeThread {
@@ -18,19 +18,21 @@ export abstract class Scene extends TreeThread {
     abstract onFinish(): Scene | undefined;
 
     public playMusic(music: string) {
-        GameConfig.getInstance().setMusic(music);
+        GameConfig.setMusic(music);
     }
     public numberOfPlayers() {
-        return GameConfig.getInstance().playingPlayers.length;
+        return GameConfig.playingPlayers.length;
     }
     public movePlayersToRect(...place: rect[]) {
         PlayerHeroes.getInstance().moveHeroesToRect(ChooseOne(...place));
+        print("moveHeroesToRect");
     }
 
     //Arenas
     public startStandardCombatArena(arena: Arena) {
         arena.closeArena();
         this.moveTardyPlayersToArena(arena);
+        print("startStandardCombatArena, moveTardyPlayersToArena");
     }
     public waitUntilPlayerTriggerArena(arena: Arena) {
         while (!arena.isPlayerTouchingTrigger()) {
@@ -55,24 +57,43 @@ export abstract class Scene extends TreeThread {
     //Spawning
     public generateSpawn(arena: Arena, func: (enemyPlayer: player, place: Vector2) => CUnit, spawnRect?: rect) {
         let place = spawnRect != null ? Vector2.randomPointInRect(spawnRect) : Vector2.randomPointInRect(ChooseOne(...arena.enemySpawns));
-        let enemyPlayer = GameConfig.getInstance().creepPlayer;
+        let enemyPlayer = GameConfig.creepPlayer;
         let u = func(enemyPlayer, place);
         arena.addEnemy(u);
         place.recycle();
     }
     public generateSpawnPerPlayerAsync(arena: Arena, func: (enemyPlayer: player, place: Vector2, focusPlayer?: CUnit) => CUnit,
                                        baseDelay: number, repeatPerPlayer: number, spawnRect?: rect) {
-        let totalPlays = GameConfig.getInstance().playingPlayers.length;
+        let totalPlays = GameConfig.playingPlayers.length;
         let id: number = 0;
 
         Delay.addDelay(() => {
-            if (id >= GameConfig.getInstance().playingPlayers.length) id = 0;
-            let play = GameConfig.getInstance().playingPlayers[id];
+            if (id >= GameConfig.playingPlayers.length) id = 0;
+            let play = GameConfig.playingPlayers[id];
             id++;
 
             let place = spawnRect != null ? Vector2.randomPointInRect(spawnRect) : Vector2.randomPointInRect(ChooseOne(...arena.enemySpawns));
-            if (spawnRect) Vector2.randomPointInRect(spawnRect);
-            let enemyPlayer = GameConfig.getInstance().creepPlayer;
+            let enemyPlayer = GameConfig.creepPlayer;
+            let focusTarget = PlayerHeroes.getInstance().getHero(play);
+            let u = func(enemyPlayer, place, focusTarget);
+            arena.addEnemy(u);
+            place.recycle();
+
+        }, baseDelay / totalPlays, repeatPerPlayer * totalPlays);
+    }
+    public generateSpawnPerPlayerFurthersSpawnAsync(arena: Arena, func: (enemyPlayer: player, place: Vector2, focusPlayer?: CUnit) => CUnit,
+                                                    baseDelay: number, repeatPerPlayer: number) {
+        let totalPlays = GameConfig.playingPlayers.length;
+        let id: number = 0;
+        let rc = arena.getFurthestSpawnerOfPlayers();
+
+        Delay.addDelay(() => {
+            if (id >= GameConfig.playingPlayers.length) id = 0;
+            let play = GameConfig.playingPlayers[id];
+            id++;
+            let place = Vector2.randomPointInRect(rc);
+
+            let enemyPlayer = GameConfig.creepPlayer;
             let focusTarget = PlayerHeroes.getInstance().getHero(play);
             let u = func(enemyPlayer, place, focusTarget);
             arena.addEnemy(u);

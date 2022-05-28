@@ -24,7 +24,7 @@ export abstract class CStepComponent extends DynamicEntity implements IComponent
         this.isFinished = true;
     }
     public get globalTimeScale(): number {
-        return GameConfig.getInstance().timeScale;
+        return GameConfig.timeScale;
     }
     public get timeScale(): number {
         return this.timerDelay * this.globalTimeScale;

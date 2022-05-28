@@ -71,6 +71,8 @@ export class CUnitPool extends Entity {
     update(): void {
         for (let i = this.alivePool.length - 1; i >= 0; i--) {
             let thing = this.alivePool[i];
+            if (thing == undefined) continue;
+
             if (thing.queueForRemoval) {
                 Quick.Remove(this.alivePool, thing);
                 thing.onDelete();
@@ -81,6 +83,8 @@ export class CUnitPool extends Entity {
         }
         for (let i = this.deadPool.length - 1; i >= 0; i--) {
             let thing = this.deadPool[i];
+            if (thing == undefined) continue;
+
             if (thing.queueForRemoval) {
                 Quick.Remove(this.deadPool, thing);
                 thing.onDelete();

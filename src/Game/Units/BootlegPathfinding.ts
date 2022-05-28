@@ -1,8 +1,8 @@
-import {PathfinderRectangle} from "wc3-treelib/src/TreeLib/Pathfinder/PathfinderRectangle";
+import {RectangleNode} from "wc3-treelib/src/TreeLib/Frameworks/Pathfinder/Node";
+import {PathfinderRectangle} from "wc3-treelib/src/TreeLib/Frameworks/Pathfinder/PathfinderRectangle";
+import {PathfindResult} from "wc3-treelib/src/TreeLib/Frameworks/Pathfinder/PathfindResult";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {TreePromise} from "wc3-treelib/src/TreeLib/Utility/TreePromise";
-import {PathfindResult} from "wc3-treelib/src/TreeLib/Pathfinder/PathfindResult";
-import {RectangleNode} from "wc3-treelib/src/TreeLib/Pathfinder/Node";
 import {TreeThread} from "wc3-treelib/src/TreeLib/Utility/TreeThread";
 
 export class BootlegPathfinding {
@@ -18,7 +18,7 @@ export class BootlegPathfinding {
 
     private constructor() {
         this.pathfinder = new PathfinderRectangle(31000, 31000, -31000, -31000,
-            64, true, true, false);
+            64, true, true, true);
 
     }
     public findAsync(from: Vector2, to: Vector2): TreePromise<PathfindResult<RectangleNode>, TreeThread> {

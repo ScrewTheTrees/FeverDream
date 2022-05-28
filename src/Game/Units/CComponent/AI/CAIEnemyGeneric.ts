@@ -2,8 +2,8 @@ import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
 import {BootlegPathfinding} from "../../BootlegPathfinding";
 import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
-import {PathfindResult} from "wc3-treelib/src/TreeLib/Pathfinder/PathfindResult";
-import {RectangleNode} from "wc3-treelib/src/TreeLib/Pathfinder/Node";
+import {PathfindResult} from "wc3-treelib/src/TreeLib/Frameworks/Pathfinder/PathfindResult";
+import {RectangleNode} from "wc3-treelib/src/TreeLib/Frameworks/Pathfinder/Node";
 import {BootlegCollisionMap} from "../../BootlegCollisionMap";
 import {CStepComponent} from "../CStepComponent";
 import {AIState} from "./AIState";
@@ -35,15 +35,13 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     public pathFindFrequentDistance: number = 500;
     public pathFindSlowDistance: number = 1400;
     public pathFindLudicrous: number = 4000;
-    public pathFindUpdateDelay: number = GetRandomReal(2, 2.5);
+    public pathFindUpdateDelay: number = GetRandomReal(1.2, 1.3);
     public pathFindUpdateDelayTime: number = GetRandomReal(0, 1);
     public pathFindCurrent?: PathfindResult<RectangleNode>;
     public pathFindCurrentId: number = 0;
     public pathFindFollowing: boolean = false;
     public pathFindCheckDist: number = math.maxinteger;
     public pathFindOffsetTowardsNextNode: boolean = true;
-
-    protected gameConfig = GameConfig.getInstance();
 
     protected constructor(owner: CUnit, primaryTarget?: CUnit, timerDelay: number = 0.1) {
         super(owner, timerDelay);
@@ -68,12 +66,21 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         });*/
     }
 
-    public abstract onAttack(hero: CUnit): void;
+    private _isYielding = 0;
+    public override timerYield(time: number) {
+        this._isYielding = math.min(time, 1000);
+    }
 
+
+    public abstract onAttack(hero: CUnit): void;
 
     step(): void {
         if (this.owner.isDead) this.aiState = AIState.DEAD;
-        if (!this.gameConfig.aiEnabled) return;
+        if (!GameConfig.aiEnabled) return;
+        if (this._isYielding >= 0) {
+            this._isYielding -= this.timeScale;
+            return;
+        }
 
         if (this.aiState == AIState.SPAWNING) {
             this.handleSpawningState();
@@ -90,7 +97,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
 
     handleSpawningState() {
         this.aiState = AIState.IDLE;
-        this.timerYield(2.5);
+        this.timerYield(2);
         return;
     }
     handleIdleState() {
@@ -124,12 +131,12 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
 
         this.currentTarget = this.calculateCurrentTarget(this.currentTarget);
 
-        if (this.gameConfig.aiEnableTargetPointCalculations) {
+        if (GameConfig.aiEnableTargetPointCalculations) {
             this.calculateTargetPoint(this.currentTarget);
             this.calculateAngleData(this.currentTarget);
         }
 
-        if (this.move && this.gameConfig.aiEnableMove) {
+        if (this.move && GameConfig.aiEnableMove) {
             this.owner.setAutoMoveData(this.angle, 1);
         }
         this.evaluateToAttack(this.currentTarget);
@@ -154,6 +161,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         }
         return target;
     }
+
     calculateAngleData(target: CUnit) {
         this.angle.updateToPoint(this.owner.getPosition()).offsetTo(this.target);
 
@@ -166,7 +174,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         let dist = this.owner.getPosition().distanceTo(hero.getPosition());
         let delay = this.pathFindUpdateDelay;
         if (dist < this.pathFindFrequentDistance) delay /= 2;
-        if (dist > this.pathFindSlowDistance) delay *= 4;
+        if (dist > this.pathFindSlowDistance) delay *= 2;
         if (dist > this.pathFindLudicrous || dist > this.pathFindCheckDist) delay *= 4;
 
         this.pathFindUpdateDelayTime += this.lastStepSize;
@@ -175,7 +183,6 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
                 this.updatePathfinderData(hero);
             } else {
                 this.pathFindFollowing = false;
-                this.curving = this.getNewCurving();
             }
         }
         if (this.pathFindFollowing && this.pathFindCurrent) {
@@ -237,7 +244,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
             this.pathFindCurrent = this.pathfinder.find(from, to);
         }
         this.pathFindCurrentId = 0;
-        this.pathFindOffsetTowardsNextNode = false;
+        this.pathFindOffsetTowardsNextNode = true;
         this.curving = this.getNewCurving();
         this.pathFindFollowing = true;
         this.pathFindUpdateDelayTime = 0;
@@ -247,7 +254,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         to.recycle();
     }
     evaluateToAttack(hero: CUnit) {
-        if (!this.gameConfig.aiEnableAttack) return;
+        if (!GameConfig.aiEnableAttack) return;
 
         let distanceToTarget = this.owner.getPosition().distanceTo(hero.getPosition());
 
@@ -288,7 +295,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     }
 
     getNewEnemyTargetDelay() {
-        return GetRandomReal(0.75, 1.25);
+        return GetRandomReal(0.5, 0.75);
     }
 
     public cleanup(): void {
@@ -296,6 +303,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         this.target.recycle();
         this.angle.recycle();
     }
+
     protected distanceToNextNode(initial: Vector2) {
         let ret = 0;
         if (this.pathFindCurrent) {
@@ -308,6 +316,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         }
         return ret;
     }
+
     protected nodeDistanceToNextNode() {
         let ret = 0;
         if (this.pathFindCurrent) {

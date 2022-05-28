@@ -12,7 +12,6 @@ import {BootlegPathfinding} from "./Game/Units/BootlegPathfinding";
 // =========================================
 
 export class Game {
-    private gameConfig = GameConfig.getInstance();
     private playerMaster = PlayerMaster.getInstance();
     private sceneService = SceneService.getInstance();
     private pathfinding = BootlegPathfinding.getInstance();
@@ -21,20 +20,20 @@ export class Game {
         Logger.doLogVerbose = false;
         Logger.doLogDebug = false;
 
-        for (let i = this.gameConfig.playerIdFrom; i < this.gameConfig.playerIdTo; i++) {
+        for (let i = GameConfig.playerIdFrom; i <= GameConfig.playerIdTo; i++) {
             let p = Player(i);
-            this.gameConfig.allPlayerSlots.push(p);
+            GameConfig.allPlayerSlots.push(p);
 
             if (GetPlayerController(p) == MAP_CONTROL_USER && GetPlayerSlotState(p) == PLAYER_SLOT_STATE_PLAYING) {
-                this.gameConfig.playingPlayers.push(p);
+                GameConfig.playingPlayers.push(p);
                 let h = new CUnitTypePlayer(p,
-                    Vector2.fromLocationClean(GetStartLocationLoc(i))
+                    Vector2.new(GetStartLocationX(i), GetStartLocationY(i))
                 );
                 this.playerMaster.playerHeroes.addHero(p, h);
             }
         }
-        for (let p of this.gameConfig.allPlayerSlots) {
-            for (let t of this.gameConfig.allPlayerSlots) {
+        for (let p of GameConfig.allPlayerSlots) {
+            for (let t of GameConfig.allPlayerSlots) {
                 SetPlayerAlliance(p, t, ALLIANCE_PASSIVE, true);
                 SetPlayerAlliance(p, t, ALLIANCE_SHARED_XP, true);
                 SetPlayerAlliance(p, t, ALLIANCE_SHARED_SPELLS, true);
