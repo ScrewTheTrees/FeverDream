@@ -6,6 +6,7 @@ import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {CUnit} from "./CUnit";
 import {DataTreeFilter} from "wc3-treelib/src/TreeLib/Utility/Data/DataTree/DataTreeFilter";
 import {DataTreePositionEvaluation} from "wc3-treelib/src/TreeLib/Utility/Data/DataTree/DataTreePositionEvaluation";
+import {Rectangle} from "wc3-treelib/src/TreeLib/Utility/Data/Rectangle";
 
 class CUnitEvaluation extends DataTreePositionEvaluation<CUnit> {
     evaluate(value: CUnit): Vector2 {
@@ -55,7 +56,7 @@ export class CUnitPool extends Entity {
     public alivePool: CUnit[] = [];
     public deadPool: CUnit[] = [];
 
-    private gridDist = 1024;
+    private defaultMaxGridDist = 1024;
 
     private notSelfFilter = new NotSelfFilter();
     private isEnemyFilter = new IsEnemyFilter();
@@ -143,10 +144,15 @@ export class CUnitPool extends Entity {
     }
 
     public getClosestAliveToPosition(pos: Vector2, filter?: DataTreeFilter<CUnit>, maxRange: number = math.maxinteger) {
-        let newUnit = this.aliveGrid.fetchClosest(pos, math.min(maxRange, this.gridDist), filter);
+        let newUnit = this.aliveGrid.fetchClosest(pos, math.min(maxRange, this.defaultMaxGridDist), filter);
         if (newUnit != undefined) {
             return newUnit;
         }
+        if (maxRange <= this.defaultMaxGridDist) {
+            return undefined;
+        }
+
+        // This calculation is expensive, if possible it would be nice to avoid it...
         let distance = maxRange;
         let candidate = undefined;
         for (let i = 0; i < this.alivePool.length; i++) {
@@ -170,7 +176,7 @@ export class CUnitPool extends Entity {
 
     public getAliveUnitsInRange(pos: Vector2, range: number, filter?: DataTreeFilter<CUnit>, checkArr?: CUnit[]) {
         let units = checkArr || [];
-        if (range <= this.gridDist) {
+        if (range <= this.defaultMaxGridDist) {
             return this.aliveGrid.fetchInCircleR(pos, range, filter, checkArr);
         }
 
@@ -185,6 +191,31 @@ export class CUnitPool extends Entity {
     }
     public getAliveUnitsInRangeNotSelf(dude: CUnit, range: number, checkArr?: CUnit[]) {
         return this.getAliveUnitsInRange(dude.getPosition(), range, this.notSelfFilter.apply(dude), checkArr);
+    }
+
+    private checkRect: Rectangle = Rectangle.new(0,0,0,0);
+    private getArrayUnitsInRect(arr: CUnit[], place: rect, filter?: DataTreeFilter<CUnit>, units: CUnit[] = []) {
+        this.checkRect.updateTo(GetRectMinX(place), GetRectMinY(place), GetRectMaxX(place), GetRectMaxY(place));
+        for (let u of arr) {
+            if (u.getPosition().intersectsRectangle(this.checkRect)) {
+                if (filter == null || filter.evaluate(u)) {
+                    units.push(u);
+                }
+            }
+        }
+        return units;
+    }
+    public getAliveUnitsInRect(place: rect, filter?: DataTreeFilter<CUnit>, checkArr: CUnit[] = []) {
+        return this.getArrayUnitsInRect(this.alivePool, place, filter, checkArr);
+    }
+    public getDeadUnitsInRect(place: rect, filter?: DataTreeFilter<CUnit>, checkArr: CUnit[] = []) {
+        return this.getArrayUnitsInRect(this.deadPool, place, filter, checkArr);
+    }
+    public getAllUnitsInRect(place: rect, filter?: DataTreeFilter<CUnit>, checkArr: CUnit[] = []) {
+        //Handles insertions into array, no worries.
+        this.getAliveUnitsInRect(place, filter, checkArr);
+        this.getDeadUnitsInRect(place, filter, checkArr);
+        return checkArr;
     }
 
     public getRandomAlive(filter?: DataTreeFilter<CUnit>) {

@@ -3,6 +3,9 @@ declare const udg_Dest_Arena1Entry1: destructable;
 declare const udg_Dest_Arena1Exit1: destructable;
 declare const udg_Dest_Arena2Entry1: destructable;
 declare const udg_Dest_Arena2Exit1: destructable;
+declare const udg_Dest_Arena3Exit1: destructable;
+declare const udg_Dest_Arena3Exit2: destructable;
+declare const udg_Dest_Arena3Exit3: destructable;
 
 //Rects 
 declare const gg_rct_Arena1Spawn1: rect;
@@ -25,3 +28,16 @@ declare const gg_rct_ArenaCaveTriggerStart: rect;
 declare const gg_rct_ArenaCaveSpawn2: rect;
 declare const gg_rct_ArenaCaveSpawn3: rect;
 declare const gg_rct_ArenaCaveSpawn4: rect;
+declare const gg_rct_ArenaCaveSpawn5: rect;
+declare const gg_rct_GodRays1: rect;
+declare const gg_rct_ArenaCaveTrigger1: rect;
+declare const gg_rct_ArenaCaveTrigger2: rect;
+declare const gg_rct_ArenaCaveTrigger3: rect;
+declare const gg_rct_BlueFog1: rect;
+declare const gg_rct_Secret1: rect;
+declare const gg_rct_Arena2WaterfallL1: rect;
+declare const gg_rct_ArenaCaveWaterfallL1: rect;
+declare const gg_rct_ArenaCaveWaterfallR1: rect;
+declare const gg_rct_ArenaCaveSpecialSpawn2: rect;
+declare const gg_rct_ArenaCaveSpecialSpawn2PowerCheck: rect;
+declare const gg_rct_ArenaCaveFirstGateGuard: rect;

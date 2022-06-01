@@ -41,6 +41,9 @@ export class SceneTutorial1 extends Scene {
     public moveHelpText: texttag;
     public attackHelpText: texttag;
 
+    public onUpdateStep() {
+        this.combatArena1.updateWaterfallLogic();
+    }
     public execute() {
         this.playerCamera.setHeroCamera();
         this.playerHeroes.reviveHeroesIfDead(this.checkpoint1);
@@ -60,7 +63,7 @@ export class SceneTutorial1 extends Scene {
         this.playMusic(Music.SECTION_1);
         this.yieldTimed(1);
 
-        this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
             return new CUnitTypeEnemyMeleeFodderSkeleton(ep, place, focus);
         }, 1, 4, this.combatArena1.enemySpawns[0]);
 
@@ -71,22 +74,22 @@ export class SceneTutorial1 extends Scene {
 
         this.waitWhileArenaHasEnemies(this.combatArena1, this.numberOfPlayers());
 
-        this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
             return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
         }, 1, 2, this.combatArena1.enemySpawns[0]);
         this.yieldTimed(0.5);
-        this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
             return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
         }, 1, 2, this.combatArena1.enemySpawns[1]);
 
         this.waitWhileArenaHasEnemies(this.combatArena1);
 
 
-        this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
             return new CUnitTypeEnemyMeleeFodderSkeleton(ep, place, focus);
         }, 1, 3);
         this.yieldTimed(1.5);
-        this.generateSpawnPerPlayerAsync(this.combatArena1, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
             return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
         }, 1, 3);
 

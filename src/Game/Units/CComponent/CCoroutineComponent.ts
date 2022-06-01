@@ -14,6 +14,7 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     }
     abstract execute(): void;
     abstract cleanup(): void;
+    onAlerted(by: CUnit) {}
 
     protected onUpdateStep() {
         /*if ((this.removeOnDeath && this.owner.isDead)

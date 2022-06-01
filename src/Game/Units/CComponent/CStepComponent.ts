@@ -13,6 +13,7 @@ export abstract class CStepComponent extends DynamicEntity implements IComponent
     }
     abstract step(): void;
     abstract cleanup(): void;
+    onAlerted(by: CUnit) {}
 
     destroy() {
         if (!this.isFinished) {

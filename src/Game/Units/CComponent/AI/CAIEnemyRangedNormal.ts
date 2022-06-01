@@ -1,6 +1,7 @@
 import {CUnit} from "../../CUnit/CUnit";
 import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
 import {CComponentEnemyRangedArrow} from "../Actions/Enemy/CComponentEnemyRangedArrow";
+import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 
 export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
     public minRange: number = 350;
@@ -19,7 +20,7 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
         return GetRandomReal(1, 3);
     }
 
-    calculateAngleData(target: CUnit) {
+    calculateAngleData(target: Vector2) {
         if (this.towards) this.angle.updateToPoint(this.owner.getPosition()).offsetTo(this.target);
         else this.angle.updateToPoint(this.target).offsetTo(this.owner.getPosition());
 
@@ -28,20 +29,20 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
         this.angle.updateTo(0, 0).polarProject(1, ang);
     }
 
-    public doAngleReadjusting(hero: CUnit, ang: number) {
-        if (!this.towards && this.owner.getPosition().distanceTo(hero.getPosition()) > this.maxRange) {
+    public doAngleReadjusting(target: Vector2, ang: number) {
+        if (!this.towards && this.owner.getPosition().distanceTo(target) > this.maxRange) {
             this.towards = true;
             this.move = true;
             this.curving = this.getNewCurving();
-        } else if (this.towards && this.owner.getPosition().distanceTo(hero.getPosition()) < this.minRange) {
+        } else if (this.towards && this.owner.getPosition().distanceTo(target) < this.minRange) {
             this.towards = false;
             this.move = true;
             this.curving = this.getNewCurving();
         }
         if (this.moveUpdateConst <= 0) {
-            this.move = (this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), hero.getPosition(), undefined, this.attackRange + 32)
-                || this.owner.getPosition().distanceTo(hero.getPosition()) < this.minRange
-                || this.owner.getPosition().distanceTo(hero.getPosition()) > this.maxRange);
+            this.move = (this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), target, undefined, this.attackRange - 32)
+                || this.owner.getPosition().distanceTo(target) < this.minRange
+                || this.owner.getPosition().distanceTo(target) > this.maxRange);
             this.moveUpdateConst = 2;
         }
         this.moveUpdateConst -= this.lastStepSize;

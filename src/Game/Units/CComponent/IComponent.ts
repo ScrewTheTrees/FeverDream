@@ -9,4 +9,5 @@ export interface IComponent {
     destroy(): void;
     cleanup(): void;
     step(): void;
+    onAlerted(by: CUnit): void;
 }

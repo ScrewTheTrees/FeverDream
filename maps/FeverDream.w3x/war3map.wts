@@ -15,12 +15,12 @@ STRING 3
 
 STRING 4
 {
-Any
+1-4
 }
 
 STRING 5
 {
-Made for HD primarily, SD might work. Fuk u nerd
+Made for HD; SD disabled.
 }
 
 STRING 6
@@ -53,5 +53,17 @@ STRING 14
 // Destructibles: B000 (Pathing Blocker (Walkable) (Large)), Name (Name)
 {
 Pathing Blocker (Walkable) (Large)
+}
+
+STRING 15
+// Doodads: D006 (Circle Of powah), Name (Name)
+{
+Circle Of powah
+}
+
+STRING 16
+// Destructibles: B002 (Pathing Blocker (Ground) (Huge)), Name (Name)
+{
+Pathing Blocker (Ground) (Huge)
 }
 

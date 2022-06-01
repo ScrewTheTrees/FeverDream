@@ -4,6 +4,7 @@ export enum Models {
     UNIT_SKELETON_RANGED_BURNING = "Units\\Creeps\\BurningArcher\\BurningArcher.mdx",
     UNIT_NAGA_SIREN = "Units\\Naga\\NagaSiren\\NagaSiren.mdx",
     UNIT_NAGA_MYRMIDION = "units\\naga\\NagaMyrmidon\\NagaMyrmidon.mdx",
+    UNIT_ZERGLING = "Units\\Critters\\zergling\\zergling.mdx",
 
     UNIT_PEON = "units\\orc\\Peon\\Peon.mdx",
     UNIT_BUILDING_BARRICADE = "Doodads\\LordaeronSummer\\Terrain\\Crates\\Crates1.mdl",

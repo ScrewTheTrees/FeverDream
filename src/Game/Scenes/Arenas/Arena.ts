@@ -21,13 +21,24 @@ export abstract class Arena {
     /*** The exit destructables (if applicable) that should Close/Open. */
     public exit: destructable[] = [];
 
+    public waterfallsUp: rect[] = [];
+    public waterfallsLeft: rect[] = [];
+    public waterfallsRight: rect[] = [];
+    public waterfallsDown: rect[] = [];
+
     public enemies: CUnit[] = [];
 
-    public constructor(arena: string) {
+    protected constructor(arena: string) {
         this.parseRegions(SceneRectType.TRIGGER, arena, this.trigger);
         this.parseRegions(SceneRectType.MOVECHECK, arena, this.arenaCheck);
         this.parseRegions(SceneRectType.TARDY, arena, this.tardy);
         this.parseRegions(SceneRectType.ENEMY_SPAWN, arena, this.enemySpawns);
+
+        this.parseRegions(SceneRectType.MOVING_WATERFALL_UP, arena, this.waterfallsUp);
+        this.parseRegions(SceneRectType.MOVING_WATERFALL_LEFT, arena, this.waterfallsLeft);
+        this.parseRegions(SceneRectType.MOVING_WATERFALL_RIGHT, arena, this.waterfallsRight);
+        this.parseRegions(SceneRectType.MOVING_WATERFALL_DOWN, arena, this.waterfallsDown);
+
         this.parseDestructable(SceneDestructableType.ENTRANCE, arena, this.entrance);
         this.parseDestructable(SceneDestructableType.EXIT, arena, this.exit);
     }
@@ -109,6 +120,18 @@ export abstract class Arena {
         this.toggleBoth(GateOperation.CLOSE);
     }
 
+    //Waterfall
+    private _vec: Vector2 = Vector2.new(0, 0);
+    public updateWaterfallLogic(speed: number = 2) {
+        this._vec.updateTo(-speed, 0);
+        for (let r of this.waterfallsLeft) {
+            let units = CUnit.unitPool.getAllUnitsInRect(r, undefined, this.checkArr);
+            for (let u of units) {
+                u.nudgeMove(this._vec);
+            }
+        }
+    }
+
     public getClosestSpawner(to: Vector2) {
         let check = this.enemySpawns[0];
         let dist = math.maxinteger;
@@ -161,27 +184,33 @@ export abstract class Arena {
     }
 }
 
+export enum ArenaEnum {
+    DUMMY = "0",
+    TUTORIAL1 = "1",
+    TUTORIAL2 = "2",
+    CAVE = "Cave",
+}
 
 export class Arena1Combat extends Arena {
     constructor() {
-        super("1");
+        super(ArenaEnum.TUTORIAL1);
     }
 }
 
 export class Arena2Combat extends Arena {
     constructor() {
-        super("2");
+        super(ArenaEnum.TUTORIAL2);
     }
 }
 
 export class ArenaDummy extends Arena {
     constructor() {
-        super("0");
+        super(ArenaEnum.DUMMY);
     }
 }
 
 export class ArenaCave extends Arena {
     constructor() {
-        super("Cave");
+        super(ArenaEnum.CAVE);
     }
 }

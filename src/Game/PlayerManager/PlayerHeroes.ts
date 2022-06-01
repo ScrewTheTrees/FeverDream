@@ -92,4 +92,15 @@ export class PlayerHeroes {
         }
         return found;
     }
+    public getOwnersInside(...to: rect[]) {
+        let found: player[] = [];
+        for (let u of this.heroes.values()) {
+            for (let r of to) {
+                if (RectContainsCoords(r, u.getPosition().x, u.getPosition().y)) {
+                    found.push(u.owner);
+                }
+            }
+        }
+        return found;
+    }
 }

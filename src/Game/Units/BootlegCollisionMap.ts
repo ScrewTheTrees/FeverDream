@@ -24,8 +24,8 @@ export class BootlegCollisionMap {
             Delay.addDelay(() => {
                 let xx = GetWidgetX(gate);
                 let yy = GetWidgetY(gate);
-                this.clearByCoordinates(xx - 600, yy - 600, xx + 600, yy + 600);
-            }, 0.25);
+                this.clearByCoordinates(xx - 1024, yy - 1024, xx + 1024, yy + 1024);
+            }, 0.5);
         });
     }
 
@@ -75,9 +75,9 @@ export class BootlegCollisionMap {
     }
 
     //Special
-    public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 30, maxLength: number = 960) {
+    public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 30, maxLength: number = 1024) {
         let start = from.copy();
-        let finalDist = math.min(from.distanceTo(to), maxLength);
+        let finalDist = math.min(from.distanceTo(to) - accuracy, maxLength);
         let finalAngle = from.directionTo(to);
         let currentDist = 0;
         while (currentDist < finalDist) {
@@ -92,6 +92,7 @@ export class BootlegCollisionMap {
         return -1;
     }
     public terrainRayCastIsHit(from: Vector2, to: Vector2, accuracy?: number, maxLength?: number) {
+        if (this.terrainRayCast(from, to, math.max((accuracy || 30) * 10, 256)) >= 0) return true; //Quick check to possibly save resources.
         return this.terrainRayCast(from, to, accuracy, maxLength) >= 0;
     }
 

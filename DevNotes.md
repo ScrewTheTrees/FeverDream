@@ -22,17 +22,22 @@
    1) Introduce some type of easter egg when exploring backwards.
    2) This easter egg should provide some type of minor buff, maybe higher attack rate.
 4) Once ready, players can head down a few ramps into the cave to start their descent into the actual game.
+5) Observant players can find a secret area by moving through waterfalls.
 
 # Scene 3:
 1) Update checkpoint, there is no going back now.
-2) 
+2) Travel through a cave system (and a bit more).
+3) System introduces patrolling enemies.
+4) Player has to activate 3 circles of power to open three gates to progress.
+5) Introduce waterfalls/flowing water properly, allowing walking through them and pushing the players.
+6) Progress onto the first boss fight.
 
 # Chute
 
 ### Willycube bossfight.
 
 A cube spinning and asserting dominance. Phase 1 is hellbullet shooting a lot of curving bullets in patterns.
-Phase 2 has a static projectiles spinning with the cube.
+Phase 2 has a static projectiles spinning with the cube while there is a segmented scrap shield players have to shoot apart one by one.
 
 ### BattleRoyale
 

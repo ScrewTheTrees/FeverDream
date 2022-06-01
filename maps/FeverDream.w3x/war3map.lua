@@ -2,6 +2,9 @@ udg_Dest_Arena1Entry1 = nil
 udg_Dest_Arena1Exit1 = nil
 udg_Dest_Arena2Entry1 = nil
 udg_Dest_Arena2Exit1 = nil
+udg_Dest_Arena3Exit1 = nil
+udg_Dest_Arena3Exit2 = nil
+udg_Dest_Arena3Exit3 = nil
 gg_rct_Arena1Spawn1 = nil
 gg_rct_Arena1Spawn2 = nil
 gg_rct_Arena1Tardy1 = nil
@@ -22,10 +25,26 @@ gg_rct_ArenaCaveTriggerStart = nil
 gg_rct_ArenaCaveSpawn2 = nil
 gg_rct_ArenaCaveSpawn3 = nil
 gg_rct_ArenaCaveSpawn4 = nil
+gg_rct_ArenaCaveSpawn5 = nil
+gg_rct_GodRays1 = nil
+gg_rct_ArenaCaveTrigger1 = nil
+gg_rct_ArenaCaveTrigger2 = nil
+gg_rct_ArenaCaveTrigger3 = nil
+gg_rct_BlueFog1 = nil
+gg_rct_Secret1 = nil
 gg_trg_InitScene1 = nil
 gg_dest_ATg4_0002 = nil
 gg_dest_ATg1_0003 = nil
 gg_dest_ATg1_0004 = nil
+gg_dest_DTg5_0763 = nil
+gg_dest_DTg5_0762 = nil
+gg_dest_DTg5_0755 = nil
+gg_rct_Arena2WaterfallL1 = nil
+gg_rct_ArenaCaveWaterfallL1 = nil
+gg_rct_ArenaCaveWaterfallR1 = nil
+gg_rct_ArenaCaveSpecialSpawn2 = nil
+gg_rct_ArenaCaveSpecialSpawn2PowerCheck = nil
+gg_rct_ArenaCaveFirstGateGuard = nil
 function InitGlobals()
 end
 
@@ -36,6 +55,9 @@ function CreateAllDestructables()
     gg_dest_ATg1_0003 = BlzCreateDestructableWithSkin(FourCC("ATg1"), -26304.0, -22720.0, 270.000, 0.900, 0, FourCC("ATg1"))
     gg_dest_ATg1_0004 = BlzCreateDestructableWithSkin(FourCC("ATg1"), -26112.0, -20480.0, 270.000, 0.900, 0, FourCC("ATg1"))
     gg_dest_ATg4_0002 = BlzCreateDestructableWithSkin(FourCC("ATg4"), -27488.0, -25120.0, 180.000, 1.000, 0, FourCC("ATg4"))
+    gg_dest_DTg5_0762 = BlzCreateDestructableWithSkin(FourCC("DTg5"), -22080.0, -8128.0, 270.000, 0.900, 0, FourCC("DTg5"))
+    gg_dest_DTg5_0755 = BlzCreateDestructableWithSkin(FourCC("DTg5"), -22080.0, -9024.0, 270.000, 0.900, 0, FourCC("DTg5"))
+    gg_dest_DTg5_0763 = BlzCreateDestructableWithSkin(FourCC("DTg5"), -22080.0, -7296.0, 270.000, 0.900, 0, FourCC("DTg5"))
 end
 
 function CreateRegions()
@@ -47,19 +69,40 @@ function CreateRegions()
     gg_rct_Scene1Start = Rect(-28032.0, -29408.0, -27680.0, -29024.0)
     gg_rct_Arena1Check1 = Rect(-27712.0, -24736.0, -23616.0, -22688.0)
     gg_rct_Arena2Check1 = Rect(-27904.0, -22528.0, -25600.0, -20512.0)
+    we = AddWeatherEffect(gg_rct_Arena2Check1, FourCC("FDbl"))
+    EnableWeatherEffect(we, true)
     gg_rct_Arena2Trigger1 = Rect(-26848.0, -21568.0, -25632.0, -20480.0)
     gg_rct_Arena2Tardy1 = Rect(-26240.0, -21248.0, -26048.0, -21056.0)
     gg_rct_Arena2Spawn1 = Rect(-27744.0, -22048.0, -27456.0, -21024.0)
     gg_rct_Scene1Camera1 = Rect(-25376.0, -24032.0, -25120.0, -23744.0)
     gg_rct_Scene2Ending = Rect(-26592.0, -18784.0, -26272.0, -18528.0)
     gg_rct_Arena2Camera1 = Rect(-27296.0, -21696.0, -27040.0, -21408.0)
-    gg_rct_SceneCaveStart = Rect(-28096.0, -15712.0, -27712.0, -15424.0)
+    gg_rct_SceneCaveStart = Rect(-28192.0, -15648.0, -27744.0, -15232.0)
     gg_rct_Scene2Start = Rect(-25888.0, -23296.0, -25568.0, -22976.0)
-    gg_rct_ArenaCaveSpawn1 = Rect(-28960.0, -11616.0, -28576.0, -11296.0)
+    we = AddWeatherEffect(gg_rct_Scene2Start, FourCC("FDgh"))
+    EnableWeatherEffect(we, true)
+    gg_rct_ArenaCaveSpawn1 = Rect(-29120.0, -8640.0, -28736.0, -8256.0)
     gg_rct_ArenaCaveTriggerStart = Rect(-28544.0, -15040.0, -27328.0, -14144.0)
-    gg_rct_ArenaCaveSpawn2 = Rect(-28320.0, -15584.0, -28000.0, -15264.0)
-    gg_rct_ArenaCaveSpawn3 = Rect(-24544.0, -14176.0, -24096.0, -13856.0)
-    gg_rct_ArenaCaveSpawn4 = Rect(-22176.0, -11360.0, -21728.0, -11040.0)
+    gg_rct_ArenaCaveSpawn2 = Rect(-28256.0, -15584.0, -27936.0, -15264.0)
+    gg_rct_ArenaCaveSpawn3 = Rect(-24480.0, -14144.0, -24128.0, -13888.0)
+    gg_rct_ArenaCaveSpawn4 = Rect(-20448.0, -9408.0, -20128.0, -9120.0)
+    gg_rct_ArenaCaveSpawn5 = Rect(-24416.0, -20544.0, -24096.0, -20224.0)
+    gg_rct_GodRays1 = Rect(-29056.0, -13152.0, -28672.0, -12800.0)
+    we = AddWeatherEffect(gg_rct_GodRays1, FourCC("LRaa"))
+    EnableWeatherEffect(we, true)
+    gg_rct_ArenaCaveTrigger1 = Rect(-28832.0, -11552.0, -28640.0, -11360.0)
+    gg_rct_ArenaCaveTrigger2 = Rect(-29024.0, -8544.0, -28832.0, -8352.0)
+    gg_rct_ArenaCaveTrigger3 = Rect(-24352.0, -20640.0, -24160.0, -20448.0)
+    gg_rct_BlueFog1 = Rect(-24736.0, -15136.0, -22592.0, -13696.0)
+    we = AddWeatherEffect(gg_rct_BlueFog1, FourCC("FDbh"))
+    EnableWeatherEffect(we, true)
+    gg_rct_Secret1 = Rect(-24704.0, -21504.0, -24192.0, -20864.0)
+    gg_rct_Arena2WaterfallL1 = Rect(-25792.0, -21312.0, -24576.0, -21088.0)
+    gg_rct_ArenaCaveWaterfallL1 = Rect(-29216.0, -9312.0, -26624.0, -8992.0)
+    gg_rct_ArenaCaveWaterfallR1 = Rect(-24800.0, -14240.0, -24032.0, -13856.0)
+    gg_rct_ArenaCaveSpecialSpawn2 = Rect(-27392.0, -9248.0, -27168.0, -9056.0)
+    gg_rct_ArenaCaveSpecialSpawn2PowerCheck = Rect(-29216.0, -10048.0, -26176.0, -8128.0)
+    gg_rct_ArenaCaveFirstGateGuard = Rect(-22336.0, -9504.0, -21824.0, -9152.0)
 end
 
 function Trig_InitScene1_Actions()
@@ -67,6 +110,9 @@ function Trig_InitScene1_Actions()
     udg_Dest_Arena1Exit1 = gg_dest_ATg1_0003
     udg_Dest_Arena2Entry1 = gg_dest_ATg1_0003
     udg_Dest_Arena2Exit1 = gg_dest_ATg1_0004
+    udg_Dest_Arena3Exit1 = gg_dest_DTg5_0755
+    udg_Dest_Arena3Exit2 = gg_dest_DTg5_0762
+    udg_Dest_Arena3Exit3 = gg_dest_DTg5_0763
 end
 
 function InitTrig_InitScene1()

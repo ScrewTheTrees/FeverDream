@@ -106,7 +106,7 @@ export abstract class CUnit extends Entity {
             this.crowdingOffsetUpdate = 0.5; //Remotly low number when waiting for literally anything.
 
             Quick.Clear(this.crowdingArray);
-            this.crowdingArray = CUnit.unitPool.getAliveUnitsInRangeNotSelf(this, 60 + (this.crowdingCollisionSize * 2), this.crowdingArray);
+            this.crowdingArray = CUnit.unitPool.getAliveUnitsInRangeNotSelf(this, (this.crowdingCollisionSize * 2) + 32, this.crowdingArray);
             for (let other of this.crowdingArray) {
                 let intersectingThicc = (this.crowdingCollisionSize + other.crowdingCollisionSize);
                 let distance = this.position.distanceTo(other.getPosition());
@@ -114,12 +114,11 @@ export abstract class CUnit extends Entity {
                     let power = math.min(16, (((1 - (distance / intersectingThicc)) / 0.25) / this.poise) * other.poise)
                     this.crowdingOffset.polarProject(power, this.position.directionFrom(other.getPosition()));
                 }
-                let diff = (distance * this.timerDelay) / (this.getActualMoveSpeed() * 2);
-                this.crowdingOffsetUpdate = math.max(0.15, math.min(this.crowdingOffsetUpdate, diff));
+                let diff = (distance * this.timerDelay) / (this.getActualMoveSpeed() * 4);
+                this.crowdingOffsetUpdate = math.max(0.1, math.min(this.crowdingOffsetUpdate, diff));
             }
-            let gc = GameConfig;
-            this.crowdingOffset.x = math.min(math.max(this.crowdingOffset.x * gc.timeScale, -this.maxPush), this.maxPush)
-            this.crowdingOffset.y = math.min(math.max(this.crowdingOffset.y * gc.timeScale, -this.maxPush), this.maxPush)
+            this.crowdingOffset.x = math.min(math.max(this.crowdingOffset.x * GameConfig.timeScale, -this.maxPush), this.maxPush)
+            this.crowdingOffset.y = math.min(math.max(this.crowdingOffset.y * GameConfig.timeScale, -this.maxPush), this.maxPush)
         }//this.crowdingOffsetUpdate
 
         if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
@@ -191,6 +190,9 @@ export abstract class CUnit extends Entity {
 
         this.setFacing(next.getAngleDegrees());
         this.forceMove(next);
+    }
+    public nudgeMove(offset: Vector2) {
+        this.forceMove(offset.multiplyOffsetNum(GameConfig.timeScale));
     }
     getActualMoveSpeed() {
         return math.max(0, this.moveSpeed + this.moveSpeedBonus) * GameConfig.timeScale;
@@ -272,6 +274,15 @@ export abstract class CUnit extends Entity {
     public dealDamage(damage: number, attacker: CUnit) {
         this.health -= damage;
         this.clampHealth(attacker);
+        this.alertNearbyAllies(attacker);
+    }
+    public alertNearbyAllies(attacker: CUnit) {
+        let aliveAlliedUnitsInRange = CUnit.unitPool.getAliveAlliedUnitsInRange(this, 512);
+        for (let u of aliveAlliedUnitsInRange) {
+            for (let c of this.subComponents) {
+                c.onAlerted(attacker);
+            }
+        }
     }
     public setMaxHealth(mh: number, setCurrentHealth: boolean = false) {
         this.maxHealth = mh;

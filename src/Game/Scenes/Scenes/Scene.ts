@@ -55,33 +55,38 @@ export abstract class Scene extends TreeThread {
         }
     }
     //Spawning
-    public generateSpawn(arena: Arena, func: (enemyPlayer: player, place: Vector2) => CUnit, spawnRect?: rect) {
+    public generateSpawn(arena: Arena, func: (enemyPlayer: player, place: Vector2) => CUnit | undefined, spawnRect?: rect) {
         let place = spawnRect != null ? Vector2.randomPointInRect(spawnRect) : Vector2.randomPointInRect(ChooseOne(...arena.enemySpawns));
         let enemyPlayer = GameConfig.creepPlayer;
         let u = func(enemyPlayer, place);
-        arena.addEnemy(u);
+        if (u) arena.addEnemy(u);
         place.recycle();
     }
-    public generateSpawnPerPlayerAsync(arena: Arena, func: (enemyPlayer: player, place: Vector2, focusPlayer?: CUnit) => CUnit,
-                                       baseDelay: number, repeatPerPlayer: number, spawnRect?: rect) {
-        let totalPlays = GameConfig.playingPlayers.length;
+    public generateSpawnForAllPlayerAsync(arena: Arena, func: (enemyPlayer: player, place: Vector2, focusPlayer?: CUnit) => CUnit | undefined,
+                                          baseDelay: number, repeatPerPlayer: number, spawnRect?: rect) {
+        this.generateSpawnForSelectPlayersAsync(arena,  func, GameConfig.playingPlayers, baseDelay, repeatPerPlayer, spawnRect);
+    }
+    public generateSpawnForSelectPlayersAsync(arena: Arena, func: (enemyPlayer: player, place: Vector2, focusPlayer?: CUnit) => CUnit | undefined,
+                                              players: player[], baseDelay: number, repeatPerPlayer: number, spawnRect?: rect) {
+        let totalPlays = players.length;
         let id: number = 0;
 
         Delay.addDelay(() => {
-            if (id >= GameConfig.playingPlayers.length) id = 0;
-            let play = GameConfig.playingPlayers[id];
+            if (id >= players.length) id = 0;
+            let play = players[id];
             id++;
 
             let place = spawnRect != null ? Vector2.randomPointInRect(spawnRect) : Vector2.randomPointInRect(ChooseOne(...arena.enemySpawns));
             let enemyPlayer = GameConfig.creepPlayer;
             let focusTarget = PlayerHeroes.getInstance().getHero(play);
             let u = func(enemyPlayer, place, focusTarget);
-            arena.addEnemy(u);
+            if (u) arena.addEnemy(u);
             place.recycle();
 
         }, baseDelay / totalPlays, repeatPerPlayer * totalPlays);
     }
-    public generateSpawnPerPlayerFurthersSpawnAsync(arena: Arena, func: (enemyPlayer: player, place: Vector2, focusPlayer?: CUnit) => CUnit,
+    public generateSpawnPerPlayerFurthersSpawnAsync(arena: Arena,
+                                                    func: (enemyPlayer: player, place: Vector2, focusPlayer?: CUnit) => CUnit | undefined,
                                                     baseDelay: number, repeatPerPlayer: number) {
         let totalPlays = GameConfig.playingPlayers.length;
         let id: number = 0;
@@ -96,7 +101,7 @@ export abstract class Scene extends TreeThread {
             let enemyPlayer = GameConfig.creepPlayer;
             let focusTarget = PlayerHeroes.getInstance().getHero(play);
             let u = func(enemyPlayer, place, focusTarget);
-            arena.addEnemy(u);
+            if (u) arena.addEnemy(u);
             place.recycle();
 
         }, baseDelay / totalPlays, repeatPerPlayer * totalPlays);

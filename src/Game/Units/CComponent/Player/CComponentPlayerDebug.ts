@@ -18,6 +18,7 @@ import {CUnitTypeDummy} from "../../CUnit/Types/CUnitTypeDummy";
 import {ArenaService} from "../../../Scenes/Arenas/ArenaService";
 import {KeyCallback} from "wc3-treelib/src/TreeLib/Services/InputManager/KeyCallback";
 import { LightningEffects } from "wc3-treelib/src/TreeLib/GeneratedBase/LightningEffects";
+import {Scene} from "../../../Scenes/Scenes/Scene";
 
 export class CComponentPlayerDebug extends CStepComponent {
     removeOnDeath = false;
@@ -153,6 +154,7 @@ export class CComponentPlayerDebug extends CStepComponent {
         InputManager.addKeyboardPressCallback(OSKEY_NUMPAD0, (call: KeyCallback) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
                 SceneService.getInstance().finishScene();
+                print("GOTO next scene.");
             }
         });
         InputManager.addKeyboardPressCallback(OSKEY_M, (call: KeyCallback) => {

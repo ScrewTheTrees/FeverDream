@@ -2,6 +2,7 @@ import {CUnit} from "../../CUnit/CUnit";
 import {CComponentEnemyRangedMagic} from "../Actions/Enemy/CComponentEnemyRangedMagic";
 import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {CAIEnemyRangedNormal} from "./CAIEnemyRangedNormal";
+import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 
 export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
 
@@ -14,11 +15,11 @@ export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
         this.approachRange = 50;
     }
 
-    public doAngleReadjusting(hero: CUnit, ang: number) {
-        if (!this.towards && this.owner.getPosition().distanceTo(hero.getPosition()) > this.maxRange) {
+    public doAngleReadjusting(target: Vector2, ang: number) {
+        if (!this.towards && this.owner.getPosition().distanceTo(target) > this.maxRange) {
             this.towards = true;
             this.curving = this.getNewCurving();
-        } else if (this.towards && this.owner.getPosition().distanceTo(hero.getPosition()) < this.minRange) {
+        } else if (this.towards && this.owner.getPosition().distanceTo(target) < this.minRange) {
             this.towards = false;
             this.curving = this.getNewCurving();
         }

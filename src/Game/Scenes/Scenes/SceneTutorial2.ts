@@ -19,10 +19,23 @@ export class SceneTutorial2 extends Scene {
     private playerHeroes = PlayerHeroes.getInstance();
     private playerCamera = PlayerCamera.getInstance();
 
+    public rollHelpText: texttag;
+
     public constructor() {
         super();
+
+        let pos = Vector2.fromRectCenter(gg_rct_Arena2Camera1);
+        this.rollHelpText = CreateTextTag();
+        SetTextTagText(this.rollHelpText, "Shift to dodge roll", 0.024);
+        SetTextTagPos(this.rollHelpText, pos.x, pos.y, 16);
+        SetTextTagVisibility(this.rollHelpText, true);
+        SetTextTagPermanent(this.rollHelpText, true);
     }
 
+    public onUpdateStep() {
+        this.combatArena1.updateWaterfallLogic();
+        this.combatArena2.updateWaterfallLogic();
+    }
     public execute() {
         /** ARENA 2 */
         this.playMusic(Music.NONE);
@@ -37,7 +50,7 @@ export class SceneTutorial2 extends Scene {
         this.playMusic(Music.SECTION_1);
         this.yieldTimed(1);
 
-        this.generateSpawnPerPlayerAsync(this.combatArena2, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena2, (ep, place, focus) => {
             return new CUnitTypeEnemyMeleeMyrmidion(ep, place, focus);
         }, 1, 2);
 
@@ -47,17 +60,17 @@ export class SceneTutorial2 extends Scene {
 
         this.waitWhileArenaHasEnemies(this.combatArena2);
 
-        this.generateSpawnPerPlayerAsync(this.combatArena2, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena2, (ep, place, focus) => {
             return new CUnitTypeEnemyRangedSiren(ep, place, focus);
         }, 1, 2);
 
         this.waitWhileArenaHasEnemies(this.combatArena2);
 
-        this.generateSpawnPerPlayerAsync(this.combatArena2, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena2, (ep, place, focus) => {
             return new CUnitTypeEnemyMeleeMyrmidion(ep, place, focus);
         }, 2, 2);
         this.yieldTimed(1);
-        this.generateSpawnPerPlayerAsync(this.combatArena2, (ep, place, focus) => {
+        this.generateSpawnForAllPlayerAsync(this.combatArena2, (ep, place, focus) => {
             return new CUnitTypeEnemyRangedSiren(ep, place, focus);
         }, 2, 2);
 
