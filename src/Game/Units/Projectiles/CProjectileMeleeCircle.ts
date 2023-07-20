@@ -8,7 +8,7 @@ export class CProjectileMeleeCircle extends CProjectile {
     public effect: effect;
     public speed: number = 16;
     public visualHeight: number = 0;
-    public collisionSize: number = 40;
+    public collisionSize: number = 64;
 
     public constructor(owner: CUnit, targetOffset: Vector2, model: string, position: Vector2) {
         super(owner, targetOffset, position);
@@ -23,7 +23,7 @@ export class CProjectileMeleeCircle extends CProjectile {
             for (let targ of this.targets) {
                 if (targ != this.owner) {
                     if (this.position.distanceTo(targ.getPosition()) < this.collisionSize + targ.projectileCollisionSize) {
-                        this.onHit(targ);
+                        if (this.onHit(targ)) return;
                     }
                 }
             }
@@ -33,19 +33,20 @@ export class CProjectileMeleeCircle extends CProjectile {
             this.yield();
         }
         this.yieldTimed(2);
-        this.destroy();
+        return this.destroy();
     }
     private draw() {
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ() + this.visualHeight);
-        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.getInstance().timeScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.targetOffset.getAngle()
         );
     }
     destroy(): void {
-        super.destroy();
+        Quick.Clear(this.targets);
         DestroyEffect(this.effect);
+        super.destroy();
     }
 }

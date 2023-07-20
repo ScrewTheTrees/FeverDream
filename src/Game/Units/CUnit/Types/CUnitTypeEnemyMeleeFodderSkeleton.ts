@@ -13,10 +13,10 @@ export class CUnitTypeEnemyMeleeFodderSkeleton extends CUnit {
     public modelScale = 0.8;
     public projectileCollisionSize = 22;
 
-    public constructor(owner: player, position: Vector2, focus?: CUnit) {
+    public constructor(owner: player, position: Vector2, focus?: CUnit, defaultAi: boolean = true) {
         super(owner, Models.UNIT_SKELETON, position);
         this.setMaxHealth(1);
-        this.addComponent(new CAIEnemyMelee(this, focus));
+        if (defaultAi) this.addAiComponent(new CAIEnemyMelee(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));
 
         this.createSpawnEffect(Models.EFFECT_DARK_RITUAL_SPAWN);

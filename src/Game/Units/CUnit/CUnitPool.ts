@@ -2,7 +2,7 @@ import {Entity} from "wc3-treelib/src/TreeLib/Entity";
 import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {GridTree} from "wc3-treelib/src/TreeLib/Utility/Data/DataTree/GridTree";
-import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
+import {ChooseOneArr} from "wc3-treelib/src/TreeLib/Misc";
 import {CUnit} from "./CUnit";
 import {DataTreeFilter} from "wc3-treelib/src/TreeLib/Utility/Data/DataTree/DataTreeFilter";
 import {DataTreePositionEvaluation} from "wc3-treelib/src/TreeLib/Utility/Data/DataTree/DataTreePositionEvaluation";
@@ -174,32 +174,32 @@ export class CUnitPool extends Entity {
         return this.getClosestAliveToPosition(u.getPosition(), this.notSelfFilter.apply(u), maxRange)
     }
 
-    public getAliveUnitsInRange(pos: Vector2, range: number, filter?: DataTreeFilter<CUnit>, checkArr?: CUnit[]) {
-        let units = checkArr || [];
+    public getAliveUnitsInRange(pos: Vector2, range: number, filter?: DataTreeFilter<CUnit>, checkArr: CUnit[] = []) {
         if (range <= this.defaultMaxGridDist) {
             return this.aliveGrid.fetchInCircleR(pos, range, filter, checkArr);
         }
 
-        for (let u of this.alivePool) {
+        for (let i = 0; i < this.alivePool.length; i++) {
+            let u = this.alivePool[i];
             if (!u.isDead && u.getPosition().distanceTo(pos) <= range) {
                 if (filter == null || filter.evaluate(u)) {
-                    units.push(u);
+                    Quick.Push(checkArr, u);
                 }
             }
         }
-        return units;
+        return checkArr;
     }
     public getAliveUnitsInRangeNotSelf(dude: CUnit, range: number, checkArr?: CUnit[]) {
         return this.getAliveUnitsInRange(dude.getPosition(), range, this.notSelfFilter.apply(dude), checkArr);
     }
 
-    private checkRect: Rectangle = Rectangle.new(0,0,0,0);
+    private checkRect: Rectangle = Rectangle.new(0, 0, 0, 0);
     private getArrayUnitsInRect(arr: CUnit[], place: rect, filter?: DataTreeFilter<CUnit>, units: CUnit[] = []) {
         this.checkRect.updateTo(GetRectMinX(place), GetRectMinY(place), GetRectMaxX(place), GetRectMaxY(place));
         for (let u of arr) {
             if (u.getPosition().intersectsRectangle(this.checkRect)) {
                 if (filter == null || filter.evaluate(u)) {
-                    units.push(u);
+                    Quick.Push(units, u);
                 }
             }
         }
@@ -223,10 +223,10 @@ export class CUnitPool extends Entity {
         for (let i = 0; i < this.alivePool.length; i++) {
             let u = this.alivePool[i];
             if (!u.isDead && (filter == null || filter.evaluate(u))) {
-                arr.push(u);
+                Quick.Push(arr, u);
             }
         }
-        return ChooseOne(...arr);
+        return ChooseOneArr(arr);
     }
 
 
@@ -236,7 +236,7 @@ export class CUnitPool extends Entity {
     public getClosestAliveEnemy(pos: Vector2, unit: CUnit, maxRange?: number) {
         return this.getClosestAliveToPosition(pos, this.isEnemyFilter.apply(unit), maxRange);
     }
-    public getRandomAliveEnemy(unit: CUnit) {
+    public getRandomAliveEnemy(unit: CUnit): CUnit | undefined {
         return this.getRandomAlive(this.isEnemyFilter.apply(unit));
     }
 

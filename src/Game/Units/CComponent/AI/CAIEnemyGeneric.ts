@@ -1,20 +1,21 @@
+import {CStepComponent} from "../CStepComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../CUnit/CUnit";
 import {BootlegPathfinding} from "../../BootlegPathfinding";
-import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
+import {BootlegCollisionMap} from "../../BootlegCollisionMap";
 import {PathfindResult} from "wc3-treelib/src/TreeLib/Frameworks/Pathfinder/PathfindResult";
 import {RectangleNode} from "wc3-treelib/src/TreeLib/Frameworks/Pathfinder/Node";
-import {BootlegCollisionMap} from "../../BootlegCollisionMap";
-import {CStepComponent} from "../CStepComponent";
-import {AIState} from "./AIState";
 import {GameConfig} from "../../../../GameConfig";
+import {TreeMath} from "wc3-treelib/src/TreeLib/Utility/TreeMath";
+import {Interpolation} from "wc3-treelib/src/TreeLib/Utility/Interpolation";
+import {EnemyWaypoint} from "./EnemyWaypoint";
+import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 
 export abstract class CAIEnemyGeneric extends CStepComponent {
     removeOnDeath = false;
     public target = Vector2.new(0, 0);
     public offset = Vector2.new(0, 0);
     public angle = Vector2.new(0, 0);
-    public aiState = AIState.SPAWNING;
 
     public primaryTarget: CUnit | undefined;
     public currentTarget: CUnit | undefined;
@@ -22,10 +23,10 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
     public closestEnemyDistanceCheck: number = 600;
 
     public attackRange: number = 100;
-    public attackDelay = this.getNewAttackDelay();
+    public attackDelay: number;
 
     public approachRange: number = 50;
-    public curving = this.getNewCurving();
+    public curving: number;
     public angleUpdateConst = 1;
     public move: boolean = true;
 
@@ -45,16 +46,31 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
 
     public lostTargetTotalTime: number = 15;
     public lostTargetTime: number = 0;
-    public lostTargetRange: number = 1800;
+    public lostTargetRange: number = 1400;
+    public lostTargetRandomTargetRange: number = 750;
+    public lostTargetAlwaysVisibleRange: number = 128;
+    public lostTargetMinVisionCone: number = 110;
+    public lostTargetMaxVisionCone: number = 80;
+
+    public guardPos: EnemyWaypoint[] | undefined;
+    public guardRepeatPositions: boolean = false;
+    public guardTimeSinceLastUpdate: number = 0;
+    public guardLastPositionForever: boolean = true;
+    public guardStateRangeFactor: number = 10;
+
+    protected _isYielding = 0;
+    public override timerYield(time: number) {
+        this._isYielding = math.min(time, 100);
+    }
 
     protected constructor(owner: CUnit, primaryTarget?: CUnit, timerDelay: number = 0.1) {
         super(owner, timerDelay);
         this.primaryTarget = primaryTarget;
         this.target.updateToPoint(this.owner.getPosition());
 
-        if (!this.primaryTarget) {
-            this.primaryTarget = CUnit.unitPool.getRandomAliveEnemy(this.owner);
-        }
+        this.curving = this.getNewCurving();
+        this.attackDelay = this.getNewAttackDelay();
+
         if (this.primaryTarget) {
             this.updatePathfinderData(this.primaryTarget.getPosition());
         }
@@ -70,117 +86,17 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         });*/
     }
 
-    private _isYielding = 0;
-    public override timerYield(time: number) {
-        this._isYielding = math.min(time, 1000);
-    }
-
-
     public abstract onAttack(hero: CUnit): void;
-    onAlerted(by: CUnit) {
-        if (this.aiState != AIState.CHASING) {
-            this.aiState = AIState.CHASING;
-            this.currentTarget = by;
-        }
-    }
+    public abstract onAlerted(by: CUnit): void;
 
-
-    step(): void {
-        if (this.owner.isDead) this.aiState = AIState.DEAD;
-        if (!GameConfig.aiEnabled) return;
-        if (this._isYielding >= 0) {
-            this._isYielding -= this.timeScale;
-            return;
-        }
-
-        if (this.aiState == AIState.SPAWNING) {
-            this.handleSpawningState();
-        } else if (this.aiState == AIState.IDLE) {
-            this.handleIdleState();
-        } else if (this.aiState == AIState.DEAD) {
-            this.handleDeadState();
-        } else if (this.aiState == AIState.LOOKING_FOR_TARGET) {
-            this.handleLookingForTargetState();
-        } else if (this.aiState == AIState.CHASING) {
-            this.handleChasingState();
-        } else if (this.aiState == AIState.LOST_TARGET) {
-            this.handleLostTargetState();
-        }
-    }
-
-    handleSpawningState() {
-        this.aiState = AIState.IDLE;
-        this.timerYield(2);
-        return;
-    }
-    handleIdleState() {
-        this.aiState = AIState.LOOKING_FOR_TARGET;
-    }
-    handleDeadState() {
-        if (!this.owner.isDead) {
-            this.aiState = AIState.SPAWNING;
-        }
-    }
-    handleLookingForTargetState() {
-        this.currentTarget = this.primaryTarget;
-        if (this.currentTarget == null || this.currentTarget.isDead) {
-            this.currentTarget = CUnit.unitPool.getRandomAliveEnemy(this.owner);
-        }
-        if (this.currentTarget != null && !this.currentTarget.isDead) {
-            this.attackDelay = this.getNewAttackDelay();
-            this.updateOffset();
-            this.aiState = AIState.CHASING;
-            this.move = true;
-            this.pathFindUpdateDelayTime = math.maxinteger; //Fire pathfinding.
-            this.closestEnemyTargetCheckDelay = 0.5;
-            return;
-        }
-        this.timerYield(0.5);
-    }
-    handleChasingState() {
-        if (this.currentTarget == null || this.currentTarget.isDead || this.lostTargetTime >= this.lostTargetTotalTime) {
-            this.aiState = AIState.LOST_TARGET;
-            return;
-        }
-        if (this.owner.isDominated()) return; //Do nothing if dominated.
-
-        this.currentTarget = this.calculateCurrentTarget(this.currentTarget);
-
-        if (GameConfig.aiEnableTargetPointCalculations) {
-            this.calculateTargetPoint(this.currentTarget.getPosition());
-            this.calculateAngleData(this.currentTarget.getPosition());
-        }
-
-        if (this.move && GameConfig.aiEnableMove) {
-            this.owner.setAutoMoveData(this.angle, 1);
-        }
-
-        this.lostTargetTime += this.lastStepSize * GameConfig.timeScale;
-        if (this.currentTarget && this.owner.getPosition().distanceTo(this.currentTarget.getPosition()) <= this.lostTargetRange) {
-            if (!this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), this.currentTarget.getPosition(), 64, this.lostTargetRange)) {
-                this.lostTargetTime = 0;
-            }
-        }
-
-        this.evaluateToAttack(this.currentTarget);
-    }
-    handleLostTargetState() {
-        this.lostTargetTime = 0;
-        this.aiState = AIState.IDLE;
-        this.pathFindUpdateDelayTime = math.maxinteger;
-    }
-
-    calculateCurrentTarget(target: CUnit) {
+    evaluateNearbyTargetsForTargetSwitch(target: CUnit) {
         this.closestEnemyTargetCheckDelay -= this.lastStepSize;
         if (this.closestEnemyTargetCheckDelay <= 0) {
-            if (this.primaryTarget != null && !this.primaryTarget.isDead) target = this.primaryTarget;
-
             let closest = CUnit.unitPool.getClosestAliveEnemy(this.owner.getPosition(), this.owner, this.closestEnemyDistanceCheck);
             if (closest) {
                 let dist = this.owner.getPosition().distanceTo(closest.getPosition());
                 if (dist <= this.closestEnemyDistanceCheck) {
-                    if (!this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), target.getPosition(), undefined, dist - 24)) {
-                        this.pathFindFollowing = false;
+                    if (this.canSeeTarget(target, dist)) {
                         target = closest;
                     }
                 }
@@ -272,6 +188,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         if (this.pathFindCurrent != null) {
             let nodes = this.pathFindCurrent.path; // Fetch before destroy.
             this.pathFindCurrent.destroy();
+            Quick.Clear(nodes);
             this.pathFindCurrent = this.pathfinder.find(from, to, nodes); //Recycle array
         } else {
             this.pathFindCurrent = this.pathfinder.find(from, to);
@@ -286,20 +203,28 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         from.recycle();
         to.recycle();
     }
-    evaluateToAttack(hero: CUnit) {
-        if (!GameConfig.aiEnableAttack) return;
+    evaluateToAttack(target: CUnit) {
+        if (!GameConfig.getInstance().aiEnableAttack) return;
 
-        let distanceToTarget = this.owner.getPosition().distanceTo(hero.getPosition());
+        let distanceToTarget = this.owner.getPosition().distanceTo(target.getPosition());
 
         if (distanceToTarget <= this.attackRange) {
-            this.attackDelay -= this.lastStepSize * GameConfig.timeScale;
+            this.attackDelay -= this.lastStepSize * GameConfig.getInstance().timeScale;
 
             if (this.attackDelay <= 0 && !this.owner.isDisabledRotation()
-                && !this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), hero.getPosition())
+                && !this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), target.getPosition())
             ) {
-                this.onAttack(hero);
+                this.onAttack(target);
                 this.attackDelay = this.getNewAttackDelay();
                 this.curving = this.getNewCurving();
+            }
+        }
+    }
+    updateLostTargetData() {
+        this.lostTargetTime += this.lastStepSize * GameConfig.getInstance().timeScale;
+        if (this.currentTarget && this.owner.getPosition().distanceTo(this.currentTarget.getPosition()) <= this.lostTargetRange) {
+            if (!this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), this.currentTarget.getPosition(), undefined, this.lostTargetRange)) {
+                this.lostTargetTime = 0;
             }
         }
     }
@@ -316,7 +241,7 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         this.angleUpdateConst -= this.lastStepSize;
     }
     getNewAttackDelay() {
-        return GetRandomReal(0.2, 0.8);
+        return GetRandomReal(0.3, 0.8);
     }
     getNewCurving() {
         if (this.pathFindFollowing) return this.getPathfindCurving();
@@ -331,10 +256,48 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
         return this.applyDistanceDelay(dist, GetRandomReal(1, 1.25));
     }
 
+    queuePathfindingUpdate() {
+        this.pathFindUpdateDelayTime = 100_000;
+    }
+
+    canSeeTarget(target: CUnit, maxRange: number = this.lostTargetRange, alwaysSeenRange: number = this.lostTargetAlwaysVisibleRange) {
+        let dist = target.getPosition().distanceTo(this.owner.getPosition());
+
+        if (dist <= alwaysSeenRange) {
+            return true;
+        }
+
+        let degreeDiff = TreeMath.GetDegreeDifferenceAbs(this.owner.getPosition().directionTo(target.getPosition()), this.owner.logicAngle);
+        let distDiff = dist / maxRange;
+        let visionCone = Interpolation.Lerp(this.lostTargetMinVisionCone, this.lostTargetMaxVisionCone, distDiff);
+
+        if (dist <= maxRange
+            && degreeDiff <= visionCone
+        ) {
+            if (!this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), target.getPosition(), undefined, maxRange)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    setGuardPosition(guardPos: EnemyWaypoint[] | undefined,
+                     repeat: boolean = false,
+                     guardLastPositionForever: boolean = true
+    ) {
+        this.guardPos = guardPos;
+        this.guardRepeatPositions = repeat;
+        this.guardLastPositionForever = guardLastPositionForever;
+    }
+
+
     public cleanup(): void {
         this.offset.recycle();
         this.target.recycle();
         this.angle.recycle();
+
+        if (this.pathFindCurrent) this.pathFindCurrent.destroy();
+        this.pathFindCurrent = undefined;
     }
 
     protected distanceToNextNode(initial: Vector2) {
@@ -364,6 +327,12 @@ export abstract class CAIEnemyGeneric extends CStepComponent {
             }
         }
         return ret;
+    }
+
+    private _checkArr: any[] = [];
+    checkArr<T>(): T[] {
+        Quick.Clear(this._checkArr);
+        return this._checkArr;
     }
 
 }

@@ -14,10 +14,10 @@ export class CUnitTypeEnemyRangedSiren extends CUnit {
     public terrainCollisionSize = 20;
     public crowdingCollisionSize = 38;
 
-    public constructor(owner: player, position: Vector2, focus?: CUnit) {
+    public constructor(owner: player, position: Vector2, focus?: CUnit, defaultAi: boolean = true) {
         super(owner, Models.UNIT_NAGA_SIREN, position);
         this.setMaxHealth(50);
-        this.addComponent(new CAIEnemyRangedKiting(this, focus));
+        if (defaultAi) this.addAiComponent(new CAIEnemyRangedKiting(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));
 
         BlzSetSpecialEffectColorByPlayer(this.effect, Players.NEUTRAL_HOSTILE);

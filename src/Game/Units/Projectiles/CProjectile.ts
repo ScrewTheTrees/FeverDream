@@ -22,7 +22,7 @@ export abstract class CProjectile extends TreeThread {
     abstract execute(): void;
 
     public targetsHit: CUnit[] = [];
-    public onHit(target: CUnit) {
+    public onHit(target: CUnit): boolean {
         if (IsPlayerEnemy(this.owner.owner, target.owner)
             && !Quick.Contains(this.targetsHit, target)
             && this.durability > 0
@@ -35,18 +35,21 @@ export abstract class CProjectile extends TreeThread {
             }
         }
         if (this.durability <= 0) {
-            this.destroy();
+            this.destroy()
+            return true;
         }
+        return false;
     }
     public destroy() {
         this.targetOffset.recycle();
         this.position.recycle();
         Quick.Clear(this.targets);
-        this.remove();
+
+        super.destroy();
     }
 
     public get timeScale() {
-        return this.timerDelay * GameConfig.timeScale;
+        return this.timerDelay * GameConfig.getInstance().timeScale;
     }
 }
 

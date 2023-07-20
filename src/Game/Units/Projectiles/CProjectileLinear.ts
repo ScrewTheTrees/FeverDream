@@ -24,24 +24,24 @@ export class CProjectileLinear extends CProjectile {
         while (this.durability > 0) {
             this.travelTime -= this.timeScale;
             if (this.travelTime <= 0) {
-                this.destroy();
+                return this.destroy();
             }
             if (this.collisionMap.getCollisionAtCoordinateEmpty(this.position.x, this.position.y)) {
-                this.position.polarProject(this.speed * GameConfig.timeScale,
+                this.position.polarProject(this.speed * GameConfig.getInstance().timeScale,
                     this.targetOffset.getAngleDegrees()
                 );
                 this.targets = CUnit.unitPool.getAliveUnitsInRange(this.position, this.collisionSize + 128, undefined, this.targets);
                 for (let targ of this.targets) {
                     if (targ != this.owner) {
                         if (this.position.distanceTo(targ.getPosition()) < this.collisionSize + targ.projectileCollisionSize) {
-                            this.onHit(targ);
+                            if (this.onHit(targ)) return;
                         }
                     }
                 }
                 Quick.Clear(this.targets);
                 this.draw();
             } else {
-                this.destroy();
+                return this.destroy();
             }
             this.yield();
         }
@@ -52,14 +52,14 @@ export class CProjectileLinear extends CProjectile {
         BlzSetSpecialEffectX(this.effect, this.position.x);
         BlzSetSpecialEffectY(this.effect, this.position.y);
         BlzSetSpecialEffectZ(this.effect, this.position.getZ() + this.visualHeight);
-        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, GameConfig.getInstance().timeScale);
         BlzSetSpecialEffectYaw(this.effect,
             this.targetOffset.getAngle()
         );
     }
 
     destroy() {
-        super.destroy();
         DestroyEffect(this.effect);
+        super.destroy();
     }
 }

@@ -32,6 +32,12 @@ gg_rct_ArenaCaveTrigger2 = nil
 gg_rct_ArenaCaveTrigger3 = nil
 gg_rct_BlueFog1 = nil
 gg_rct_Secret1 = nil
+gg_rct_Arena2WaterfallL1 = nil
+gg_rct_ArenaCaveWaterfallL1 = nil
+gg_rct_ArenaCaveWaterfallR1 = nil
+gg_rct_ArenaCaveSpecialSpawn2 = nil
+gg_rct_ArenaCaveSpecialSpawn2PowerCheck = nil
+gg_rct_ArenaCaveFirstGateGuard = nil
 gg_trg_InitScene1 = nil
 gg_dest_ATg4_0002 = nil
 gg_dest_ATg1_0003 = nil
@@ -39,12 +45,6 @@ gg_dest_ATg1_0004 = nil
 gg_dest_DTg5_0763 = nil
 gg_dest_DTg5_0762 = nil
 gg_dest_DTg5_0755 = nil
-gg_rct_Arena2WaterfallL1 = nil
-gg_rct_ArenaCaveWaterfallL1 = nil
-gg_rct_ArenaCaveWaterfallR1 = nil
-gg_rct_ArenaCaveSpecialSpawn2 = nil
-gg_rct_ArenaCaveSpecialSpawn2PowerCheck = nil
-gg_rct_ArenaCaveFirstGateGuard = nil
 function InitGlobals()
 end
 
@@ -102,7 +102,7 @@ function CreateRegions()
     gg_rct_ArenaCaveWaterfallR1 = Rect(-24800.0, -14240.0, -24032.0, -13856.0)
     gg_rct_ArenaCaveSpecialSpawn2 = Rect(-27392.0, -9248.0, -27168.0, -9056.0)
     gg_rct_ArenaCaveSpecialSpawn2PowerCheck = Rect(-29216.0, -10048.0, -26176.0, -8128.0)
-    gg_rct_ArenaCaveFirstGateGuard = Rect(-22336.0, -9504.0, -21824.0, -9152.0)
+    gg_rct_ArenaCaveFirstGateGuard = Rect(-22336.0, -10368.0, -21824.0, -10016.0)
 end
 
 function Trig_InitScene1_Actions()

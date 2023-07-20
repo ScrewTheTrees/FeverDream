@@ -9,6 +9,7 @@ import {CUnitTypeEnemyRangedSiren} from "../../Units/CUnit/Types/CUnitTypeEnemyR
 import {ArenaService} from "../Arenas/ArenaService";
 import {SceneCave} from "./SceneCave";
 import {Music} from "../../Music";
+import {GameConfig} from "../../../GameConfig";
 
 export class SceneTutorial2 extends Scene {
     public checkpoint1 = gg_rct_Scene2Start;
@@ -50,8 +51,8 @@ export class SceneTutorial2 extends Scene {
         this.playMusic(Music.SECTION_1);
         this.yieldTimed(1);
 
-        this.generateSpawnForAllPlayerAsync(this.combatArena2, (ep, place, focus) => {
-            return new CUnitTypeEnemyMeleeMyrmidion(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena2, (place, focus) => {
+            return new CUnitTypeEnemyMeleeMyrmidion( GameConfig.getInstance().nagaPlayer, place, focus);
         }, 1, 2);
 
         this.cameraShowActionThenResetHeroCamera(Vector2.fromRectCenter(gg_rct_Arena2Camera1).recycle(),
@@ -60,18 +61,18 @@ export class SceneTutorial2 extends Scene {
 
         this.waitWhileArenaHasEnemies(this.combatArena2);
 
-        this.generateSpawnForAllPlayerAsync(this.combatArena2, (ep, place, focus) => {
-            return new CUnitTypeEnemyRangedSiren(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena2, (place, focus) => {
+            return new CUnitTypeEnemyRangedSiren( GameConfig.getInstance().nagaPlayer, place, focus);
         }, 1, 2);
 
         this.waitWhileArenaHasEnemies(this.combatArena2);
 
-        this.generateSpawnForAllPlayerAsync(this.combatArena2, (ep, place, focus) => {
-            return new CUnitTypeEnemyMeleeMyrmidion(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena2, (place, focus) => {
+            return new CUnitTypeEnemyMeleeMyrmidion( GameConfig.getInstance().nagaPlayer, place, focus);
         }, 2, 2);
         this.yieldTimed(1);
-        this.generateSpawnForAllPlayerAsync(this.combatArena2, (ep, place, focus) => {
-            return new CUnitTypeEnemyRangedSiren(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena2, (place, focus) => {
+            return new CUnitTypeEnemyRangedSiren( GameConfig.getInstance().nagaPlayer, place, focus);
         }, 2, 2);
 
 
@@ -95,7 +96,7 @@ export class SceneTutorial2 extends Scene {
         return new SceneCave();
     }
     onPlayersDeath(): void {
-        Delay.addDelay(() => {
+        Delay.getInstance().addDelay(() => {
             ArenaService.getInstance().clearAllEnemies();
             this.playerHeroes.reviveHeroesIfDead(this.checkpoint1);
             this.reset();

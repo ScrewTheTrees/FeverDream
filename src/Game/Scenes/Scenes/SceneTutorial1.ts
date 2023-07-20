@@ -11,6 +11,7 @@ import {ArenaService} from "../Arenas/ArenaService";
 import {Music} from "../../Music";
 import {CUnitTypeEnemyRangedFodderSkeleton} from "../../Units/CUnit/Types/CUnitTypeEnemyRangedFodderSkeleton";
 import { Delay } from "wc3-treelib/src/TreeLib/Services/Delay/Delay";
+import {GameConfig} from "../../../GameConfig";
 
 export class SceneTutorial1 extends Scene {
     public checkpoint1 = gg_rct_Scene1Start;
@@ -63,8 +64,8 @@ export class SceneTutorial1 extends Scene {
         this.playMusic(Music.SECTION_1);
         this.yieldTimed(1);
 
-        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
-            return new CUnitTypeEnemyMeleeFodderSkeleton(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, (place, focus) => {
+            return new CUnitTypeEnemyMeleeFodderSkeleton( GameConfig.getInstance().skeletonPlayer, place, focus);
         }, 1, 4, this.combatArena1.enemySpawns[0]);
 
 
@@ -74,23 +75,23 @@ export class SceneTutorial1 extends Scene {
 
         this.waitWhileArenaHasEnemies(this.combatArena1, this.numberOfPlayers());
 
-        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
-            return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, ( place, focus) => {
+            return new CUnitTypeEnemyRangedFodderSkeleton( GameConfig.getInstance().skeletonPlayer, place, focus);
         }, 1, 2, this.combatArena1.enemySpawns[0]);
         this.yieldTimed(0.5);
-        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
-            return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, ( place, focus) => {
+            return new CUnitTypeEnemyRangedFodderSkeleton( GameConfig.getInstance().skeletonPlayer, place, focus);
         }, 1, 2, this.combatArena1.enemySpawns[1]);
 
         this.waitWhileArenaHasEnemies(this.combatArena1);
 
 
-        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
-            return new CUnitTypeEnemyMeleeFodderSkeleton(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, (place, focus) => {
+            return new CUnitTypeEnemyMeleeFodderSkeleton( GameConfig.getInstance().skeletonPlayer, place, focus);
         }, 1, 3);
         this.yieldTimed(1.5);
-        this.generateSpawnForAllPlayerAsync(this.combatArena1, (ep, place, focus) => {
-            return new CUnitTypeEnemyRangedFodderSkeleton(ep, place, focus);
+        this.generateSpawnForAllPlayerAsync(this.combatArena1, ( place, focus) => {
+            return new CUnitTypeEnemyRangedFodderSkeleton( GameConfig.getInstance().skeletonPlayer, place, focus);
         }, 1, 3);
 
         this.waitWhileArenaHasEnemies(this.combatArena1);
@@ -112,7 +113,7 @@ export class SceneTutorial1 extends Scene {
         return new SceneTutorial2();
     }
     onPlayersDeath(): void {
-        Delay.addDelay(() => {
+        Delay.getInstance().addDelay(() => {
             ArenaService.getInstance().clearAllEnemies();
             this.reset();
         }, 5);

@@ -2,6 +2,7 @@ import {Scene} from "./Scenes/Scene";
 import {Entity} from "wc3-treelib/src/TreeLib/Entity";
 import {PlayerHeroes} from "../PlayerManager/PlayerHeroes";
 import {SceneTutorial1} from "./Scenes/SceneTutorial1";
+import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 
 export class SceneService extends Entity {
     private static _instance: SceneService;
@@ -21,14 +22,15 @@ export class SceneService extends Entity {
 
     step(): void {
         if (this._currentScene && this._currentScene.isFinished) {
+            let old = this._currentScene;
             this._currentScene = this._currentScene.onFinish();
+            Quick.ClearTable(old);
         }
 
         let heroesAlive = PlayerHeroes.getInstance().countAliveHeroes();
         if (this._currentScene
             && this._currentScene.isActive()
             && heroesAlive == 0 && this.previousHeroesAlive > 0) {
-            print("onPlayersDeath")
             this._currentScene.onPlayersDeath();
         }
         this.previousHeroesAlive = heroesAlive;

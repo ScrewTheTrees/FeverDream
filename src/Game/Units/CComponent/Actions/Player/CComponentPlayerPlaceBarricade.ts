@@ -1,7 +1,6 @@
 import {CCoroutineComponent} from "../../CCoroutineComponent";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 import {CUnit} from "../../../CUnit/CUnit";
-import {CProjectilePlayerShoot} from "../../../Projectiles/Player/CProjectilePlayerShoot";
 import {PlayerStats} from "../../../../PlayerManager/PlayerStats";
 import {CUnitTypeBarricade} from "../../../CUnit/Types/CUnitTypeBarricade";
 
@@ -34,19 +33,19 @@ export class CComponentPlayerPlaceBarricade extends CCoroutineComponent {
         this.setAnimation(ANIM_TYPE_SPELL);
         this.setVisualTimescale(1.5 / actionRate);
         this.yieldTimed(0.8 / actionRate, () => {
-            if (barricade.isDead) this.destroy()
+            if (barricade.isDead) return this.owner.removeComponent(this);
         });
         this.setAnimation(ANIM_TYPE_STAND);
         this.setAnimation(ANIM_TYPE_SPELL);
         this.setVisualTimescale(1.5 / actionRate);
         this.yieldTimed(0.8 / actionRate, () => {
-            if (barricade.isDead) this.destroy()
+            if (barricade.isDead) return this.owner.removeComponent(this);
         });
         this.setAnimation(ANIM_TYPE_STAND);
         this.setAnimation(ANIM_TYPE_SPELL);
         this.setVisualTimescale(1.5 / actionRate);
         this.yieldTimed(0.8 / actionRate, () => {
-            if (barricade.isDead) this.destroy()
+            if (barricade.isDead) return this.owner.removeComponent(this);
         });
     }
 

@@ -20,26 +20,43 @@ export class Game {
         Logger.doLogVerbose = false;
         Logger.doLogDebug = false;
 
-        for (let i = GameConfig.playerIdFrom; i <= GameConfig.playerIdTo; i++) {
+        for (let i =  GameConfig.getInstance().playerIdFrom; i <=  GameConfig.getInstance().playerIdTo; i++) {
             let p = Player(i);
-            GameConfig.allPlayerSlots.push(p);
+             GameConfig.getInstance().allPlayerSlots.push(p);
 
             if (GetPlayerController(p) == MAP_CONTROL_USER && GetPlayerSlotState(p) == PLAYER_SLOT_STATE_PLAYING) {
-                GameConfig.playingPlayers.push(p);
+                 GameConfig.getInstance().playingPlayers.push(p);
                 let h = new CUnitTypePlayer(p,
                     Vector2.new(GetStartLocationX(i), GetStartLocationY(i))
                 );
                 this.playerMaster.playerHeroes.addHero(p, h);
             }
         }
-        for (let p of GameConfig.allPlayerSlots) {
-            for (let t of GameConfig.allPlayerSlots) {
+        for (let p of  GameConfig.getInstance().allPlayerSlots) {
+            for (let t of  GameConfig.getInstance().allPlayerSlots) {
                 SetPlayerAlliance(p, t, ALLIANCE_PASSIVE, true);
                 SetPlayerAlliance(p, t, ALLIANCE_SHARED_XP, true);
                 SetPlayerAlliance(p, t, ALLIANCE_SHARED_SPELLS, true);
                 SetPlayerAlliance(p, t, ALLIANCE_SHARED_VISION, true);
             }
         }
+        for (let i =  GameConfig.getInstance().enemyIdFrom; i <=  GameConfig.getInstance().enemyIdTo; i++) {
+            for (let j = 0; j <=  GameConfig.getInstance().enemyIdTo; j++) {
+                let val = false;
+                if (i == j) val = true;
+
+                let p = Player(i);
+                let t = Player(j);
+
+                SetPlayerAlliance(p, t, ALLIANCE_PASSIVE, val);
+                SetPlayerAlliance(p, t, ALLIANCE_SHARED_XP, val);
+                SetPlayerAlliance(p, t, ALLIANCE_SHARED_SPELLS, val);
+                SetPlayerAlliance(p, t, ALLIANCE_SHARED_VISION, val);
+                SetPlayerAlliance(p, t, ALLIANCE_HELP_REQUEST, val);
+                SetPlayerAlliance(p, t, ALLIANCE_HELP_RESPONSE, val);
+            }
+        }
+
 
         FogEnable(false);
         FogMaskEnable(false);

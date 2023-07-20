@@ -47,7 +47,7 @@ export class PlayerHeroes {
         return heroes;
     }
     public countAliveHeroes() {
-        let heroes =0;
+        let heroes = 0;
         for (let u of this.heroes.values()) {
             if (!u.isDead) {
                 heroes++;
@@ -70,7 +70,16 @@ export class PlayerHeroes {
             }
         }
     }
-    public intersects(...to: rect[]): boolean {
+    public intersects(to: rect): boolean {
+        for (let u of this.heroes.values()) {
+            if (u.isDead) continue;
+            if (RectContainsCoords(to, u.getPosition().x, u.getPosition().y)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public intersectsAny(to: rect[]): boolean {
         for (let u of this.heroes.values()) {
             if (u.isDead) continue;
             for (let r of to) {
@@ -81,7 +90,16 @@ export class PlayerHeroes {
         }
         return false;
     }
-    public getHeroesInside(...to: rect[]) {
+    public getHeroesInside(to: rect) {
+        let found: CUnit[] = [];
+        for (let u of this.heroes.values()) {
+            if (RectContainsCoords(to, u.getPosition().x, u.getPosition().y)) {
+                found.push(u);
+            }
+        }
+        return found;
+    }
+    public getHeroesInsideAny(to: rect[]) {
         let found: CUnit[] = [];
         for (let u of this.heroes.values()) {
             for (let r of to) {
@@ -92,7 +110,16 @@ export class PlayerHeroes {
         }
         return found;
     }
-    public getOwnersInside(...to: rect[]) {
+    public getOwnersInside(to: rect) {
+        let found: player[] = [];
+        for (let u of this.heroes.values()) {
+            if (RectContainsCoords(to, u.getPosition().x, u.getPosition().y)) {
+                found.push(u.owner);
+            }
+        }
+        return found;
+    }
+    public getOwnersInsideAny(to: rect[]) {
         let found: player[] = [];
         for (let u of this.heroes.values()) {
             for (let r of to) {

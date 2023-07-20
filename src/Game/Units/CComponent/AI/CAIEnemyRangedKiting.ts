@@ -1,8 +1,9 @@
 import {CUnit} from "../../CUnit/CUnit";
 import {CComponentEnemyRangedMagic} from "../Actions/Enemy/CComponentEnemyRangedMagic";
-import {ChooseOne} from "wc3-treelib/src/TreeLib/Misc";
 import {CAIEnemyRangedNormal} from "./CAIEnemyRangedNormal";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
+import {ChooseOneArr} from "wc3-treelib/src/TreeLib/Misc";
+import {Quick} from "wc3-treelib/src/TreeLib/Quick";
 
 export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
 
@@ -33,14 +34,14 @@ export class CAIEnemyRangedKiting extends CAIEnemyRangedNormal {
     }
 
     public getNewAttackDelay() {
-        return GetRandomReal(2, 4);
+        return GetRandomReal(2.5, 3.5);
     }
     public getNewCurving() {
         if (this.pathFindFollowing) return this.getPathfindCurving();
-        return ChooseOne(
-            GetRandomReal(-70, -40),
-            GetRandomReal(40, 70),
-        );
+        let arr: number[] = this.checkArr();
+        Quick.Push(arr, GetRandomReal(-70, -40));
+        Quick.Push(arr, GetRandomReal(40, 70));
+        return ChooseOneArr(arr);
     }
     public onAttack(hero: CUnit) {
         this.owner.addComponent(new CComponentEnemyRangedMagic(this.owner,

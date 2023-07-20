@@ -18,7 +18,7 @@ import {CUnitTypeDummy} from "../../CUnit/Types/CUnitTypeDummy";
 import {ArenaService} from "../../../Scenes/Arenas/ArenaService";
 import {KeyCallback} from "wc3-treelib/src/TreeLib/Services/InputManager/KeyCallback";
 import { LightningEffects } from "wc3-treelib/src/TreeLib/GeneratedBase/LightningEffects";
-import {Scene} from "../../../Scenes/Scenes/Scene";
+import {EnemyWaypoint} from "../AI/EnemyWaypoint";
 
 export class CComponentPlayerDebug extends CStepComponent {
     removeOnDeath = false;
@@ -54,8 +54,33 @@ export class CComponentPlayerDebug extends CStepComponent {
                 ArenaService.getInstance().dummyArena.addEnemy(new CUnitTypeEnemyRangedSiren(Players.NEUTRAL_HOSTILE, InputManager.getLastMouseCoordinate(call.triggeringPlayer), this.owner));
             }
         });
+
+
+        InputManager.addKeyboardPressCallback(OSKEY_NUMPAD5, (call: KeyCallback) => {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
+                let u = new CUnitTypeEnemyMeleeMyrmidion(GameConfig.getInstance().nagaPlayer, InputManager.getLastMouseCoordinate(call.triggeringPlayer), this.owner);
+                u.aiComponent?.setGuardPosition([
+                    new EnemyWaypoint(u.getPosition().copy()),
+                    new EnemyWaypoint(this.owner.getPosition().copy()),
+
+                ], true, true);
+                ArenaService.getInstance().dummyArena.addEnemy(u);
+            }
+        });
+        InputManager.addKeyboardPressCallback(OSKEY_NUMPAD6, (call: KeyCallback) => {
+            if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
+                let u = new CUnitTypeEnemyMeleeFodderSkeleton(GameConfig.getInstance().skeletonPlayer, InputManager.getLastMouseCoordinate(call.triggeringPlayer), this.owner);
+                u.aiComponent?.setGuardPosition([
+                    new EnemyWaypoint(u.getPosition().copy()),
+                    new EnemyWaypoint(this.owner.getPosition().copy()),
+
+                ], true, true);
+                ArenaService.getInstance().dummyArena.addEnemy(u);
+            }
+        });
+
         InputManager.addKeyboardPressCallback(OSKEY_NUMPAD7, (call: KeyCallback) => {
-            Delay.addDelay(() => {
+            Delay.getInstance().addDelay(() => {
                 ArenaService.getInstance().dummyArena.addEnemy(new CUnitTypeEnemyMeleeFodderSkeleton(Players.NEUTRAL_HOSTILE, InputManager.getLastMouseCoordinate(call.triggeringPlayer), this.owner));
             }, 0.03, 50);
         });
@@ -93,7 +118,7 @@ export class CComponentPlayerDebug extends CStepComponent {
                 for (let p of path) {
                     things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.point.x, p.point.y));
                 }
-                Delay.addDelay(() => {
+                Delay.getInstance().addDelay(() => {
                     for (let p of things) {
                         DestroyEffect(p);
                     }
@@ -111,7 +136,7 @@ export class CComponentPlayerDebug extends CStepComponent {
                         for (let p of result.path) {
                             things.push(AddSpecialEffect(Models.PROJECTILE_ENEMY_RANGED_MAGIC, p.point.x, p.point.y));
                         }
-                        Delay.addDelay(() => {
+                        Delay.getInstance().addDelay(() => {
                             for (let p of things) {
                                 DestroyEffect(p);
                             }
@@ -143,7 +168,7 @@ export class CComponentPlayerDebug extends CStepComponent {
                             point.recycle();
                             point2.recycle();
                         }
-                        Delay.addDelay(() => {
+                        Delay.getInstance().addDelay(() => {
                             for (let p of things) {
                                 DestroyEffect(p);
                             }
@@ -159,17 +184,17 @@ export class CComponentPlayerDebug extends CStepComponent {
         });
         InputManager.addKeyboardPressCallback(OSKEY_M, (call: KeyCallback) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
-                GameConfig.timeScale += 0.1;
-                GameConfig.timeScale = Math.round(GameConfig.timeScale * 100) / 100;
-                print(GameConfig.timeScale);
+                GameConfig.getInstance().timeScale += 0.1;
+                GameConfig.getInstance().timeScale = Math.round(GameConfig.getInstance().timeScale * 100) / 100;
+                print(GameConfig.getInstance().timeScale);
             }
         });
         InputManager.addKeyboardPressCallback(OSKEY_N, (call: KeyCallback) => {
             if (call.triggeringPlayer == this.owner.owner && call.triggeringPlayer == Player(0)) {
-                GameConfig.timeScale -= 0.1;
-                if (GameConfig.timeScale < 0) GameConfig.timeScale = 0;
-                GameConfig.timeScale = Math.round(GameConfig.timeScale * 100) / 100;
-                print(GameConfig.timeScale);
+                GameConfig.getInstance().timeScale -= 0.1;
+                if (GameConfig.getInstance().timeScale < 0) GameConfig.getInstance().timeScale = 0;
+                GameConfig.getInstance().timeScale = Math.round(GameConfig.getInstance().timeScale * 100) / 100;
+                print(GameConfig.getInstance().timeScale);
             }
         });
 

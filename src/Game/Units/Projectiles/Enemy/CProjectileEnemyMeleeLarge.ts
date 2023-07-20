@@ -8,7 +8,7 @@ export class CProjectileEnemyMeleeLarge extends CProjectileMeleeCircle {
         super(owner, targetOffset, Models.PROJECTILE_ENEMY_MELEE, owner.getPosition());
         this.visualHeight = 32;
         this.speed = 75;
-        this.collisionSize = 80;
+        this.collisionSize = 128;
         BlzSetSpecialEffectScale(this.effect, scale);
     }
 }

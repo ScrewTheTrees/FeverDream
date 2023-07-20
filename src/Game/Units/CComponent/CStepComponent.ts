@@ -13,19 +13,15 @@ export abstract class CStepComponent extends DynamicEntity implements IComponent
     }
     abstract step(): void;
     abstract cleanup(): void;
-    onAlerted(by: CUnit) {}
+    onAlerted(by: CUnit) {
+    }
 
     destroy() {
-        if (!this.isFinished) {
-            this.remove();
-            this.cleanup();
-            // @ts-ignore
-            this.owner = null;
-        }
-        this.isFinished = true;
+        this.cleanup();
+        //super.destroy();
     }
     public get globalTimeScale(): number {
-        return GameConfig.timeScale;
+        return GameConfig.getInstance().timeScale;
     }
     public get timeScale(): number {
         return this.timerDelay * this.globalTimeScale;

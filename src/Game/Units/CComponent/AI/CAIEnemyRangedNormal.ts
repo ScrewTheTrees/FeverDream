@@ -1,9 +1,9 @@
 import {CUnit} from "../../CUnit/CUnit";
-import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
+import {CAIStateEnemyGeneric} from "./CAIStateEnemyGeneric";
 import {CComponentEnemyRangedArrow} from "../Actions/Enemy/CComponentEnemyRangedArrow";
 import {Vector2} from "wc3-treelib/src/TreeLib/Utility/Data/Vector2";
 
-export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
+export class CAIEnemyRangedNormal extends CAIStateEnemyGeneric {
     public minRange: number = 350;
     public maxRange: number = 700;
 
@@ -17,7 +17,7 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
     }
 
     public getNewAttackDelay() {
-        return GetRandomReal(1, 3);
+        return GetRandomReal(1.5, 2.5);
     }
 
     calculateAngleData(target: Vector2) {
@@ -38,9 +38,11 @@ export class CAIEnemyRangedNormal extends CAIEnemyGeneric {
             this.towards = false;
             this.move = true;
             this.curving = this.getNewCurving();
+        } else {
+            this.move = false;
         }
         if (this.moveUpdateConst <= 0) {
-            this.move = (this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), target, undefined, this.attackRange - 32)
+            this.move = (this.collisionMap.terrainRayCastIsHit(this.owner.getPosition(), target, undefined, this.attackRange)
                 || this.owner.getPosition().distanceTo(target) < this.minRange
                 || this.owner.getPosition().distanceTo(target) > this.maxRange);
             this.moveUpdateConst = 2;

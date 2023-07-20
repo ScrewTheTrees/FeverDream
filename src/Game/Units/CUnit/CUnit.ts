@@ -9,6 +9,8 @@ import {GameConfig} from "../../../GameConfig";
 import {BootlegCollisionMap} from "../BootlegCollisionMap";
 import {IComponent} from "../CComponent/IComponent";
 import {Delay} from "wc3-treelib/src/TreeLib/Services/Delay/Delay";
+import {Logger} from "wc3-treelib/src/TreeLib/Logger";
+import {CAIEnemyGeneric} from "../CComponent/AI/CAIEnemyGeneric";
 
 export abstract class CUnit extends Entity {
     public static unitPool: CUnitPool = new CUnitPool();
@@ -20,7 +22,7 @@ export abstract class CUnit extends Entity {
     public modelScale: number = 1;
     public visualTimeScale: number = 1;
 
-    private position: Vector2;
+    private readonly position: Vector2;
     public displayHeight: number = 0;
     public facingYaw: number = 0;
     public facingPitch: number = 0;
@@ -56,6 +58,7 @@ export abstract class CUnit extends Entity {
     public moveSpeedBonus = 0;
 
     public subComponents: IComponent[] = [];
+    public aiComponent: CAIEnemyGeneric | undefined;
 
     private collision = BootlegCollisionMap.getInstance();
 
@@ -78,7 +81,7 @@ export abstract class CUnit extends Entity {
                 this.move(this.moveOffset);
             }
             if (!this.isDisabledRotation()) {
-                this.facingYaw = Interpolation.RotDivisionSpring(this.facingYaw, this.logicAngle, 10 / GameConfig.timeScale);
+                this.facingYaw = Interpolation.RotDivisionSpring(this.facingYaw, this.logicAngle, 10 / GameConfig.getInstance().timeScale);
             }
             if (!this.isDisabledMovement()) {
                 if (this.moveTime <= 0) this.isMoving = false;
@@ -117,8 +120,8 @@ export abstract class CUnit extends Entity {
                 let diff = (distance * this.timerDelay) / (this.getActualMoveSpeed() * 4);
                 this.crowdingOffsetUpdate = math.max(0.1, math.min(this.crowdingOffsetUpdate, diff));
             }
-            this.crowdingOffset.x = math.min(math.max(this.crowdingOffset.x * GameConfig.timeScale, -this.maxPush), this.maxPush)
-            this.crowdingOffset.y = math.min(math.max(this.crowdingOffset.y * GameConfig.timeScale, -this.maxPush), this.maxPush)
+            this.crowdingOffset.x = math.min(math.max(this.crowdingOffset.x * GameConfig.getInstance().timeScale, -this.maxPush), this.maxPush)
+            this.crowdingOffset.y = math.min(math.max(this.crowdingOffset.y * GameConfig.getInstance().timeScale, -this.maxPush), this.maxPush)
         }//this.crowdingOffsetUpdate
 
         if (this.crowdingOffset.x != 0 || this.crowdingOffset.y != 0) {
@@ -163,8 +166,23 @@ export abstract class CUnit extends Entity {
         }
         return command;
     }
+    public addAiComponent<T extends CAIEnemyGeneric>(command: T) {
+        if (this.aiComponent != undefined) {
+            Logger.warning("Trying to add ai component to unit with existing AI.");
+            return;
+        }
+        this.aiComponent = command;
+        if (!Quick.Contains(this.subComponents, command)) {
+            Quick.Push(this.subComponents, command);
+            command.step();
+        }
+        return command;
+    }
     public removeComponent(command: IComponent) {
         Quick.Remove(this.subComponents, command);
+        if (this.aiComponent == command) {
+            this.aiComponent = undefined;
+        }
         command.destroy();
     }
     public teleport(to: Vector2) {
@@ -192,10 +210,10 @@ export abstract class CUnit extends Entity {
         this.forceMove(next);
     }
     public nudgeMove(offset: Vector2) {
-        this.forceMove(offset.multiplyOffsetNum(GameConfig.timeScale));
+        this.forceMove(offset.multiplyOffsetNum(GameConfig.getInstance().timeScale));
     }
     getActualMoveSpeed() {
-        return math.max(0, this.moveSpeed + this.moveSpeedBonus) * GameConfig.timeScale;
+        return math.max(0, this.moveSpeed + this.moveSpeedBonus) * GameConfig.getInstance().timeScale;
     }
     private forceMoveVector = Vector2.new(0, 0);
     public forceMove(offset: Vector2) {
@@ -252,6 +270,9 @@ export abstract class CUnit extends Entity {
         if (this.isDead) {
             type = ANIM_TYPE_DEATH;
         }
+        if (this.lastAnimationType == type && type == ANIM_TYPE_DEATH) {
+            return;
+        }
         this.lastAnimationType = type;
         for (let subAnim of subanims) {
             BlzSpecialEffectAddSubAnimation(this.effect, subAnim);
@@ -260,7 +281,7 @@ export abstract class CUnit extends Entity {
     }
     public setVisualTimeScale(scale: number) {
         this.visualTimeScale = scale;
-        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
     }
     public addVisualTimeScale(scale: number) {
         this.setVisualTimeScale(this.visualTimeScale * scale);
@@ -276,10 +297,14 @@ export abstract class CUnit extends Entity {
         this.clampHealth(attacker);
         this.alertNearbyAllies(attacker);
     }
+    private _alertNearbyAllies: CUnit[] = [];
     public alertNearbyAllies(attacker: CUnit) {
-        let aliveAlliedUnitsInRange = CUnit.unitPool.getAliveAlliedUnitsInRange(this, 512);
-        for (let u of aliveAlliedUnitsInRange) {
-            for (let c of this.subComponents) {
+        Quick.Clear(this._alertNearbyAllies);
+        CUnit.unitPool.getAliveAlliedUnitsInRange(this, 512, this._alertNearbyAllies);
+        for (let i = 0; i < this._alertNearbyAllies.length; i++) {
+            let u = this._alertNearbyAllies[i];
+            for (let j = 0; j < u.subComponents.length; j++) {
+                let c = u.subComponents[j];
                 c.onAlerted(attacker);
             }
         }
@@ -296,7 +321,7 @@ export abstract class CUnit extends Entity {
     public createSpawnEffect(effectPath: string, scale: number = 1, duration: number = 2) {
         let eff = AddSpecialEffect(effectPath, this.getPosition().x, this.getPosition().y);
         BlzSetSpecialEffectScale(eff, scale);
-        Delay.addDelay(() => {
+        Delay.getInstance().addDelay(() => {
             DestroyEffect(eff);
             // @ts-ignore
             eff = null;
@@ -304,6 +329,8 @@ export abstract class CUnit extends Entity {
         return eff;
     }
     public killUnit(dealer?: CUnit) {
+        if (this.isDead) return;
+
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             if (comp.removeOnDeath) {
@@ -318,13 +345,11 @@ export abstract class CUnit extends Entity {
         this.wasMoving = false;
         this.setAnimation(ANIM_TYPE_DEATH);
         this.setVisualTimeScale(1);
-        CUnit.unitPool.update();
     }
     public revive() {
         CUnit.unitPool.gridUpdateIsDead(this, this.isDead, false);
         this.health = this.maxHealth;
         this.isDead = false;
-        CUnit.unitPool.update();
     }
     public getZValue() {
         let zExtra = this.displayHeight;
@@ -362,7 +387,7 @@ export abstract class CUnit extends Entity {
         BlzSetSpecialEffectColorByPlayer(this.effect, this.owner);
         BlzSetSpecialEffectPosition(this.effect, this.position.x, this.position.y, this.getZValue())
         BlzSetSpecialEffectScale(this.effect, this.modelScale);
-        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.timeScale);
+        BlzSetSpecialEffectTimeScale(this.effect, this.visualTimeScale * GameConfig.getInstance().timeScale);
         BlzSetSpecialEffectOrientation(this.effect,
             this.facingYaw * bj_DEGTORAD,
             this.facingPitch * bj_DEGTORAD,
@@ -372,7 +397,7 @@ export abstract class CUnit extends Entity {
 
     public onDelete() {
         CUnit.unitPool.gridRemove(this);
-        CUnit.unitPool.update();
+        CUnit.unitPool.removeUnit(this);
         for (let i = this.subComponents.length - 1; i >= 0; i--) {
             let comp = this.subComponents[i];
             this.removeComponent(comp);
@@ -385,6 +410,8 @@ export abstract class CUnit extends Entity {
 
         this.position.recycle();
         this.remove();
+
+        Quick.ClearTable(this);
     }
     public onHit(other: CProjectile) {
         this.createSpawnEffect(Models.EFFECT_BLOOD_RED, 1, 5);

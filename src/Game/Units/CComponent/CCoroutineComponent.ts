@@ -14,26 +14,23 @@ export abstract class CCoroutineComponent extends TreeThread implements ICompone
     }
     abstract execute(): void;
     abstract cleanup(): void;
-    onAlerted(by: CUnit) {}
+    onAlerted(by: CUnit) {
+    }
 
     protected onUpdateStep() {
         /*if ((this.removeOnDeath && this.owner.isDead)
             || this.owner.queueForRemoval
         ) {
-            this.stop();
+            this.destroy();
         }*/
     }
 
     public destroy() {
-        if (!this.isFinished) {
-            super.stop();
-            this.cleanup();
-            // @ts-ignore
-            this.owner = null;
-        }
+        this.cleanup();
+        super.destroy();
     }
     public get globalTimeScale(): number {
-        return GameConfig.timeScale;
+        return GameConfig.getInstance().timeScale;
     }
     public get timeStep(): number {
         return this._timerDelay * this.globalTimeScale;

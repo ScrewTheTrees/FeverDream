@@ -13,7 +13,7 @@ export class CComponentRemoveOnDeath extends CStepComponent {
         }
         if (this.owner.isDead) {
             this.dead = true;
-            this.timerYield(10);
+            this.timerYield(5);
             return;
         }
     }

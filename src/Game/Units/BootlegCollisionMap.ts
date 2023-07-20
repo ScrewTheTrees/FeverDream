@@ -21,7 +21,7 @@ export class BootlegCollisionMap {
         this.gridSize = gridSize;
 
         Hooks.hookArguments(ModifyGateBJ, (operation, gate) => {
-            Delay.addDelay(() => {
+            Delay.getInstance().addDelay(() => {
                 let xx = GetWidgetX(gate);
                 let yy = GetWidgetY(gate);
                 this.clearByCoordinates(xx - 1024, yy - 1024, xx + 1024, yy + 1024);
@@ -75,7 +75,7 @@ export class BootlegCollisionMap {
     }
 
     //Special
-    public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 30, maxLength: number = 1024) {
+    public terrainRayCast(from: Vector2, to: Vector2, accuracy: number = 40, maxLength: number = 1024) {
         let start = from.copy();
         let finalDist = math.min(from.distanceTo(to) - accuracy, maxLength);
         let finalAngle = from.directionTo(to);
@@ -92,7 +92,7 @@ export class BootlegCollisionMap {
         return -1;
     }
     public terrainRayCastIsHit(from: Vector2, to: Vector2, accuracy?: number, maxLength?: number) {
-        if (this.terrainRayCast(from, to, math.max((accuracy || 30) * 10, 256)) >= 0) return true; //Quick check to possibly save resources.
+        if (this.terrainRayCast(from, to, math.max((accuracy || 40) * 10, 256)) >= 0) return true; //Quick check to possibly save resources.
         return this.terrainRayCast(from, to, accuracy, maxLength) >= 0;
     }
 
@@ -103,7 +103,7 @@ export class BootlegCollisionMap {
             this.grid[x] = [];
         }
         let half = this.gridSize / 2;
-        let value = PointWalkableChecker.checkTerrainIsWalkableXY((x * this.gridSize) + half - this.gridNegative, (y * this.gridSize) + half - this.gridNegative);
+        let value = PointWalkableChecker.getInstance().checkTerrainIsWalkableXY((x * this.gridSize) + half - this.gridNegative, (y * this.gridSize) + half - this.gridNegative);
         this.grid[x][y] = value;
         return value;
     }

@@ -75,7 +75,7 @@ export abstract class Arena {
         return rec;
     }
     public isPlayerTouchingTrigger() {
-        return PlayerHeroes.getInstance().intersects(...this.trigger);
+        return PlayerHeroes.getInstance().intersectsAny(this.trigger);
     }
 
     //Enemy

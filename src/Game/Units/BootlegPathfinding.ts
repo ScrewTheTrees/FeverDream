@@ -18,7 +18,7 @@ export class BootlegPathfinding {
 
     private constructor() {
         this.pathfinder = new PathfinderRectangle(31000, 31000, -31000, -31000,
-            64, true, true, true);
+            64, true, true, false);
 
     }
     public findAsync(from: Vector2, to: Vector2): TreePromise<PathfindResult<RectangleNode>, TreeThread> {

@@ -1,42 +1,52 @@
-import {Hooks} from "wc3-treelib/src/TreeLib/Hooks";
 import {Players} from "wc3-treelib/src/TreeLib/Structs/Players";
 import {MusicChange} from "./MusicChange";
 
-Hooks.addAfterMainHook(() => GameConfig.Init())
 export class GameConfig {
-    static Init() {
-        this.creepPlayer = Players.NEUTRAL_HOSTILE
+    private static _instance: GameConfig;
+    public static getInstance() {
+        if (!this._instance) {
+            this._instance = new GameConfig();
+        }
+        return this._instance;
+    }
+    private constructor() {
+        this.creepPlayer = Players.NEUTRAL_HOSTILE;
+        this.skeletonPlayer = Players.BROWN;
+        this.nagaPlayer = Players.NAVY;
     }
 
     //Players
-    public static readonly playerIdFrom = 0;
-    public static readonly playerIdTo = 3;
-    public static readonly enemyIdFrom = 4;
-    public static readonly enemyIdTo = 5;
+    public readonly playerIdFrom = 0;
+    public readonly playerIdTo = 3;
+    public readonly enemyIdFrom = 4;
+    public readonly enemyIdTo = 23;
 
-    public static readonly allPlayerSlots: player[] = [];
-    public static readonly playingPlayers: player[] = [];
-    public static creepPlayer: player;
+    public readonly allPlayerSlots: player[] = [];
+    public readonly playingPlayers: player[] = [];
+
+    public creepPlayer: player;
+    public skeletonPlayer: player;
+    public nagaPlayer: player;
 
 
     //asd
-    public static timeScale: number = 1;
+    public timeScale: number = 1;
 
 
     //AI
-    public static aiEnabled: boolean = true;
-    public static aiEnableMove: boolean = true;
-    public static aiEnableAttack: boolean = true;
-    public static aiEnableTargetPointCalculations: boolean = true;
+    public aiEnabled: boolean = true;
+    public aiEnableMove: boolean = true;
+    public aiEnableAttack: boolean = true;
+    public aiEnableTargetPointCalculations: boolean = true;
 
     //
-    public static countPlayingPlayers() {
+    public countPlayingPlayers() {
         return this.playingPlayers.length;
     }
 
     //
-    public static music: string = "";
-    public static setMusic(track: string) {
+    public music: string = "";
+    public setMusic(track: string) {
         if (track != this.music) {
             this.music = track;
             new MusicChange(track);

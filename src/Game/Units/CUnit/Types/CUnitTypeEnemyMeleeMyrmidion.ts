@@ -16,10 +16,10 @@ export class CUnitTypeEnemyMeleeMyrmidion extends CUnit {
     public modelScale = 0.6;
 
 
-    public constructor(owner: player, position: Vector2, focus?: CUnit) {
+    public constructor(owner: player, position: Vector2, focus?: CUnit, defaultAi: boolean = true) {
         super(owner, Models.UNIT_NAGA_MYRMIDION, position);
         this.setMaxHealth(85); //4 Hits at the start, should be 3 hits after 2 damage upgrades.
-        this.addComponent(new CAIEnemyMeleeSlowLarge(this, focus));
+        if (defaultAi) this.addAiComponent(new CAIEnemyMeleeSlowLarge(this, focus));
         this.addComponent(new CComponentRemoveOnDeath(this));
 
         BlzSetSpecialEffectColorByPlayer(this.effect, Players.NEUTRAL_HOSTILE);

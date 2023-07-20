@@ -1,8 +1,8 @@
 import {CUnit} from "../../CUnit/CUnit";
 import {CComponentEnemyMeleeNormal} from "../Actions/Enemy/CComponentEnemyMeleeNormal";
-import {CAIEnemyGeneric} from "./CAIEnemyGeneric";
+import {CAIStateEnemyGeneric} from "./CAIStateEnemyGeneric";
 
-export class CAIEnemyMelee extends CAIEnemyGeneric {
+export class CAIEnemyMelee extends CAIStateEnemyGeneric {
 
     public constructor(owner: CUnit, primaryTarget?: CUnit) {
         super(owner, primaryTarget);
